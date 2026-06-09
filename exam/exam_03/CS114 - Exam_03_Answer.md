@@ -233,20 +233,11 @@ $$f(\mu) = (4+5+5+4) = 18$$
 
 ---
 
-## Câu 7. Inductive Bias và Biểu diễn Hàm (Nâng cao)
+## Câu 7. So sánh Gradient Descent và Newton's Method (Nâng cao)
 
-### 7.1 Logistic Regression với Hình tròn
-- **Không.** Logistic Regression tiêu chuẩn tạo ra ranh giới quyết định là một siêu phẳng tuyến tính (đường thẳng trong 2D). Một đường thẳng không thể bao quanh và cô lập các điểm bên trong một hình tròn khỏi các điểm bên ngoài.
-- **Biến đổi dữ liệu:** Thêm các feature phi tuyến, cụ thể là bậc hai (Polynomial features): $x_1^2$ và $x_2^2$. Khi đó ranh giới quyết định tuyến tính trong không gian mới sẽ có dạng $w_1 x_1^2 + w_2 x_2^2 + b = 0$, chính là phương trình của đường tròn/elip trong không gian gốc, cho phép mô hình phân loại hoàn hảo.
-
-### 7.2 Decision Tree với Hình tròn
-- **Có thể phân loại được**, nhưng ranh giới sẽ rất cồng kềnh.
-- **Hình dáng ranh giới:** Vì mỗi node của Decision Tree chỉ chia một không gian bằng các đường song song với trục tọa độ (VD: $x_1 < c$ hoặc $x_2 < c$), cây không thể vẽ các đường cong hay đường chéo. Ranh giới tạo ra sẽ là một đường viền zíc-zắc hình "cầu thang" (staircase) cấu thành từ các đoạn thẳng vuông góc, xấp xỉ mép ngoài của hình tròn. Cây sẽ cần rất sâu (nhiều lá) để xấp xỉ tốt, dẫn đến overfitting.
-
-### 7.3 Khi ranh giới là đường chéo $x_1 + x_2 = 1$
-- **Logistic Regression:** Chỉ cần 3 tham số ($w_1, w_2, b$) để biểu diễn chính xác phương trình đường chéo này (với $w_1 = 1, w_2 = 1, b = -1$). Mô hình rất đơn giản và hoàn hảo.
-- **Decision Tree:** Sẽ vô cùng chật vật. Giống như mô phỏng hình tròn, cây phải tạo ra một ranh giới "cầu thang" vô hạn độ phân giải để xấp xỉ một đường chéo. Mô hình sẽ cần hàng trăm hoặc hàng ngàn node để tiệm cận được đường thẳng chéo này.
-- **Kết luận:** Tùy thuộc vào Inductive Bias (giả định có sẵn về hình dáng hàm), các mô hình có thế mạnh riêng ở các dạng ranh giới khác nhau.
+- **Cơ chế:** Gradient Descent là phương pháp tối ưu chỉ sử dụng đạo hàm bậc 1 ($\nabla J$). Newton's Method tối ưu mạnh mẽ hơn bằng cách sử dụng cả đạo hàm bậc 1 và độ cong bậc 2 của hàm số thông qua ma trận Hessian $H$. Công thức cập nhật của nó có chứa $H^{-1}\nabla J$.
+- **Tốc độ hội tụ:** Nhờ có thông tin độ cong, Newton's Method có tốc độ hội tụ bậc 2 (Quadratic Convergence), chỉ cần số bước lặp rất ít và đặc biệt là **không cần điều chỉnh siêu tham số learning rate $\alpha$**. Trong khi đó, Gradient Descent hội tụ tuyến tính (Linear), rất chậm và phụ thuộc lớn vào việc chọn $\alpha$.
+- **Chi phí phần cứng:** Dù Newton's method hội tụ trong ít bước lặp, chi phí ở mỗi bước lại vô cùng lớn. Việc tính và nghịch đảo ma trận Hessian $p \times p$ đòi hỏi chi phí thuật toán $\mathcal{O}(p^3)$. Nếu mô hình có số lượng thuộc tính $p$ rất lớn (hàng triệu), Newton's Method trở nên bất khả thi. Khi đó, Gradient Descent với chi phí $\mathcal{O}(p)$ ở mỗi vòng lặp là lựa chọn duy nhất.
 
 ---
 

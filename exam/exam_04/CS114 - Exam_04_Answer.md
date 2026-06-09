@@ -257,28 +257,15 @@ Tại $\boldsymbol{\beta} = (0,0)$, Ridge penalty không ảnh hưởng vì grad
 
 ---
 
-## Câu 7. Góc nhìn Bayes cho Regularization (Nâng cao)
+## Câu 7. Batch Normalization trong Mạng Neural (Nâng cao)
 
-### 7.1 Chứng minh Ridge Regression là MAP
-Theo định lý Bayes: Posterior $\propto$ Likelihood $\times$ Prior
-$$P(\boldsymbol{\beta} \mid \mathbf{y}, \mathbf{X}) \propto P(\mathbf{y} \mid \mathbf{X}, \boldsymbol{\beta}) \cdot P(\boldsymbol{\beta})$$
-Lấy log hai vế để tìm giá trị tối đa (MAP):
-$$\log \text{Posterior} = \log P(\mathbf{y} \mid \mathbf{X}, \boldsymbol{\beta}) + \log P(\boldsymbol{\beta})$$
-- Log-likelihood (nhiễu Gaussian $\sigma^2$): $-\frac{1}{2\sigma^2}\|\mathbf{y} - \mathbf{X}\boldsymbol{\beta}\|_2^2 + C_1$
-- Log-prior (Gaussian $\mathcal{N}(0, \tau^2\mathbf{I})$): $-\frac{1}{2\tau^2}\|\boldsymbol{\beta}\|_2^2 + C_2$
-MAP tối đa hóa tổng hai đại lượng này, tương đương với **cực tiểu hóa** hàm mất mát bị đổi dấu:
-$$L(\boldsymbol{\beta}) = \frac{1}{2\sigma^2}\|\mathbf{y} - \mathbf{X}\boldsymbol{\beta}\|_2^2 + \frac{1}{2\tau^2}\|\boldsymbol{\beta}\|_2^2$$
-Nhân toàn bộ với $2\sigma^2$, ta được hàm loss chính xác của Ridge Regression:
-$$L_{ridge}(\boldsymbol{\beta}) = \|\mathbf{y} - \mathbf{X}\boldsymbol{\beta}\|_2^2 + \frac{\sigma^2}{\tau^2}\|\boldsymbol{\beta}\|_2^2$$
-Với $\lambda = \frac{\sigma^2}{\tau^2} \quad \blacksquare$
+**Internal Covariate Shift:** Trong một mạng neural sâu, mỗi khi trọng số ở các tầng trước được cập nhật, phân phối dữ liệu đầu ra của chúng (cũng là đầu vào của tầng sau) sẽ liên tục bị thay đổi và xô lệch. Các tầng ẩn sâu luôn phải chạy theo để học một phân phối mục tiêu đang biến động không ngừng, khiến quá trình hội tụ cực kỳ chậm và dễ bị kẹt.
 
-### 7.2 Prior của Lasso Regression
-Lasso Regression tương ứng với giả định Prior của $\boldsymbol{\beta}$ là **phân phối Laplace** (Laplace distribution) có trung bình 0.
-Hàm mật độ Laplace: $P(\beta) = \frac{1}{2b} \exp\left(-\frac{|\beta|}{b}\right)$. Lấy log sẽ tạo ra số hạng $-\frac{1}{b}|\beta|$, chính là gốc rễ của norm L1 ($\|\boldsymbol{\beta}\|_1$).
-
-### 7.3 Giải thích tính thưa (Sparsity)
-- **Phân phối Gaussian (Ridge):** Có dạng hình chuông mượt. Tại đỉnh $\beta=0$, đạo hàm bằng 0. Khi $\beta$ nhỏ dần về 0, lực đẩy của penalty cũng tiến dần về 0. Do đó, Ridge chỉ kéo hệ số "lại gần" 0 mà rất hiếm khi bằng chính xác 0 (lực cản bằng 0 trước khi chạm tới mốc).
-- **Phân phối Laplace (Lasso):** Có một đỉnh nhọn (cusp) tại chính xác mốc $\beta=0$, nơi đạo hàm không liên tục. Xác suất Prior tập trung cực kì mạnh tại chính xác điểm 0. Lực cản của penalty L1 là một hằng số liên tục không suy giảm ngay cả khi $\beta$ cực kì gần 0. Điều này khiến quá trình tối ưu có xu hướng đẩy và "khóa" (truncate) hoàn toàn các trọng số không quan trọng về đúng giá trị 0, tạo ra sự thưa thớt (sparsity) và thực hiện Feature Selection tự động.
+**Giải pháp Batch Normalization:** Để khắc phục, kỹ thuật này chuẩn hóa trực tiếp điểm số tuyến tính $Z^{[l]}$ trên mỗi mini-batch $\mathcal{B}$ về trạng thái chuẩn (trung bình 0, phương sai 1):
+$$\mu_{\mathcal{B}} = \frac{1}{m}\sum Z_i, \quad \sigma^2_{\mathcal{B}} = \frac{1}{m}\sum (Z_i-\mu_{\mathcal{B}})^2$$
+$$\hat{Z}_i = \frac{Z_i - \mu_{\mathcal{B}}}{\sqrt{\sigma^2_{\mathcal{B}} + \epsilon}}$$
+Sau đó, để không làm mất đi khả năng biểu diễn của tầng, giá trị này được scale và shift bằng hai tham số học được $\gamma$ và $\beta$: $\tilde{Z}_i = \gamma \hat{Z}_i + \beta$.
+BN giúp phân phối dữ liệu truyền giữa các tầng ổn định, bôi trơn không gian lỗi, cho phép sử dụng learning rate lớn hơn và tăng tốc hội tụ lên gấp nhiều lần.
 
 ---
 

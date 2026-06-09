@@ -1,0 +1,144 @@
+
+# **ĐỀ THI MACHINE LEARNING — ĐỀ 04**
+
+* **Thời gian làm bài:** 90 phút
+* **Hình thức:** Tự luận + tính toán
+* **Ghi chú:** Sinh viên được sử dụng máy tính cầm tay. Trình bày rõ công thức, các bước biến đổi và kết luận.
+
+---
+
+Câu 1\. Logistic Regression — Chứng minh Tính Lồi
+
+Cho hàm mất mát Binary Cross-Entropy của Logistic Regression:
+
+$$J(\boldsymbol{\beta}) = -\sum_{i=1}^{n}\left[y^{(i)}\log\sigma(\boldsymbol{\beta}^T\mathbf{x}^{(i)}) + (1-y^{(i)})\log(1-\sigma(\boldsymbol{\beta}^T\mathbf{x}^{(i)}))\right]$$
+
+**Hãy:**
+
+1. Tính gradient $\nabla J(\boldsymbol{\beta})$ bằng chain rule (trình bày 3 thành phần: Loss → Sigmoid → Tuyến tính).
+2. Tính ma trận Hessian $H = \nabla^2 J(\boldsymbol{\beta})$.
+3. Chứng minh $H \succeq 0$ (bán xác định dương), từ đó suy ra $J$ là hàm lồi.
+4. Giải thích hệ quả thực tiễn: Logistic Regression không có cực tiểu cục bộ.
+
+---
+
+Câu 2\. OLS bằng Ma trận — Bộ dữ liệu 2 biến
+
+Cho dữ liệu với mô hình $\hat{y} = \beta_0 + \beta_1 x_1 + \beta_2 x_2$:
+
+| STT | $x_1$ | $x_2$ | $y$ |
+| :--- | :--- | :--- | :--- |
+| 1 | 1 | 2 | 10 |
+| 2 | 2 | 1 | 12 |
+| 3 | 3 | 3 | 18 |
+| 4 | 4 | 2 | 20 |
+| 5 | 5 | 4 | 28 |
+
+**Hãy:**
+
+1. Xây dựng $\mathbf{X}$ (có cột 1) và $\mathbf{y}$.
+2. Tính $\mathbf{X}^T\mathbf{X}$ và $\mathbf{X}^T\mathbf{y}$.
+3. Giải normal equations (có thể dùng elimination hoặc máy tính).
+4. Dự đoán $\hat{y}$ khi $x_1 = 3, x_2 = 5$.
+
+---
+
+Câu 3\. GDA — Chứng minh Ranh giới Tuyến tính
+
+Trong Gaussian Discriminant Analysis với $\mathbf{x} \mid y=0 \sim \mathcal{N}(\boldsymbol{\mu}_0, \boldsymbol{\Sigma})$ và $\mathbf{x} \mid y=1 \sim \mathcal{N}(\boldsymbol{\mu}_1, \boldsymbol{\Sigma})$ (ma trận hiệp phương sai chung).
+
+**Hãy:**
+
+1. Viết $P(y=1 \mid \mathbf{x})$ theo Định lý Bayes.
+2. Chứng minh rằng $P(y=1 \mid \mathbf{x}) = \sigma(\boldsymbol{\theta}^T\mathbf{x} + \theta_0)$ bằng cách:
+   - Tính log-ratio $\log\frac{P(\mathbf{x} \mid y=1)}{P(\mathbf{x} \mid y=0)}$.
+   - Chỉ ra số hạng bậc hai $\mathbf{x}^T\boldsymbol{\Sigma}^{-1}\mathbf{x}$ bị triệt tiêu nhờ $\boldsymbol{\Sigma}$ chung.
+   - Xác định $\boldsymbol{\theta}$ và $\theta_0$.
+3. Giải thích vì sao nếu $\boldsymbol{\Sigma}_0 \neq \boldsymbol{\Sigma}_1$, ranh giới quyết định sẽ là bậc hai (quadratic).
+
+---
+
+Câu 4\. Decision Tree — Regression Tree với MSE
+
+Cho bảng dữ liệu hồi quy:
+
+| STT | $x$ | $y$ |
+| :--- | :--- | :--- |
+| 1 | 1 | 2.5 |
+| 2 | 2 | 3.0 |
+| 3 | 3 | 4.5 |
+| 4 | 4 | 4.0 |
+| 5 | 5 | 8.0 |
+| 6 | 6 | 7.5 |
+| 7 | 7 | 9.0 |
+| 8 | 8 | 10.0 |
+
+**Hãy:**
+
+1. Tính MSE khi không chia (dùng toàn bộ dữ liệu làm 1 lá, dự đoán = $\bar{y}$).
+2. Xét split $x \leq 4$. Tính $\bar{y}_{left}$, $\bar{y}_{right}$, SSE trái, SSE phải, tổng SSE.
+3. Xét split $x \leq 3$. Tính tương tự.
+4. Chọn split tốt hơn theo tiêu chí SSE nhỏ hơn.
+
+---
+
+Câu 5\. Backpropagation qua Mạng 2-3-1
+
+Cho mạng gồm:
+
+* 2 input: $x_1 = 1$, $x_2 = -1$
+* 1 hidden layer gồm 3 neuron, dùng sigmoid
+* 1 output neuron, dùng sigmoid
+* Loss: Binary cross-entropy $L = -[y\log\hat{y} + (1-y)\log(1-\hat{y})]$
+* Nhãn thật: $y = 1$
+
+**Trọng số tầng ẩn:**
+
+$$\mathbf{W}^{[1]} = \begin{pmatrix} 0.2 & -0.3 \\ 0.4 & 0.1 \\ -0.1 & 0.5 \end{pmatrix}, \quad \mathbf{b}^{[1]} = \begin{pmatrix} 0 \\ 0 \\ 0 \end{pmatrix}$$
+
+**Trọng số tầng output:**
+
+$$\mathbf{W}^{[2]} = \begin{pmatrix} 0.5 & -0.3 & 0.4 \end{pmatrix}, \quad b^{[2]} = 0$$
+
+**Hãy thực hiện:**
+
+1. Forward pass: tính $\mathbf{Z}^{[1]}$, $\mathbf{A}^{[1]}$, $Z^{[2]}$, $\hat{y}$.
+2. Tính loss.
+3. Tính $dZ^{[2]}$ (biết sigmoid + BCE cho $dZ = \hat{y} - y$).
+4. Tính $dW^{[2]}$ và $db^{[2]}$.
+
+---
+
+Câu 6\. Gradient Descent với Regularization
+
+Cho mô hình tuyến tính $\hat{y} = \beta_0 + \beta_1 x$ với Ridge regularization. Bắt đầu từ $\beta_0 = 0$, $\beta_1 = 0$.
+
+Dữ liệu:
+
+| $x$ | $y$ |
+| :--- | :--- |
+| 1 | 3 |
+| 2 | 5 |
+| 3 | 7 |
+| 4 | 9 |
+
+**Hãy:**
+
+1. Tính gradient của loss OLS (không có regularization) tại $\boldsymbol{\beta} = (0, 0)$.
+2. Tính gradient của Ridge penalty $\lambda\|\boldsymbol{\beta}\|_2^2$ tại $\boldsymbol{\beta} = (0, 0)$ với $\lambda = 0.1$. 
+3. Tính gradient tổng và cập nhật $\boldsymbol{\beta}$ sau một bước với $\alpha = 0.1$.
+4. So sánh $\boldsymbol{\beta}$ mới với trường hợp không regularization. Nhận xét.
+
+---
+
+Câu 7 (Nâng cao)\. Góc nhìn Bayes cho Regularization (MAP)
+
+Trong bài giảng, ta đã biết cực tiểu hóa OLS tương đương với Maximum Likelihood Estimation (MLE) dựa trên giả định nhiễu Gaussian. Việc thêm Regularization thực chất tương đương với ước lượng Maximum a Posteriori (MAP) bằng cách đặt Prior Probability (xác suất tiền nghiệm) lên các hệ số $\boldsymbol{\beta}$.
+
+**Hãy:**
+
+1. Chứng minh rằng Ridge Regression (với L2 penalty $\lambda \|\boldsymbol{\beta}\|_2^2$) tương đương với MAP estimation nếu ta giả định Prior của mỗi $\beta_j$ tuân theo phân phối Gaussian độc lập có trung bình 0 và phương sai $\tau^2$.
+2. Hàm mất mát Lasso Regression (với L1 penalty $\lambda \|\boldsymbol{\beta}\|_1$) tương ứng với giả định Prior của $\boldsymbol{\beta}$ là phân phối gì?
+3. Dựa vào đặc điểm hình học của hai hàm mật độ phân phối Prior trên (tại điểm $\beta = 0$), hãy giải thích bằng trực giác tại sao Lasso tạo ra nghiệm thưa (sparse solution — các $\beta_j$ bị ép về chính xác bằng 0) còn Ridge thì không.
+
+**HẾT**

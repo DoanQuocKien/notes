@@ -1,0 +1,155 @@
+---
+title: "Machine Learning: Advanced Decision Trees and Ensemble Methods"
+author: "Quoc Kien"
+jupyter: science_env
+format: 
+  html:    
+    toc: true
+    toc-depth: 3
+    theme: cosmic
+  pdf:
+    include-in-header:
+      text: |
+        \usepackage{fvextra}
+        \DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,breakanywhere,commandchars=\\\{\}}
+---
+
+## 1. Cơ chế Hoạt động của Cây Quyết định (Decision Tree)
+
+Cây quyết định là thuật toán học máy phi tuyến tính hoạt động theo cơ chế chia để trị (Top-down, Greedy, Recursively partitioning). Thuật toán liên tục phân tách không gian thuộc tính thành các vùng hình chữ nhật loại trừ lẫn nhau (Mutually exclusive regions) sao cho dữ liệu ở mỗi vùng con đạt độ đồng nhất (Purity) cao nhất.
+
+
+
+Tại một nút (node) bất kỳ, không gian dữ liệu được phân hoạch dựa trên một thuộc tính $j$ và một ngưỡng giá trị $t$:
+
+$$S(j, t) = \left\{ \{x \in \mathcal{D} \mid x_j \le t\}, \{x \in \mathcal{D} \mid x_j > t\} \right\} = \{ R_1, R_2 \}$$
+
+```{python}
+#| label: decision-tree-partitions
+#| fig-cap: "A shallow decision tree and the axis-aligned regions it creates."
+#| echo: false
+
+import matplotlib.pyplot as plt
+from matplotlib.patches import Rectangle
+
+fig, ax = plt.subplots(1, 2, figsize=(9, 3.8))
+
+regions = [
+    (0, 0, 2.4, 5, "#BEE3F8", "Leaf A"),
+    (2.4, 0, 2.6, 2.2, "#C6F6D5", "Leaf B"),
+    (2.4, 2.2, 2.6, 2.8, "#FED7D7", "Leaf C"),
+]
+for x, y, w, h, color, label in regions:
+    ax[0].add_patch(Rectangle((x, y), w, h, facecolor=color, edgecolor="black", alpha=0.75))
+    ax[0].text(x + w / 2, y + h / 2, label, ha="center", va="center", fontweight="bold")
+ax[0].axvline(2.4, color="black", linestyle="--")
+ax[0].hlines(2.2, 2.4, 5, color="black", linestyle="--")
+ax[0].set_xlim(0, 5)
+ax[0].set_ylim(0, 5)
+ax[0].set_xlabel("$x_1$")
+ax[0].set_ylabel("$x_2$")
+ax[0].set_title("Feature-space partition")
+ax[0].grid(alpha=0.2)
+
+nodes = {
+    "root": (0.5, 0.9, "$x_1 \\leq 2.4$?"),
+    "left": (0.25, 0.48, "Leaf A"),
+    "right": (0.75, 0.48, "$x_2 \\leq 2.2$?"),
+    "b": (0.62, 0.12, "Leaf B"),
+    "c": (0.88, 0.12, "Leaf C"),
+}
+for key, (x, y, text) in nodes.items():
+    bbox = dict(boxstyle="round,pad=0.25", fc="#EDF2F7", ec="black")
+    ax[1].text(x, y, text, ha="center", va="center", bbox=bbox)
+for src, dst, label in [("root", "left", "yes"), ("root", "right", "no"), ("right", "b", "yes"), ("right", "c", "no")]:
+    x0, y0, _ = nodes[src]
+    x1, y1, _ = nodes[dst]
+    ax[1].annotate("", xy=(x1, y1 + 0.08), xytext=(x0, y0 - 0.08),
+                   arrowprops=dict(arrowstyle="->", lw=1))
+    ax[1].text((x0 + x1) / 2, (y0 + y1) / 2, label, fontsize=8)
+ax[1].set_title("Equivalent tree")
+ax[1].axis("off")
+plt.tight_layout()
+plt.show()
+```
+
+The important visual property is axis alignment: each split cuts one feature at one threshold, so deeper trees build more refined rectangular regions.
+
+---
+
+## 2. Hàm Mục Tiêu và Các Độ Đo Ô Nhiễm (Impurity Metrics)
+
+Để đánh giá chất lượng của một phép phân tách tại nút $R$, ta định nghĩa hàm chi phí thông qua độ ô nhiễm $L(R)$. 
+
+### 2.1 Đối với Bài toán Phân loại (Classification)
+Gọi $p_c$ là tỷ lệ số mẫu thuộc lớp $c \in \{1, 2, \dots, C\}$ bên trong vùng $R$:
+
+$$p_c = \frac{1}{|R|} \sum_{i \in R} \mathbb{I}(y^{(i)} = c)$$
+
+* **Độ bất định Entropy (Entropy):** Đo lường mức độ hỗn loạn của thông tin. Hàm số đạt cực đại bằng $\log_2 C$ khi dữ liệu phân phối đều và đạt cực tiểu bằng $0$ khi toàn bộ mẫu thuộc về một lớp duy nhất:
+    $$H(R) = - \sum_{c=1}^{C} p_c \log_2 p_c$$
+* **Chỉ số Gini (Gini Index):** Đo lường xác suất phân loại sai một mẫu dữ liệu nếu ta chọn nhãn ngẫu nhiên dựa trên phân phối của vùng đó:
+    $$G(R) = 1 - \sum_{c=1}^{C} p_c^2$$
+
+Khi phân hoạch một nút cha $R$ thành hai nút con $R_1$ và $R_2$, thuật toán tham lam sẽ quét qua toàn bộ các thuộc tính $j$ và các ngưỡng $t$ để chọn ra phép phân tách tối đa hóa **Information Gain**:
+
+$$\max_{j, t} \text{Gain}(R, j, t) = H(R) - \left( \frac{|R_1|}{|R|} H(R_1) + \frac{|R_2|}{|R|} H(R_2) \right)$$
+
+### 2.2 Đối với Bài toán Hồi quy (Regression Trees - CART)
+Đối với bài toán dự đoán giá trị liên tục, ta không sử dụng Entropy hay Gini mà tối ưu hóa bằng **Sai số bình phương trung bình (MSE)**.
+
+* **Hàm mục tiêu ô nhiễm tại nút $R$:**
+    $$L(R) = \frac{1}{|R|} \sum_{i \in R} (y^{(i)} - \bar{y}_R)^2$$
+    Trong đó $\bar{y}_R$ là giá trị trung bình cộng của các nhãn mục tiêu nằm trong vùng $R$:
+    $$\bar{y}_R = \frac{1}{|R|} \sum_{i \in R} y^{(i)}$$
+* **Giá trị dự đoán:** Khi một mẫu dữ liệu mới rơi vào nút lá $R$, giá trị dự đoán đầu ra của mô hình chính là hằng số $\bar{y}_R$.
+* **Tiêu chí phân hoạch:** Thuật toán tìm kiếm thuộc tính $j$ và ngưỡng $t$ sao cho tổng sai số bình phương sau phân tách là nhỏ nhất:
+    $$\min_{j, t} \left[ \sum_{i \in R_1} (y^{(i)} - \bar{y}_{R_1})^2 + \sum_{i \in R_2} (y^{(i)} - \bar{y}_{R_2})^2 \right]$$
+
+---
+
+## 3. Kiểm Soát Overfitting & Kỹ Thuật Cắt Tỉa Cây (Pruning)
+
+Nếu cây quyết định được phát triển tự do, nó sẽ mọc cho đến khi tất cả các nút lá đều đồng nhất tuyệt đối ($L(R)=0$). Hiện tượng này gây ra hiện tượng Overfitting nghiêm trọng (High Variance). Để kiểm soát, ta sử dụng thuật toán **Cost-Complexity Pruning** (Cắt tỉa chi phí - phức tạp).
+
+Ta thiết lập hàm mục tiêu tối ưu hóa có chứa thành phần phạt dựa trên kích thước cấu trúc cây:
+
+$$C_\alpha(T) = \sum_{m=1}^{|T|} |R_m| L(R_m) + \alpha |T|$$
+
+Trong đó:
+* $|T|$ là số lượng nút lá của cây $T$.
+* $L(R_m)$ là độ ô nhiễm tại nút lá thứ $m$.
+* $\alpha \ge 0$ là siêu tham số điều khiển sự đánh đổi (trade-off) giữa độ chính xác và độ phức tạp cấu trúc. $\alpha$ càng lớn, thuật toán càng ép cây phải bị cắt tỉa gọn hơn.
+
+---
+
+## 4. Các Phương Phương Học Tập Hợp (Ensemble Methods)
+
+
+
+### 4.1 Phương pháp Bagging (Bootstrap Aggregating)
+* **Nguyên lý:** Xây dựng song song nhiều cây quyết định hoàn toàn độc lập. Mỗi cây được huấn luyện trên một tập dữ liệu con được tạo ra bằng phương pháp lấy mẫu lặp lại ngẫu nhiên (Bootstrap sampling) từ tập dữ liệu huấn luyện gốc.
+* **Đại diện tiêu biểu - Random Forest:** Để giảm thiểu độ tương quan giữa các cây, Random Forest bổ sung một cơ chế ngẫu nhiên hóa: Tại mỗi nút phân tách, thuật toán chỉ cho phép chọn thuộc tính tối ưu từ một tập con gồm $k$ thuộc tính được chọn ngẫu nhiên ($k < p$, thông thường $k = \sqrt{p}$).
+
+### 4.2 Phương pháp Boosting & Bản chất Toán học của XGBoost
+Trái ngược với Bagging, Boosting xây dựng chuỗi các cây một cách tuần tự (Sequential), cây sau tập trung sửa sai cho các cây phía trước.
+
+**XGBoost (Extreme Gradient Boosting)** nâng cấp thuật toán bằng cách áp dụng **Khai triển Taylor bậc hai** để xấp xỉ hàm mất mát tổng thể tại bước lặp thứ $t$, giúp tìm ra cấu trúc cây tối ưu một cách cực kỳ chính xác.
+
+Hàm mất mát tại bước lặp thứ $t$ khi thêm cây $f_t(\mathbf{x})$ vào mô hình:
+
+$$\mathcal{L}^{(t)} = \sum_{i=1}^{n} l\left(y^{(i)}, \hat{y}^{(t-1)(i)} + f_t(\mathbf{x}^{(i)})\right) + \Omega(f_t)$$
+
+Áp dụng khai triển Taylor bậc hai xấp xỉ hàm $l(y, \hat{y} + \Delta\hat{y}) \approx l(y, \hat{y}) + g \Delta\hat{y} + \frac{1}{2} h (\Delta\hat{y})^2$:
+
+$$\mathcal{L}^{(t)} \approx \sum_{i=1}^{n} \left[ l(y^{(i)}, \hat{y}^{(t-1)(i)}) + g_i f_t(\mathbf{x}^{(i)}) + \frac{1}{2} h_i f_t^2(\mathbf{x}^{(i)}) \right] + \Omega(f_t)$$
+
+Trong đó $g_i$ và $h_i$ lần lượt là đạo hàm bậc một (Gradient) và đạo hàm bậc hai (Hessian) của hàm mất mát cũ tính tại giá trị dự đoán trước đó:
+
+$$g_i = \frac{\partial l(y^{(i)}, \hat{y}^{(t-1)(i)})}{\partial \hat{y}^{(t-1)(i)}} \quad \text{và} \quad h_i = \frac{\partial^2 l(y^{(i)}, \hat{y}^{(t-1)(i)})}{\partial (\hat{y}^{(t-1)(i)})^2}$$
+
+Bỏ qua các hằng số không ảnh hưởng đến quá trình tối ưu hóa, hàm mục tiêu rút gọn của XGBoost tại bước $t$ là:
+
+$$\tilde{\mathcal{L}}^{(t)} = \sum_{i=1}^{n} \left[ g_i f_t(\mathbf{x}^{(i)}) + \frac{1}{2} h_i f_t^2(\mathbf{x}^{(i)}) \right] + \gamma |T| + \frac{1}{2}\lambda \sum_{j=1}^{|T|} w_j^2$$
+
+Thông tin đạo hàm bậc hai $h_i$ đóng vai trò như một hệ số điều hướng độ cong của không gian lỗi, giúp XGBoost hội tụ nhanh vượt trội so với Gradient Boosting truyền thống chỉ dùng đạo hàm bậc một.

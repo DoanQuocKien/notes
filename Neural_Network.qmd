@@ -1,0 +1,184 @@
+---
+title: "Machine Learning: Neural Networks and Fully Vectorized Backpropagation"
+author: "Quoc Kien"
+jupyter: science_env
+format: 
+  html:    
+    toc: true
+    toc-depth: 3
+    theme: cosmic
+  pdf:
+    include-in-header:
+      text: |
+        \usepackage{fvextra}
+        \DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,breakanywhere,commandchars=\\\{\}}
+---
+
+## 1. Nơ-ron Đơn Bào (Perceptron) và Hiện tượng Bão hòa Gradient
+
+Mô hình nơ-ron cơ bản thực hiện một phép biến đổi tuyến tính kết hợp với hàm kích hoạt phi tuyến:
+
+$$z = \mathbf{w}^T \mathbf{x} + b \implies \hat{y} = a = g(z)$$
+
+### Hiện tượng Bão hòa Gradient (Gradient Saturation)
+Khi sử dụng hàm kích hoạt Sigmoid $\sigma(z) = \frac{1}{1 + e^{-z}}$, đạo hàm của nó là $\sigma'(z) = \sigma(z)(1 - \sigma(z))$. 
+Khi giá trị $z$ tiến về cực hạn ($z \to \infty$ hoặc $z \to -\infty$), giá trị của $\sigma(z)$ tiến sát về $1$ hoặc $0$, dẫn đến đạo hàm $\sigma'(z) \to 0$. Khi thực hiện lan truyền ngược qua nhiều tầng ẩn, các đạo hàm tiệm cận 0 này nhân chuỗi với nhau sẽ làm gradient triệt tiêu hoàn toàn về 0. Mạng nơ-ron rơi vào trạng thái bão hòa và dừng học (**Vanishing Gradient Problem**).
+
+Để khắc phục, các tầng ẩn hiện đại ưu tiên sử dụng hàm **ReLU** $g(z) = \max(0, z)$ vì đạo hàm bằng $1$ với mọi miền dương, hoặc **Leaky ReLU** để tránh hiện tượng nơ-ron chết:
+$$g(z) = \max(\alpha z, z) \implies g'(z) = \begin{cases} 1 & \text{nếu } z > 0 \\ \alpha & \text{nếu } z \le 0 \end{cases} \quad (\text{với } \alpha \approx 0.01)$$
+
+```{python}
+#| label: activation-saturation
+#| fig-cap: "Sigmoid saturates for large positive or negative inputs, while ReLU preserves a usable gradient on the positive side."
+#| echo: false
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+z = np.linspace(-8, 8, 400)
+sigmoid = 1 / (1 + np.exp(-z))
+sigmoid_grad = sigmoid * (1 - sigmoid)
+relu = np.maximum(0, z)
+
+fig, ax = plt.subplots(1, 2, figsize=(9, 3.4))
+ax[0].plot(z, sigmoid, label="sigmoid", color="#4C78A8")
+ax[0].plot(z, relu / relu.max(), label="scaled ReLU", color="#F58518")
+ax[0].set_title("Activation value")
+ax[0].set_xlabel("z")
+ax[0].grid(alpha=0.25)
+ax[0].legend()
+
+ax[1].plot(z, sigmoid_grad, label="sigmoid derivative", color="#4C78A8")
+ax[1].axhline(1.0, color="#F58518", linestyle="--", label="ReLU derivative for z > 0")
+ax[1].set_title("Gradient signal")
+ax[1].set_xlabel("z")
+ax[1].grid(alpha=0.25)
+ax[1].legend()
+plt.tight_layout()
+plt.show()
+```
+
+The plot shows why deep networks often avoid sigmoid activations in hidden layers: once $z$ is far from zero, the sigmoid slope is nearly flat, so backpropagation sends almost no correction signal to earlier layers.
+
+---
+
+## 2. Kiến trúc Mạng Nơ-ron Đa Tầng (Multilayer Perceptron - MLP)
+
+The easiest way to read an MLP is layer by layer. Each circle stores one scalar activation, and each edge has a learnable weight. A fully connected layer means every activation from the previous layer contributes to every neuron in the next layer.
+
+```{python}
+#| label: nn-layering-graph
+#| fig-cap: "A fully connected neural network with input, hidden, and output layers."
+#| echo: false
+
+import matplotlib.pyplot as plt
+
+layers = [3, 4, 3, 2]
+layer_names = ["Input\n$A^{[0]}$", "Hidden 1\n$A^{[1]}$", "Hidden 2\n$A^{[2]}$", "Output\n$A^{[3]}$"]
+positions = {}
+
+fig, ax = plt.subplots(figsize=(8, 4.8))
+for layer_idx, width in enumerate(layers):
+    y_offset = (max(layers) - width) / 2
+    for neuron_idx in range(width):
+        y = width - neuron_idx - 1 + y_offset
+        positions[(layer_idx, neuron_idx)] = (layer_idx, y)
+        circle = plt.Circle((layer_idx, y), 0.14, color="#4C78A8", edgecolor="black", linewidth=0.8, zorder=3)
+        ax.add_patch(circle)
+        ax.text(layer_idx, y, f"$a_{neuron_idx + 1}$", ha="center", va="center", fontsize=7, color="white")
+
+for layer_idx in range(len(layers) - 1):
+    for src in range(layers[layer_idx]):
+        for dst in range(layers[layer_idx + 1]):
+            x0, y0 = positions[(layer_idx, src)]
+            x1, y1 = positions[(layer_idx + 1, dst)]
+            ax.plot([x0 + 0.14, x1 - 0.14], [y0, y1], color="#9AA0A6", linewidth=0.6, alpha=0.55, zorder=1)
+
+for layer_idx, name in enumerate(layer_names):
+    ax.text(layer_idx, -0.7, name, ha="center", va="top", fontsize=10, fontweight="bold")
+
+ax.annotate("forward pass", xy=(2.55, 4.2), xytext=(0.45, 4.2),
+            arrowprops=dict(arrowstyle="->", lw=1.5, color="#2F855A"),
+            color="#2F855A", ha="center", va="center", fontsize=10)
+ax.annotate("backpropagation", xy=(0.45, 4.55), xytext=(2.55, 4.55),
+            arrowprops=dict(arrowstyle="->", lw=1.5, color="#C05621"),
+            color="#C05621", ha="center", va="center", fontsize=10)
+ax.set_xlim(-0.5, len(layers) - 0.5)
+ax.set_ylim(-1.0, 5.0)
+ax.axis("off")
+plt.show()
+```
+
+This diagram also clarifies the matrix notation below: multiplying by $\mathbf{W}^{[l]}$ collects all incoming edges for layer $l$, adding $\mathbf{b}^{[l]}$ shifts each neuron, and applying $g^{[l]}$ turns the linear score into the activation passed forward.
+
+
+
+Để xử lý các bài toán phi tuyến phức tạp, các nơ-ron được xếp chồng thành kiến trúc đa tầng đầy đủ kết nối (Fully Connected). Quá trình lan truyền xuôi (Forward Pass) cho một Mini-batch gồm $m$ mẫu dữ liệu được biểu diễn đồng thời dưới dạng ma trận để tối ưu hóa hiệu năng tính toán:
+
+$$\mathbf{Z}^{[l]} = \mathbf{W}^{[l]} \mathbf{A}^{[l-1]} + \mathbf{b}^{[l]}$$
+
+$$\mathbf{A}^{[l]} = g^{[l]}(\mathbf{Z}^{[l]})$$
+
+Kích thước của các ma trận trong hệ thống (với $n_l$ là số nơ-ron tại layer $l$):
+* $\mathbf{A}^{[l-1]}$: Kích thước $\left( n_{l-1} \times m \right)$ — với $\mathbf{A}^{[0]} = \mathbf{X}^T$ là ma trận đầu vào.
+* $\mathbf{W}^{[l]}$: Kích thước $\left( n_l \times n_{l-1} \right)$ — ma trận trọng số của tầng $l$.
+* $\mathbf{b}^{[l]}$: Kích thước $\left( n_l \times 1 \right)$ — vector bias (được cộng broatcast theo cột cho đủ kích thước batch $m$).
+* $\mathbf{Z}^{[l]}$ và $\mathbf{A}^{[l]}$: Kích thước $\left( n_l \times m \right)$.
+
+---
+
+## 3. Chứng Minh Toán Học Đạo Hàm Ma Trận Lan Truyền Ngược (Vectorized Backpropagation)
+
+Xét hàm mất mát lỗi bình phương tổng quát hoặc Cross-Entropy viết cho toàn bộ một batch gồm $m$ mẫu dữ liệu: $\mathcal{L}$. Ta định nghĩa ma trận lỗi hệ thống tại tầng $l$ bằng đạo hàm riêng của Loss đối với tổng tuyến tính ma trận $\mathbf{Z}^{[l]}$:
+
+$$\mathbf{dZ}^{[l]} = \frac{\partial \mathcal{L}}{\partial \mathbf{Z}^{[l]}} \quad \left(\text{kích thước } n_l \times m\right)$$
+
+Sử dụng toán tử tích Hadamard $\odot$ (element-wise product), ta tiến hành chứng minh chuỗi công thức vi phân ma trận ngược từ tầng cuối cùng $L$ về các tầng ẩn trước đó.
+
+### Bước 1: Gradient tại tầng đầu ra (Output Layer $l = L$)
+Giả sử bài toán phân loại đa lớp sử dụng hàm kích hoạt Softmax và hàm mất mát Cross-Entropy ở tầng cuối. Triển khai vi phân chuỗi ma trận và triệt tiêu các lượng mẫu số tương ứng, ta thu được ma trận sai số đầu ra cực kỳ clean:
+
+$$\mathbf{dZ}^{[L]} = \mathbf{A}^{[L]} - \mathbf{Y}$$
+
+### Bước 2: Lan truyền ngược ma trận sai số về tầng ẩn $l$
+Ta cần tính $\mathbf{dZ}^{[l]}$ dựa trên ma trận sai số của tầng liền sau nó $\mathbf{dZ}^{[l+1]}$. Áp dụng quy tắc vi phân chuỗi tổng quát trên không gian đa biến:
+
+$$\mathbf{dZ}^{[l]} = \frac{\partial \mathcal{L}}{\partial \mathbf{Z}^{[l]}} = \left[ \frac{\partial \mathbf{Z}^{[l+1]}}{\partial \mathbf{A}^{[l]}} \right]^T \frac{\partial \mathcal{L}}{\partial \mathbf{Z}^{[l+1]}} \odot (g^{[l]})'(\mathbf{Z}^{[l]})$$
+
+Vì phương trình tầng kế tiếp là $\mathbf{Z}^{[l+1]} = \mathbf{W}^{[l+1]} \mathbf{A}^{[l]} + \mathbf{b}^{[l+1]}$, đạo hàm riêng $\frac{\partial \mathbf{Z}^{[l+1]}}{\partial \mathbf{A}^{[l]}} = \mathbf{W}^{[l+1]}$. Thay thế vào hệ thống, ta thu được phương trình lan truyền lỗi cốt lõi:
+
+$$\mathbf{dZ}^{[l]} = \left( (\mathbf{W}^{[l+1]})^T \mathbf{dZ}^{[l+1]} \right) \odot (g^{[l]})'(\mathbf{Z}^{[l]})$$
+
+### Bước 3: Tính Gradient đối với các tham số Ma trận $\mathbf{W}^{[l]}$ và $\mathbf{b}^{[l]}$
+Từ ma trận lỗi $\mathbf{dZ}^{[l]}$, ta tính tốc độ thay đổi của hàm mất mát đối với các tham số cần tối ưu hóa của tầng đó (chia cho $m$ để lấy trung bình mẫu trên toàn bộ mini-batch):
+
+$$\mathbf{dW}^{[l]} = \frac{\partial \mathcal{L}}{\partial \mathbf{W}^{[l]}} = \frac{1}{m} \mathbf{dZ}^{[l]} (\mathbf{A}^{[l-1]})^T \quad \left(\text{kích thước } n_l \times n_{l-1}\right)$$
+
+$$\mathbf{db}^{[l]} = \frac{\partial \mathcal{L}}{\partial \mathbf{b}^{[l]}} = \frac{1}{m} \sum_{i=1}^{m} \mathbf{dZ}^{(i)[l]} = \frac{1}{m} \text{np.sum}(\mathbf{dZ}^{[l]}, \text{axis}=1, \text{keepdims}=True)$$
+
+---
+
+## 4. Các Kỹ Thuật Điều Hướng Chống Overfitting Hiện Đại
+
+### 4.1 Cơ chế Ngắt Kết Nối Ngẫu Nhiên (Dropout)
+Tại mỗi bước lặp huấn luyện (training iteration), thuật toán tiến hành ngắt kết nối ngẫu nhiên một tỷ lệ $p$ các nơ-ron trong tầng ẩn bằng cách đặt giá trị output của chúng bằng 0.
+
+
+
+Về mặt toán học, phép toán này tương đương với việc bọc một ma trận mặt nạ nhị phân Bernoulli $\mathbf{M}^{[l]}$ vào quá trình lan truyền:
+$$\mathbf{A}^{[l]} = g^{[l]}(\mathbf{Z}^{[l]}) \odot \mathbf{M}^{[l]} \quad \text{với } M_{j,k}^{[l]} \sim \text{Bernoulli}(1-p)$$
+
+Khi kiểm thử (Testing), ta không dùng Dropout mà giữ nguyên toàn bộ mạng, nhưng phải nhân kết quả đầu ra với hệ số tỷ lệ $(1-p)$ để đảm bảo kỳ vọng toán học của các tầng ổn định (hoặc áp dụng Inverted Dropout ngay trong lúc train bằng cách chia trực tiếp $\mathbf{A}^{[l]}$ cho $1-p$). Dropout ép mạng nơ-ron không được phụ thuộc vào bất kỳ một liên kết đơn lẻ nào, tăng tính tổng quát hóa tương tự như mô hình tập hợp (Ensemble).
+
+### 4.2 Chuẩn hóa Lớp Dữ liệu (Batch Normalization)
+Để giải quyết hiện tượng dịch chuyển phân phối nội bộ phức tạp (**Internal Covariate Shift**) khiến các tầng ẩn sâu rất khó hội tụ, ta thực hiện chuẩn hóa phân phối đầu ra tuyến tính $\mathbf{Z}^{[l]}$ về trạng thái trung bình bằng 0 và phương sai bằng 1 trên mỗi mini-batch dữ liệu $\mathcal{B}$:
+
+$$\boldsymbol{\mu}_{\mathcal{B}} = \frac{1}{m} \sum_{i=1}^{m} \mathbf{z}^{(i)}, \quad \boldsymbol{\sigma}_{\mathcal{B}}^2 = \frac{1}{m} \sum_{i=1}^{m} (\mathbf{z}^{(i)} - \boldsymbol{\mu}_{\mathcal{B}})^2$$
+
+$$\hat{\mathbf{z}}^{(i)} = \frac{\mathbf{z}^{(i)} - \boldsymbol{\mu}_{\mathcal{B}}}{\sqrt{\boldsymbol{\sigma}_{\mathcal{B}}^2 + \epsilon}}$$
+
+Để không làm mất đi tính đại diện phi tuyến của tầng dữ liệu, mạng nơ-ron được bổ sung hai tham số có thể học được là $\boldsymbol{\gamma}$ (scale) và $\boldsymbol{\beta}$ (shift) để biến đổi lại:
+
+$$\tilde{\mathbf{z}}^{(i)} = \boldsymbol{\gamma} \odot \hat{\mathbf{z}}^{(i)} + \boldsymbol{\beta}$$
+
+Giá trị $\tilde{\mathbf{z}}^{(i)}$ này mới là giá trị thực tế được đưa vào hàm kích hoạt $g(\cdot)$. Batch Normalization hoạt động như một chất bôi trơn toán học mạnh mẽ, cho phép mạng sử dụng learning rate lớn hơn và tăng tốc độ hội tụ lên gấp nhiều lần.

@@ -144,14 +144,8 @@ $$x = \{1, 2, 3, 10, 11, 12, 20, 21\}$$
 
 ---
 
-Câu 7 (Nâng cao)\. Generative vs Discriminative Models
+Câu 7 (Nâng cao). Hội tụ của thuật toán K-means
 
-Xét hai mô hình Naive Bayes (Generative) và Logistic Regression (Discriminative) được sử dụng để giải quyết cùng một bài toán phân loại nhị phân. Giả sử dữ liệu thực tế *hoàn toàn tuân theo* các giả định của Naive Bayes (các đặc trưng độc lập có điều kiện theo lớp, phân phối Gaussian).
-
-**Hãy:**
-
-1. Khi số lượng dữ liệu huấn luyện $n$ tiến tới vô cực ($n \to \infty$), mô hình nào sẽ có Test Error nhỏ hơn, hay cả hai bằng nhau? Vì sao?
-2. Khi số lượng dữ liệu huấn luyện $n$ rất nhỏ, mô hình nào hội tụ đến Test Error tiệm cận của nó nhanh hơn (cần ít dữ liệu hơn)? Phân tích dựa trên số lượng tham số cần ước lượng.
-3. Trong thực tế, giả định "độc lập có điều kiện" hiếm khi thỏa mãn. Khi đó, biểu đồ Learning Curve (Test Error theo $n$) của hai mô hình sẽ cắt nhau như thế nào khi $n$ tăng dần? Giải thích.
+Dựa vào định nghĩa hàm mục tiêu Distortion (Sum of Squared Errors), hãy lập luận toán học để chứng minh vì sao thuật toán K-means (sử dụng Coordinate Descent) luôn luôn hội tụ sau một số vòng lặp hữu hạn, nhưng không thể đảm bảo luôn đạt được cực tiểu toàn cục (global minimum).
 
 **HẾT**

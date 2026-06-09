@@ -131,14 +131,8 @@ Dữ liệu:
 
 ---
 
-Câu 7 (Nâng cao)\. Góc nhìn Bayes cho Regularization (MAP)
+Câu 7 (Nâng cao). Batch Normalization trong Mạng Neural
 
-Trong bài giảng, ta đã biết cực tiểu hóa OLS tương đương với Maximum Likelihood Estimation (MLE) dựa trên giả định nhiễu Gaussian. Việc thêm Regularization thực chất tương đương với ước lượng Maximum a Posteriori (MAP) bằng cách đặt Prior Probability (xác suất tiền nghiệm) lên các hệ số $\boldsymbol{\beta}$.
-
-**Hãy:**
-
-1. Chứng minh rằng Ridge Regression (với L2 penalty $\lambda \|\boldsymbol{\beta}\|_2^2$) tương đương với MAP estimation nếu ta giả định Prior của mỗi $\beta_j$ tuân theo phân phối Gaussian độc lập có trung bình 0 và phương sai $\tau^2$.
-2. Hàm mất mát Lasso Regression (với L1 penalty $\lambda \|\boldsymbol{\beta}\|_1$) tương ứng với giả định Prior của $\boldsymbol{\beta}$ là phân phối gì?
-3. Dựa vào đặc điểm hình học của hai hàm mật độ phân phối Prior trên (tại điểm $\beta = 0$), hãy giải thích bằng trực giác tại sao Lasso tạo ra nghiệm thưa (sparse solution — các $\beta_j$ bị ép về chính xác bằng 0) còn Ridge thì không.
+Trình bày bài toán Internal Covariate Shift (hiện tượng dịch chuyển phân phối nội bộ) gặp phải trong việc huấn luyện các mạng Neural sâu. Kỹ thuật Batch Normalization đã giải quyết vấn đề này như thế nào?
 
 **HẾT**

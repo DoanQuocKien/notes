@@ -112,14 +112,8 @@ $$f(\mu) = \sum_{i=1}^{m} \|x_i - \mu\|^2$$
 
 ---
 
-Câu 7 (Nâng cao)\. Inductive Bias và Biểu diễn Hàm
+Câu 7 (Nâng cao). So sánh Gradient Descent và Newton's Method
 
-Bạn được giao một bộ dữ liệu phân loại nhị phân 2D. Các điểm thuộc Lớp 1 nằm gọn trong một hình tròn bán kính $R$ ở tâm hệ tọa độ, và các điểm thuộc Lớp 0 bao quanh nằm ngoài hình tròn đó. Không có nhiễu (noise) trong dữ liệu.
-
-**Hãy:**
-
-1. Mô hình Logistic Regression tiêu chuẩn (chỉ dùng các feature đầu vào là $x_1, x_2$) có thể phân loại đúng 100% bộ dữ liệu này không? Giải thích vì sao. Đề xuất một cách biến đổi dữ liệu (feature engineering) đơn giản để mô hình này giải quyết được bài toán.
-2. Một Decision Tree tiêu chuẩn (các đường cắt luôn vuông góc với trục tọa độ) có thể phân loại tốt bộ dữ liệu này không? Mô tả hình dáng của ranh giới quyết định (decision boundary) mà cây sẽ tạo ra xung quanh hình tròn.
-3. Nếu bài toán thay đổi: ranh giới thực sự của dữ liệu lại là đường chéo thẳng $x_1 + x_2 = 1$. So sánh độ phức tạp (số lượng tham số/node) cần thiết của Logistic Regression và Decision Tree để mô hình hóa chính xác ranh giới này.
+Trong quá trình huấn luyện Logistic Regression, thuật toán tối ưu Gradient Descent và Newton's Method thường được cân nhắc sử dụng. Hãy trình bày sự khác biệt cơ bản về cơ chế tính toán, tốc độ hội tụ, và chi phí tính toán phần cứng giữa hai thuật toán này.
 
 **HẾT**

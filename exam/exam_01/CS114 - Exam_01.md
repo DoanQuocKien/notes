@@ -156,13 +156,8 @@ Câu 7\. Bias-Variance Decomposition
 
 ---
 
-Câu 8 (Nâng cao)\. SGD và Khả Năng Tổng Quát Hóa (Generalization)
+Câu 8. Tính phi tuyến trong Mạng Neural (Nâng cao)
 
-Cho một mạng neural network được huấn luyện bằng mini-batch SGD. Một sinh viên nhận thấy mô hình bị overfitting (train loss rất thấp nhưng validation loss cao). Sinh viên quyết định tăng kích thước mini-batch (batch size) lên rất lớn (gần bằng toàn bộ tập dữ liệu) để tính gradient chính xác hơn, hy vọng giảm overfitting.
-
-**Hãy:**
-
-1. Giải thích tại sao việc tăng batch size lên quá lớn lại có thể làm *tăng* nguy cơ overfitting thay vì giảm. (Gợi ý: Liên hệ với tính ngẫu nhiên - stochasticity - và tính chất của các điểm cực tiểu cục bộ dốc/bằng phẳng).
-2. Viết công thức xấp xỉ liên hệ giữa tỷ lệ $\frac{\text{learning\_rate}}{\text{batch\_size}}$ với mức độ nhiễu (noise) trong quá trình cập nhật SGD. Từ đó suy ra: nếu ta buộc phải tăng batch size lên $k$ lần, ta nên điều chỉnh learning rate như thế nào để cố gắng giữ nguyên hiệu ứng điều chuẩn (implicit regularization) của SGD?
+Vì sao ta không thể dùng hàm kích hoạt tuyến tính (linear activation, $g(z)=z$) cho tất cả các tầng ẩn trong một mạng Neural Network có nhiều tầng? Chứng minh bằng toán học.
 
 **HẾT**

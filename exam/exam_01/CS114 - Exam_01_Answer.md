@@ -310,16 +310,14 @@ $$= \text{Bias}^2 + \text{Variance}$$
 
 ---
 
-## Câu 8. SGD và Khả Năng Tổng Quát Hóa (Nâng cao)
+## Câu 8. Tính phi tuyến trong Mạng Neural (Nâng cao)
 
-### 8.1 Tại sao Batch Size lớn tăng Overfitting
-Tăng batch size làm gradient trơn tru và chính xác hơn trên tập huấn luyện. Tuy nhiên, chính sự "nhiễu" (stochastic noise) do mini-batch nhỏ tạo ra lại đóng vai trò như một cơ chế implicit regularization (điều chuẩn ngầm). Nhiễu này giúp quỹ đạo tối ưu "nảy" và thoát khỏi các cực tiểu cục bộ dốc (sharp minima - thường fit dữ liệu train rất khít nhưng generalize kém trên dữ liệu mới) để hội tụ về các cực tiểu bằng phẳng (flat minima - nơi hàm loss ít nhạy cảm với sự thay đổi nhỏ của dữ liệu, generalize tốt hơn). Khi batch size quá lớn, gradient mất đi độ nhiễu, mô hình dễ mắc kẹt ở sharp minima, dẫn đến overfitting trầm trọng hơn.
+Nếu dùng hàm kích hoạt tuyến tính $g(z)=z$, phép tính ở mỗi tầng chỉ là một biến đổi tuyến tính:
+Tầng 1: $\mathbf{A}^{[1]} = \mathbf{W}^{[1]}\mathbf{x} + \mathbf{b}^{[1]}$
+Tầng 2: $\mathbf{A}^{[2]} = \mathbf{W}^{[2]}\mathbf{A}^{[1]} + \mathbf{b}^{[2]} = \mathbf{W}^{[2]}(\mathbf{W}^{[1]}\mathbf{x} + \mathbf{b}^{[1]}) + \mathbf{b}^{[2]} = (\mathbf{W}^{[2]}\mathbf{W}^{[1]})\mathbf{x} + (\mathbf{W}^{[2]}\mathbf{b}^{[1]} + \mathbf{b}^{[2]})$
 
-### 8.2 Điều chỉnh Learning Rate (Linear Scaling Rule)
-Mức độ nhiễu trong bước cập nhật của SGD xấp xỉ tỷ lệ thuận với $\frac{\eta}{B}$ (trong đó $\eta$ là learning rate, $B$ là batch size).
-Để duy trì mức độ nhiễu (và do đó giữ nguyên hiệu ứng implicit regularization), tỷ lệ này cần được giữ không đổi.
-Do đó, nếu tăng batch size lên $k$ lần ($B \to kB$), ta nên tăng learning rate lên $k$ lần ($\eta \to k\eta$). Đây được gọi là "Linear Scaling Rule" phổ biến trong phân tán huấn luyện Deep Learning.
+Đặt $\mathbf{W}' = \mathbf{W}^{[2]}\mathbf{W}^{[1]}$ và $\mathbf{b}' = \mathbf{W}^{[2]}\mathbf{b}^{[1]} + \mathbf{b}^{[2]}$, ta có $\mathbf{A}^{[2]} = \mathbf{W}'\mathbf{x} + \mathbf{b}'$. Đây lại là một phép biến đổi tuyến tính duy nhất.
 
----
+Bất kể mạng có sâu bao nhiêu tầng, sự kết hợp của các phép biến đổi tuyến tính vẫn chỉ tạo ra một biến đổi tuyến tính. Mạng sẽ sụp đổ (collapse) thành một mô hình hồi quy tuyến tính/logistic thông thường, hoàn toàn mất đi khả năng học và mô phỏng các ranh giới phân loại phi tuyến phức tạp (như bài toán XOR).
 
 **HẾT ĐÁP ÁN**

@@ -192,59 +192,11 @@ $$\hat{z}_i = \frac{z_i - 5}{\sqrt{5 + 10^{-8}}} \approx \frac{z_i - 5}{2.236}$$
 
 ---
 
-## Câu 5. K-means++
+## Câu 5. Dropout trong Neural Network
 
-### 5.1-5.3 Chọn tâm thứ hai
+Kỹ thuật Inverted Dropout ngẫu nhiên tắt đi (đặt giá trị bằng 0) một tỷ lệ $p$ các nơ-ron ở các tầng ẩn trong mỗi bước lặp khi huấn luyện. Cụ thể, vector kích hoạt $\mathbf{a}$ được nhân phần tử (element-wise) với một ma trận mặt nạ $\mathbf{M}$ (chứa 0 và 1) rồi chia cho $(1-p)$ để giữ nguyên cường độ tín hiệu (kỳ vọng toán học): $\mathbf{a}_{drop} = \frac{\mathbf{a} \odot \mathbf{M}}{1-p}$.
 
-$\mu_1 = 1$
-
-| $x_i$ | $D(x_i)$ | $D^2$ | $P(x_i)$ |
-| :--- | :--- | :--- | :--- |
-| 1 | 0 | 0 | 0 |
-| 3 | 2 | 4 | 4/484 = 0.008 |
-| 5 | 4 | 16 | 16/484 = 0.033 |
-| 15 | 14 | 196 | 196/484 = 0.405 |
-| 17 | 16 | 256 | 256/484 = 0.529 |
-
-$\sum D^2 = 0+4+16+196+256 = 472$
-
-*Sửa:* $\sum D^2 = 472$
-
-| $x_i$ | $P(x_i)$ |
-| :--- | :--- |
-| 1 | 0 |
-| 3 | 0.008 |
-| 5 | 0.034 |
-| 15 | 0.415 |
-| **17** | **0.542** |
-
-### 5.4
-
-$x = 17$ có xác suất cao nhất. Trực giác: K-means++ ưu tiên chọn tâm mới **xa nhất** so với tâm hiện có, để đảm bảo các tâm phân tán tốt trong không gian dữ liệu.
-
-### 5.5 Chọn tâm thứ ba ($\mu_1 = 1, \mu_2 = 17$)
-
-$D(x_i)$ = khoảng cách đến tâm gần nhất:
-
-| $x_i$ | $d(x_i, 1)$ | $d(x_i, 17)$ | $D(x_i)$ | $D^2$ |
-| :--- | :--- | :--- | :--- | :--- |
-| 1 | 0 | 16 | 0 | 0 |
-| 3 | 2 | 14 | 2 | 4 |
-| 5 | 4 | 12 | 4 | 16 |
-| 15 | 14 | 2 | 2 | 4 |
-| 17 | 16 | 0 | 0 | 0 |
-
-$\sum D^2 = 0+4+16+4+0 = 24$
-
-| $x_i$ | $P(x_i)$ |
-| :--- | :--- |
-| 1 | 0 |
-| 3 | 4/24 = 0.167 |
-| **5** | **16/24 = 0.667** |
-| 15 | 4/24 = 0.167 |
-| 17 | 0 |
-
-$x = 5$ có xác suất cao nhất — nằm xa nhất so với cả hai tâm hiện có.
+**Ý nghĩa Ensemble:** Ở mỗi vòng lặp, bằng cách tắt ngẫu nhiên các nơ-ron khác nhau, mô hình thực chất đang huấn luyện một mạng con (sub-network) khác nhau được trích xuất từ mạng toàn cục ban đầu. Khi bước vào giai đoạn dự đoán (inference/test mode) và không dùng Dropout, toàn bộ nơ-ron được giữ lại và tham gia tính toán. Hiệu ứng này tương đương về mặt toán học với việc lấy trung bình dự đoán (model averaging / bagging) của hàng tỷ mạng con đã được huấn luyện, giúp mô hình đạt được sự vững chãi (robust) và giảm thiểu Overfitting hiệu quả.
 
 ---
 
@@ -283,22 +235,12 @@ Vì negative log-likelihood lồi, mọi bài toán MLE cho phân phối thuộc
 
 ---
 
-## Câu 7. K-means và "Lời nguyền chiều dữ liệu" (Nâng cao)
+## Câu 7. Vấn đề Triệt tiêu Đạo hàm (Vanishing Gradient) (Nâng cao)
 
-### 7.1 Khoảng cách khi $p \to \infty$
-Khi số chiều $p \to \infty$, tỷ số chênh lệch khoảng cách $\frac{d_{max} - d_{min}}{d_{min}}$ có xu hướng tiến tới **0**. Điều này có nghĩa là khoảng cách giữa mọi cặp điểm ngẫu nhiên trong không gian nhiều chiều đều hội tụ về một giá trị gần bằng nhau.
+Đạo hàm của hàm sigmoid là $\sigma'(z) = \sigma(z)(1-\sigma(z))$. 
 
-### 7.2 Vì sao K-means mất tác dụng
-Thuật toán K-means phụ thuộc hoàn toàn vào việc phân bổ điểm vào cụm có tâm "gần nhất" và cập nhật tâm dựa trên các điểm "gần" nó. Khi mọi điểm đều cách xa nhau (và cách xa các tâm) một khoảng gần tương đương nhau, khái niệm "gần nhất" hay "hàng xóm" bị mất ý nghĩa thống kê. K-means không thể tìm ra cấu trúc cụm vì không có khoảng cách nào nổi bật hơn khoảng cách nào, dẫn đến việc phân cụm gần như ngẫu nhiên.
+Giá trị cực đại của đạo hàm này chỉ đạt được $0.25$ tại $z=0$, và nó hội tụ rất nhanh về $0$ khi $|z|$ tiến ra xa khỏi 0. Theo quy tắc chuỗi (Chain Rule) của thuật toán Backpropagation, gradient truyền về các tầng ẩn đầu tiên bằng tích của các đạo hàm cục bộ qua các tầng trên. 
 
-### 7.3 Tính chất bất lợi của Centroid
-Trong không gian rất nhiều chiều, khối lượng của không gian nằm chủ yếu ở lớp vỏ (ngoài rìa). Khi lấy trung bình cộng (Centroid) của các điểm nằm thưa thớt ở rìa, tâm cụm sẽ rơi vào vùng trung tâm - một vùng "hư không" (empty space) hoàn toàn không có thực thể dữ liệu nào tồn tại ở gần đó. Các centroid trở nên xa lạ và không mang tính đại diện cho phân bố dữ liệu thực.
-
-### 7.4 Kỹ thuật giải quyết
-1. **Giảm chiều dữ liệu (Dimensionality Reduction):** Sử dụng các thuật toán như PCA (Principal Component Analysis), t-SNE hoặc UMAP để chiếu dữ liệu xuống không gian ít chiều hơn (giữ lại phương sai/cấu trúc chính) trước khi chạy K-means.
-2. **Thay đổi độ đo khoảng cách:** Thay vì dùng khoảng cách Euclidean tuyệt đối (dễ bị bão hòa trong nhiều chiều), sử dụng **Cosine Similarity** (Spherical K-means) để đánh giá sự tương đồng góc giữa các vector, rất hiệu quả cho văn bản hoặc dữ liệu sparse.
-*(Cách 3 bổ sung: Feature Selection - tự loại bỏ các đặc trưng nhiễu không mang thông tin)*.
-
----
+Vì mỗi thành phần đạo hàm $\sigma'(z)$ luôn luôn $\le 0.25$, việc nhân chuỗi nhiều lần qua các tầng sẽ làm gradient nhỏ dần theo cấp số nhân (exponential decay). Khi mạng đủ sâu, tín hiệu gradient triệt tiêu hoàn toàn về 0 ở các tầng ẩn sâu nhất, khiến các trọng số không nhận được tín hiệu để cập nhật (Vanishing Gradient). Hậu quả là mạng bị tê liệt quá trình học, các tầng đầu tiên không thể rút trích được đặc trưng.
 
 **HẾT ĐÁP ÁN**

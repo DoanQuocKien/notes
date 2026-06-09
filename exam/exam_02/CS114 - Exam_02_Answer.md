@@ -314,19 +314,15 @@ Giảm rất mạnh từ $K=2$ sang $K=3$ (từ 14.1 xuống 0.56). **Chọn $K 
 
 ---
 
-## Câu 7. Generative vs Discriminative Models (Nâng cao)
+## Câu 7. Hội tụ của thuật toán K-means (Nâng cao)
 
-### 7.1 Khi $n \to \infty$ và giả định đúng
-**Cả hai bằng nhau.** Khi $n \to \infty$ và dữ liệu thực sự thỏa mãn giả định Naive Bayes, cả hai mô hình đều hội tụ về cùng một bộ phân loại tối ưu (Bayes optimal classifier). Hệ số của Logistic Regression khi hội tụ sẽ hoàn toàn tương đương với các hệ số log-odds suy ra từ Naive Bayes.
+Hàm mục tiêu của K-means là tổng bình phương khoảng cách: $J = \sum_{i=1}^m \|x_i - \mu_{c_i}\|^2 \ge 0$.
+Thuật toán là quá trình Coordinate Descent với 2 bước:
+1. **Gán cụm:** Chọn tâm cụm gần nhất cho mỗi điểm làm tổng khoảng cách $J$ giảm đi hoặc giữ nguyên.
+2. **Cập nhật tâm:** Việc cập nhật tâm cụm bằng giá trị trung bình (mean) chính là nghiệm tối ưu giải bài toán cực tiểu hóa $J$ cho mỗi cụm, do đó $J$ tiếp tục giảm hoặc giữ nguyên.
 
-### 7.2 Khi $n$ nhỏ
-**Naive Bayes hội tụ nhanh hơn.** Naive Bayes tối đa hóa joint likelihood bằng cách ước lượng các tham số $\mu, \sigma$ riêng rẽ cho từng feature độc lập. Số lượng tham số hiệu dụng cần ước lượng ít và không phụ thuộc chéo vào nhau, dẫn đến tốc độ hội tụ nhanh (chỉ cần $O(\log p)$ dữ liệu). Logistic Regression phải tối ưu đồng thời tất cả các trọng số $\beta$ để tìm ranh giới phân biệt, cần nhiều dữ liệu hơn (cỡ $O(p)$) để tránh overfitting. Do đó khi dữ liệu ít, NB hoạt động tốt hơn LR.
+Vì $J$ luôn giảm hoặc không đổi qua mỗi bước lặp và bị chặn dưới bởi 0, cộng với việc tập hợp các cách phân chia $m$ điểm vào $K$ nhóm là hữu hạn, nên thuật toán chắc chắn sẽ dừng và hội tụ.
 
-### 7.3 Khi giả định độc lập bị vi phạm (Thực tế)
-Đường cong Learning Curve của hai mô hình sẽ cắt nhau.
-- **Khi $n$ nhỏ:** Naive Bayes vẫn có Test Error thấp hơn Logistic Regression do lợi thế hội tụ nhanh, trong khi LR dễ bị overfit.
-- **Khi $n$ lớn:** LR sẽ vượt qua NB (có Test Error thấp hơn). Do giả định sai, Naive Bayes bị "bias" vĩnh viễn và tiến tới một mức Test Error tiệm cận cao. Ngược lại, Logistic Regression bỏ qua giả định phân phối, trực tiếp tối ưu ranh giới phân loại để cực tiểu hóa sai số dự đoán, nên khi đủ dữ liệu, nó sẽ tìm được ranh giới tốt hơn và hội tụ ở mức error thấp hơn.
-
----
+Tuy nhiên, hàm $J$ không lồi hoàn toàn (non-convex). Do tính tham lam của quá trình lặp, thuật toán có thể bị kẹt ở các điểm cực tiểu cục bộ (local minimum) nếu các tâm cụm ban đầu được khởi tạo ở các vị trí không thuận lợi.
 
 **HẾT ĐÁP ÁN**

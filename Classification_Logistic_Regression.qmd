@@ -1,5 +1,5 @@
 ---
-title: "Machine Learning: Classification and Logistic Regression Optimization"
+title: "Học máy: Phân loại và Tối ưu Hồi quy Logistic"
 author: "Quoc Kien"
 jupyter: science_env
 format: 
@@ -138,13 +138,13 @@ $$\boldsymbol{\beta}^{(t+1)} = \boldsymbol{\beta}^{(t)} - H^{-1} \nabla J(\bolds
 
 ---
 
-## 6. Executable Check: Sigmoid and Decision Boundary
+## 6. Kiểm tra Thực thi: Sigmoid và Ranh giới Quyết định
 
-The formulas above become easier to remember if we connect them to two visual facts: the sigmoid turns a real-valued score into a probability, and the threshold $P(y=1 \mid \mathbf{x})=0.5$ becomes a linear decision boundary.
+Các công thức phía trên sẽ dễ nhớ hơn nếu gắn với hai trực giác hình học: sigmoid biến một điểm số thực thành xác suất, và ngưỡng $P(y=1 \mid \mathbf{x})=0.5$ tạo ra ranh giới quyết định tuyến tính.
 
 ```{python}
 #| label: logistic-regression-demo
-#| fig-cap: "Logistic regression maps a linear score through sigmoid and learns a linear probability boundary."
+#| fig-cap: "Logistic Regression ánh xạ điểm tuyến tính qua sigmoid và học ranh giới xác suất tuyến tính."
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -169,8 +169,8 @@ for _ in range(800):
 
 pred = (sigmoid(X_design @ beta) >= 0.5).astype(int)
 accuracy = (pred == y).mean()
-print("Learned beta:", np.round(beta, 3))
-print("Training accuracy:", round(float(accuracy), 3))
+print("Beta học được:", np.round(beta, 3))
+print("Độ chính xác huấn luyện:", round(float(accuracy), 3))
 
 z = np.linspace(-8, 8, 300)
 xx, yy = np.meshgrid(np.linspace(-3, 3, 160), np.linspace(-3, 3, 160))
@@ -181,8 +181,8 @@ fig, ax = plt.subplots(1, 2, figsize=(9, 3.8))
 ax[0].plot(z, sigmoid(z), color="#4C78A8")
 ax[0].axhline(0.5, color="black", linestyle="--", linewidth=1)
 ax[0].axvline(0.0, color="black", linestyle="--", linewidth=1)
-ax[0].set_title("Sigmoid maps score to probability")
-ax[0].set_xlabel("linear score z")
+ax[0].set_title("Sigmoid biến điểm số thành xác suất")
+ax[0].set_xlabel("điểm tuyến tính z")
 ax[0].set_ylabel("$\\sigma(z)$")
 ax[0].grid(alpha=0.25)
 
@@ -190,7 +190,7 @@ contour = ax[1].contourf(xx, yy, surface, levels=20, cmap="RdBu_r", alpha=0.75)
 ax[1].scatter(X0[:, 0], X0[:, 1], label="class 0", edgecolor="black", alpha=0.85)
 ax[1].scatter(X1[:, 0], X1[:, 1], label="class 1", edgecolor="black", alpha=0.85)
 ax[1].contour(xx, yy, surface, levels=[0.5], colors="black", linewidths=2)
-ax[1].set_title("Learned probability boundary")
+ax[1].set_title("Ranh giới xác suất học được")
 ax[1].set_xlabel("$x_1$")
 ax[1].set_ylabel("$x_2$")
 ax[1].legend()
@@ -198,3 +198,172 @@ fig.colorbar(contour, ax=ax[1], label="$P(y=1 \\mid x)$")
 plt.tight_layout()
 plt.show()
 ```
+
+---
+
+## 7. Bảng Công thức Thi: Quy trình Thay số cho Logistic Regression
+
+Dùng phần này khi đề bài nhắc đến "phân loại nhị phân", "xác suất thuộc lớp 1", "log odds", hoặc "cross-entropy".
+
+| Nhiệm vụ | Công thức | Cách dùng |
+| :--- | :--- | :--- |
+| Điểm tuyến tính | $z^{(i)}=\boldsymbol{\beta}^T\mathbf{x}^{(i)}$ | Nén toàn bộ đặc trưng thành một số thực. |
+| Xác suất | $\hat{y}^{(i)}=\sigma(z^{(i)})=\frac{1}{1+e^{-z^{(i)}}}$ | Biến điểm số bất kỳ thành xác suất trong $(0,1)$. |
+| Luật quyết định | $\hat{y}^{(i)}\ge 0.5 \Rightarrow$ lớp 1 | Tương đương $z^{(i)}\ge 0$ nếu ngưỡng là 0.5. |
+| Loss một mẫu | $J^{(i)}=-y^{(i)}\log\hat{y}^{(i)}-(1-y^{(i)})\log(1-\hat{y}^{(i)})$ | Phạt rất nặng khi mô hình tự tin nhưng sai. |
+| Gradient | $\nabla J=\sum_i(\hat{y}^{(i)}-y^{(i)})\mathbf{x}^{(i)}$ | Sai số dự đoán nhân với vector đặc trưng. |
+| Hessian | $H=\sum_i \hat{y}^{(i)}(1-\hat{y}^{(i)})\mathbf{x}^{(i)}(\mathbf{x}^{(i)})^T$ | Bán xác định dương, nên hàm mục tiêu lồi. |
+| Cập nhật Gradient Descent | $\boldsymbol{\beta}\leftarrow\boldsymbol{\beta}-\alpha\nabla J$ | Đi ngược chiều gradient của cross-entropy. |
+
+**Bẫy thường gặp khi thi.**
+
+- Logistic Regression là mô hình tuyến tính theo không gian đặc trưng, nhưng xác suất đầu ra phi tuyến vì có sigmoid.
+- Không mặc định dùng MSE để suy luận Logistic Regression; cross-entropy xuất phát từ Bernoulli MLE.
+- Dấu của $z=\boldsymbol{\beta}^T\mathbf{x}$ quyết định lớp khi ngưỡng là 0.5.
+- Độ lớn $|z|$ thể hiện mức tự tin: dương lớn nghĩa là gần lớp 1, âm lớn nghĩa là gần lớp 0.
+
+```{python}
+#| label: logistic-plug-in-table
+
+import numpy as np
+
+beta = np.array([-0.4, 1.2, -0.8])
+X_demo = np.array([
+    [1.0, 0.0, 0.0],
+    [1.0, 2.0, 1.0],
+    [1.0, -1.0, 2.0],
+])
+y_demo = np.array([0, 1, 0])
+scores = X_demo @ beta
+probs = 1 / (1 + np.exp(-scores))
+losses = -y_demo * np.log(probs) - (1 - y_demo) * np.log(1 - probs)
+
+print("Điểm z:", np.round(scores, 3))
+print("Xác suất:", np.round(probs, 3))
+print("Lớp dự đoán:", (probs >= 0.5).astype(int))
+print("Cross-entropy từng mẫu:", np.round(losses, 3))
+print("Loss trung bình:", round(float(losses.mean()), 3))
+```
+
+### Bộ bài tập mẫu có lời giải
+
+**Đề bài.** Cho mô hình Logistic Regression có $\boldsymbol{\beta}=(-0.4, 1.2, -0.8)$, trong đó phần tử đầu tiên là bias. Với mẫu $\mathbf{x}=(1,2,1)$ và nhãn thật $y=1$, hãy tính xác suất dự đoán, lớp dự đoán, và loss cross-entropy.
+
+**Lời giải từng bước.**
+
+1. Tính điểm tuyến tính:
+   $$z=-0.4+1.2(2)-0.8(1)=1.2$$
+2. Đưa qua sigmoid:
+   $$\hat{y}=\sigma(1.2)=\frac{1}{1+e^{-1.2}}\approx 0.768$$
+3. Vì $0.768\ge 0.5$, mô hình dự đoán **lớp 1**.
+4. Vì $y=1$, loss là:
+   $$J=-\log(0.768)\approx 0.264$$
+
+**Kết luận.** Mô hình dự đoán đúng lớp 1 với xác suất khoảng $76.8\%$, và loss thấp vì dự đoán khá tự tin.
+
+### Bài 2: Bảng 12 dòng, tính xác suất, loss, accuracy
+
+**Đề bài.** Cho mô hình $\boldsymbol{\beta}=(-1.0,0.9,0.7)$, trong đó phần tử đầu là bias. Với 12 mẫu sau, hãy tính $z$, xác suất, lớp dự đoán, cross-entropy trung bình, và accuracy.
+
+| dòng | $x_1$ | $x_2$ | $y$ |
+| :--- | ---: | ---: | ---: |
+| 1 | 0.0 | 0.0 | 0 |
+| 2 | 0.5 | 0.2 | 0 |
+| 3 | 1.0 | 0.4 | 0 |
+| 4 | 1.0 | 1.0 | 1 |
+| 5 | 1.5 | 0.8 | 1 |
+| 6 | 2.0 | 0.5 | 1 |
+| 7 | -0.5 | 1.0 | 0 |
+| 8 | 0.2 | 1.8 | 1 |
+| 9 | 2.5 | 1.0 | 1 |
+| 10 | -1.0 | 0.5 | 0 |
+| 11 | 1.2 | -0.2 | 0 |
+| 12 | 0.8 | 1.5 | 1 |
+
+**Lời giải.** Mỗi dòng làm cùng một quy trình:
+
+$$z=-1.0+0.9x_1+0.7x_2,\quad \hat{p}=\frac{1}{1+e^{-z}}$$
+
+Ví dụ dòng 4:
+
+$$z=-1.0+0.9(1.0)+0.7(1.0)=0.60$$
+
+$$\hat{p}=\sigma(0.60)=\frac{1}{1+e^{-0.60}}\approx0.646$$
+
+Vì $\hat{p}\ge0.5$, dự đoán lớp $1$. Vì $y=1$, loss dòng 4 là:
+
+$$-\log(0.646)\approx0.437$$
+
+Làm tương tự cho 12 dòng:
+
+| dòng | $z$ | $\hat{p}$ | lớp dự đoán | loss |
+| :--- | ---: | ---: | ---: | ---: |
+| 1 | -1.000 | 0.269 | 0 | 0.313 |
+| 2 | -0.410 | 0.399 | 0 | 0.509 |
+| 3 | 0.180 | 0.545 | 1 | 0.787 |
+| 4 | 0.600 | 0.646 | 1 | 0.437 |
+| 5 | 0.910 | 0.713 | 1 | 0.338 |
+| 6 | 1.150 | 0.760 | 1 | 0.275 |
+| 7 | -0.750 | 0.321 | 0 | 0.387 |
+| 8 | 0.440 | 0.608 | 1 | 0.497 |
+| 9 | 1.950 | 0.875 | 1 | 0.133 |
+| 10 | -1.550 | 0.175 | 0 | 0.192 |
+| 11 | -0.060 | 0.485 | 0 | 0.664 |
+| 12 | 0.770 | 0.684 | 1 | 0.380 |
+
+Tổng loss xấp xỉ:
+
+$$0.313+0.509+\cdots+0.380=4.914$$
+
+Cross-entropy trung bình:
+
+$$\bar{J}=\frac{4.914}{12}\approx0.409$$
+
+Mô hình sai duy nhất ở dòng 3, nên accuracy:
+
+$$\text{Accuracy}=\frac{11}{12}\approx0.917$$
+
+**Kết luận.** Bài kiểu này không cần học lại mô hình. Chỉ cần thay số vào $z$, qua sigmoid, đặt ngưỡng $0.5$, rồi tính loss từng dòng.
+
+### Bài 3: Một bước cập nhật gradient
+
+**Đề bài.** Với cùng 12 dòng ở Bài 2, từ $\boldsymbol{\beta}=(-1.0,0.9,0.7)$, hãy tính một bước gradient descent với learning rate $\alpha=0.1$.
+
+**Lời giải.** Gradient của cross-entropy là:
+
+$$\nabla J=\frac{1}{n}\mathbf{X}^T(\hat{\mathbf{p}}-\mathbf{y})$$
+
+Từ bảng ở Bài 2, lấy từng sai số xác suất $\hat{p}_i-y_i$, rồi nhân với từng cột của $\mathbf{X}$. Sau khi cộng và chia cho $n=12$, ta được:
+
+$$
+\nabla J
+\approx
+\begin{pmatrix}
+0.0399\\
+-0.0765\\
+-0.1166
+\end{pmatrix}
+$$
+
+Cập nhật:
+
+$$\boldsymbol{\beta}_{new}
+=\boldsymbol{\beta}-0.1\nabla J$$
+
+$$
+\boldsymbol{\beta}_{new}
+\approx
+\begin{pmatrix}
+-1.0\\0.9\\0.7
+\end{pmatrix}
+-0.1
+\begin{pmatrix}
+0.0399\\-0.0765\\-0.1166
+\end{pmatrix}
+=
+\begin{pmatrix}
+-1.0040\\0.9076\\0.7117
+\end{pmatrix}
+$$
+
+**Kết luận.** Nếu $\hat{p}-y$ dương, mô hình đang dự đoán xác suất lớp 1 quá cao cho dòng đó; gradient sẽ đẩy hệ số theo hướng giảm xác suất đó.

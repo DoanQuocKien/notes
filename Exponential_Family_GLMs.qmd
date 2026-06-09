@@ -1,5 +1,5 @@
 ---
-title: "Machine Learning: Exponential Family and Generalized Linear Models (GLMs)"
+title: "Học máy: Họ Hàm Mũ và Mô hình Tuyến tính Tổng quát (GLM)"
 author: "Quoc Kien"
 jupyter: science_env
 format: 
@@ -224,3 +224,152 @@ plt.legend()
 plt.grid(alpha=0.2)
 plt.show()
 ```
+
+---
+
+## 8. Bảng Công thức Thi: Chọn GLM và Thay số
+
+Bắt đầu mọi bài GLM bằng cách xác định kiểu của biến mục tiêu.
+
+| Kiểu biến mục tiêu | Phân phối | Tham số tự nhiên / Link | Inverse Link / Dự đoán |
+| :--- | :--- | :--- | :--- |
+| Giá trị thực $y\in\mathbb{R}$ | Gaussian | $\eta=\mu=\boldsymbol{\beta}^T\mathbf{x}$ | $\hat{y}=\boldsymbol{\beta}^T\mathbf{x}$ |
+| Nhị phân $y\in\{0,1\}$ | Bernoulli | $\eta=\log\frac{\phi}{1-\phi}$ | $\phi=\sigma(\boldsymbol{\beta}^T\mathbf{x})$ |
+| Dữ liệu đếm $y\in\{0,1,2,\dots\}$ | Poisson | $\eta=\log\lambda$ | $\lambda=e^{\boldsymbol{\beta}^T\mathbf{x}}$ |
+
+**Mẫu giải GLM tổng quát với canonical link.**
+
+1. Tính điểm tuyến tính: $\eta^{(i)}=\boldsymbol{\beta}^T\mathbf{x}^{(i)}$.
+2. Đổi điểm tuyến tính thành kỳ vọng: $\mu^{(i)}=g^{-1}(\eta^{(i)})$.
+3. Tính sai số: $y^{(i)}-\mu^{(i)}$.
+4. Cập nhật trọng số:
+
+$$\boldsymbol{\beta}\leftarrow \boldsymbol{\beta}+\alpha\sum_i (y^{(i)}-\mu^{(i)})\mathbf{x}^{(i)}$$
+
+**Mẹo nhớ:** phân phối quyết định inverse link; inverse link quyết định cách dự đoán.
+
+```{python}
+#| label: glm-family-map-demo
+
+import numpy as np
+
+eta = np.array([-2.0, 0.0, 2.0])
+gaussian_mu = eta
+bernoulli_mu = 1 / (1 + np.exp(-eta))
+poisson_mu = np.exp(eta)
+
+print("eta:", eta)
+print("Inverse link Gaussian:", np.round(gaussian_mu, 3))
+print("Inverse link Bernoulli:", np.round(bernoulli_mu, 3))
+print("Inverse link Poisson:", np.round(poisson_mu, 3))
+```
+
+### Bộ bài tập mẫu có lời giải
+
+**Đề bài.** Cho $\boldsymbol{\beta}=(0.5,1.0,-0.25)$ và $\mathbf{x}=(1,2,4)$, trong đó phần tử đầu là bias. Tính dự đoán nếu ta dùng Gaussian GLM, Bernoulli GLM và Poisson GLM.
+
+**Lời giải từng bước.**
+
+1. Tính điểm tuyến tính:
+   $$\eta=\boldsymbol{\beta}^T\mathbf{x}=0.5+1.0(2)-0.25(4)=1.5$$
+2. Nếu là Gaussian:
+   $$\hat{y}=\eta=1.5$$
+3. Nếu là Bernoulli:
+   $$P(y=1\mid\mathbf{x})=\sigma(1.5)=\frac{1}{1+e^{-1.5}}\approx 0.818$$
+4. Nếu là Poisson:
+   $$\lambda=e^{1.5}\approx 4.482$$
+
+**Kết luận.** Cùng một điểm tuyến tính $\eta=1.5$, nhưng mỗi GLM biến nó thành dự đoán khác nhau tùy theo phân phối mục tiêu.
+
+### Bài 2: Bảng 10 dòng, chọn inverse link phù hợp
+
+**Đề bài.** Cho 10 giá trị $\eta$ từ mô hình tuyến tính. Hãy tính dự đoán cho ba trường hợp: Gaussian, Bernoulli, và Poisson. Sau đó giải thích khi nào dùng từng loại.
+
+| dòng | $\eta$ |
+| :--- | ---: |
+| 1 | -2.0 |
+| 2 | -1.2 |
+| 3 | -0.5 |
+| 4 | 0.0 |
+| 5 | 0.3 |
+| 6 | 0.8 |
+| 7 | 1.1 |
+| 8 | 1.6 |
+| 9 | 2.0 |
+| 10 | 2.5 |
+
+**Lời giải.** Ba inverse link cần dùng:
+
+$$\mu_{\text{Gaussian}}=\eta,\quad
+\mu_{\text{Bernoulli}}=\sigma(\eta)=\frac{1}{1+e^{-\eta}},\quad
+\mu_{\text{Poisson}}=e^\eta$$
+
+Ví dụ với $\eta=0.8$:
+
+$$\mu_{\text{Gaussian}}=0.8$$
+
+$$\mu_{\text{Bernoulli}}=\frac{1}{1+e^{-0.8}}\approx0.690$$
+
+$$\mu_{\text{Poisson}}=e^{0.8}\approx2.226$$
+
+Làm tương tự cho toàn bộ bảng:
+
+| dòng | $\eta$ | Gaussian $\mu$ | Bernoulli $P(y=1)$ | Poisson rate |
+| :--- | ---: | ---: | ---: | ---: |
+| 1 | -2.0 | -2.0 | 0.119 | 0.135 |
+| 2 | -1.2 | -1.2 | 0.231 | 0.301 |
+| 3 | -0.5 | -0.5 | 0.378 | 0.607 |
+| 4 | 0.0 | 0.0 | 0.500 | 1.000 |
+| 5 | 0.3 | 0.3 | 0.574 | 1.350 |
+| 6 | 0.8 | 0.8 | 0.690 | 2.226 |
+| 7 | 1.1 | 1.1 | 0.750 | 3.004 |
+| 8 | 1.6 | 1.6 | 0.832 | 4.953 |
+| 9 | 2.0 | 2.0 | 0.881 | 7.389 |
+| 10 | 2.5 | 2.5 | 0.924 | 12.182 |
+
+**Kết luận.**
+
+- Gaussian dùng khi $y$ là số thực liên tục.
+- Bernoulli dùng khi $y\in\{0,1\}$.
+- Poisson dùng khi $y$ là số đếm không âm.
+
+### Bài 3: Tính log-likelihood Bernoulli từ 10 quan sát
+
+**Đề bài.** Với xác suất dự đoán của Bernoulli GLM ở Bài 2 và nhãn thật dưới đây, hãy tính log-likelihood trung bình.
+
+| dòng | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 |
+| :--- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| $y$ | 0 | 0 | 0 | 0 | 1 | 1 | 1 | 1 | 1 | 1 |
+
+**Lời giải.** Bernoulli log-likelihood từng dòng:
+
+$$\ell_i=y_i\log(p_i)+(1-y_i)\log(1-p_i)$$
+
+Với $y=0$, log-likelihood là $\log(1-p)$. Với $y=1$, log-likelihood là $\log(p)$.
+
+| dòng | $p$ | $y$ | log-likelihood |
+| :--- | ---: | ---: | ---: |
+| 1 | 0.119 | 0 | $\log(0.881)=-0.127$ |
+| 2 | 0.231 | 0 | $\log(0.769)=-0.263$ |
+| 3 | 0.378 | 0 | $\log(0.622)=-0.474$ |
+| 4 | 0.500 | 0 | $\log(0.500)=-0.693$ |
+| 5 | 0.574 | 1 | $\log(0.574)=-0.554$ |
+| 6 | 0.690 | 1 | $\log(0.690)=-0.371$ |
+| 7 | 0.750 | 1 | $\log(0.750)=-0.287$ |
+| 8 | 0.832 | 1 | $\log(0.832)=-0.184$ |
+| 9 | 0.881 | 1 | $\log(0.881)=-0.127$ |
+| 10 | 0.924 | 1 | $\log(0.924)=-0.079$ |
+
+Tổng log-likelihood:
+
+$$-0.127-0.263-0.474-0.693-0.554-0.371-0.287-0.184-0.127-0.079=-3.160$$
+
+Log-likelihood trung bình:
+
+$$\bar{\ell}=\frac{-3.160}{10}=-0.316$$
+
+Negative log-likelihood trung bình:
+
+$$-\bar{\ell}=0.316$$
+
+**Kết luận.** Logistic Regression chính là Bernoulli GLM với logit link. Khi tối ưu cross-entropy, ta đang tối thiểu hóa negative log-likelihood.

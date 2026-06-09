@@ -1,140 +1,386 @@
 ---
-title: "Machine Learning: Optimization, Bias-Variance Decomposition, and Regularization"
+title: "Học máy: Tối ưu hóa, Thiên lệch-Phương sai, và Điều chuẩn"
 author: "Quoc Kien"
-format: 
-  html:    
+jupyter: science_env
+format:
+  html:
     toc: true
     toc-depth: 3
     theme: cosmic
+  pdf:
+    include-in-header:
+      text: |
+        \usepackage{fvextra}
+        \DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,breakanywhere,commandchars=\\\{\}}
 ---
 
-## 1. Optimization via Gradient Descent Variants
+## 1. Tối ưu hóa bằng Gradient Descent
 
-To minimize our loss function $L(\boldsymbol{\beta}) = \frac{1}{2n} \sum_{i=1}^{n} (y_i - \boldsymbol{\beta}^T \mathbf{x}_i)^2$, we use iterative optimization. The general parameter update rule for a single feature index $j \in \{1, 2, \dots, p\}$ at iteration $t$ is:
+Giả sử ta tối thiểu hóa loss hồi quy tuyến tính:
 
-$$\beta_j^{(t+1)} = \beta_j^{(t)} - \alpha \frac{\partial L(\boldsymbol{\beta}^{(t)})}{\partial \beta_j}$$
+$$L(\boldsymbol{\beta})
+=\frac{1}{2n}\sum_{i=1}^{n}(y_i-\boldsymbol{\beta}^T\mathbf{x}_i)^2$$
 
-Where $\alpha$ is the learning rate.
+Gradient descent cập nhật tham số theo quy tắc:
 
-### Gradient Derivation
-Taking the partial derivative of the loss function for a single parameter component $\beta_j$:
+$$\boldsymbol{\beta}^{(t+1)}
+=\boldsymbol{\beta}^{(t)}
+-\alpha\nabla L(\boldsymbol{\beta}^{(t)})$$
 
-$$\frac{\partial L(\boldsymbol{\beta})}{\partial \beta_j} = \frac{1}{2n} \sum_{i=1}^{n} 2(y_i - \boldsymbol{\beta}^T \mathbf{x}_i) \cdot \frac{\partial (y_i - \boldsymbol{\beta}^T \mathbf{x}_i)}{\partial \beta_j}$$
+Trong đó $\alpha$ là learning rate. Nếu $\alpha$ quá nhỏ, mô hình học chậm. Nếu $\alpha$ quá lớn, loss có thể dao động hoặc tăng.
 
-$$\frac{\partial L(\boldsymbol{\beta})}{\partial \beta_j} = \frac{1}{n} \sum_{i=1}^{n} (y_i - \boldsymbol{\beta}^T \mathbf{x}_i)(-x_{i,j})$$
+Với từng hệ số $\beta_j$:
 
-$$\frac{\partial L(\boldsymbol{\beta})}{\partial \beta_j} = -\frac{1}{n} \sum_{i=1}^{n} (y_i - \boldsymbol{\beta}^T \mathbf{x}_i)x_{i,j}$$
+$$\frac{\partial L}{\partial\beta_j}
+=-\frac{1}{n}\sum_{i=1}^{n}(y_i-\boldsymbol{\beta}^T\mathbf{x}_i)x_{i,j}$$
 
-Substituting this back into the gradient descent update equation flips the negative sign to a positive step:
+Suy ra cập nhật:
 
-$$\beta_j^{(t+1)} = \beta_j^{(t)} + \frac{\alpha}{n} \sum_{i=1}^{n} (y_i - \boldsymbol{\beta}^T \mathbf{x}_i)x_{i,j}$$
+$$\beta_j
+\leftarrow
+\beta_j
++\frac{\alpha}{n}\sum_{i=1}^{n}(y_i-\boldsymbol{\beta}^T\mathbf{x}_i)x_{i,j}$$
 
-### Comparison of Optimization Regimes
+Trực giác: nếu residual $y_i-\hat{y}_i$ dương, mô hình đang dự đoán thấp hơn thực tế. Ta tăng các hệ số tương ứng với đặc trưng dương để kéo dự đoán lên.
 
-Depending on how many samples we look at before updating our weights, we can group gradient descent into three variants:
+---
 
-| Variant | Data Subset per Update | Mathematical Update Step | Operational Trade-off |
+## 2. Batch, Stochastic, và Mini-batch
+
+| Biến thể | Dữ liệu dùng trong một lần cập nhật | Công thức | Khi nào nhớ tới |
 | :--- | :--- | :--- | :--- |
-| **Batch Gradient Descent (BCD)** | Entire dataset ($n$ samples) | $$\beta_j \leftarrow \beta_j + \frac{\alpha}{n} \sum_{i=1}^{n} (y_i - \boldsymbol{\beta}^T \mathbf{x}_i)x_{i,j}$$ | Guaranteed smooth convergence to global minimum, but highly computationally expensive and slow for massive datasets. |
-| **Stochastic Gradient Descent (SGD)** | A single random sample $i \in \{1, \dots, n\}$ | $$\beta_j \leftarrow \beta_j + \alpha (y_i - \boldsymbol{\beta}^T \mathbf{x}_i)x_{i,j}$$ | Fast execution and low memory usage. However, updates exhibit high variance, introducing significant noise that causes the loss curve to oscillate heavily. |
-| **Mini-batch Stochastic Gradient Descent** | A random subset $\mathcal{B} \subset \{1, \dots, n\}$ of size $m$ | $$\beta_j \leftarrow \beta_j + \frac{\alpha}{m} \sum_{i \in \mathcal{B}} (y_i - \boldsymbol{\beta}^T \mathbf{x}_i)x_{i,j}$$ | Best of both worlds. Strikes an ideal balance between computational velocity, vectorization efficiency, and stable empirical convergence. |
+| Batch Gradient Descent | Toàn bộ $n$ mẫu | $\beta_j\leftarrow\beta_j+\frac{\alpha}{n}\sum_i(y_i-\hat{y}_i)x_{i,j}$ | Mượt, ổn định, nhưng chậm với dữ liệu lớn. |
+| Stochastic Gradient Descent | Một mẫu ngẫu nhiên | $\beta_j\leftarrow\beta_j+\alpha(y_i-\hat{y}_i)x_{i,j}$ | Nhanh, nhiễu cao, loss dao động. |
+| Mini-batch Gradient Descent | Một nhóm $m$ mẫu | $\beta_j\leftarrow\beta_j+\frac{\alpha}{m}\sum_{i\in\mathcal{B}}(y_i-\hat{y}_i)x_{i,j}$ | Cân bằng giữa tốc độ, vector hóa, và ổn định. |
+
+```{python}
+#| label: gradient-descent-loss-path
+#| fig-cap: "Gradient descent đi từng bước xuống đáy của hàm loss lồi."
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+beta_grid = np.linspace(-1, 5, 300)
+loss_grid = (beta_grid - 2.3) ** 2 + 0.4
+
+beta = -0.5
+alpha = 0.22
+path = [beta]
+for _ in range(12):
+    grad = 2 * (beta - 2.3)
+    beta = beta - alpha * grad
+    path.append(beta)
+
+path = np.array(path)
+path_loss = (path - 2.3) ** 2 + 0.4
+
+plt.figure(figsize=(7, 4))
+plt.plot(beta_grid, loss_grid, color="#4C78A8", label="loss")
+plt.scatter(path, path_loss, color="#F58518", zorder=3, label="các bước cập nhật")
+for a, b, la, lb in zip(path[:-1], path[1:], path_loss[:-1], path_loss[1:]):
+    plt.annotate("", xy=(b, lb), xytext=(a, la), arrowprops={"arrowstyle": "->", "color": "#F58518"})
+plt.xlabel("tham số beta")
+plt.ylabel("loss")
+plt.title("Learning rate điều khiển độ dài bước đi")
+plt.legend()
+plt.grid(alpha=0.25)
+plt.show()
+```
 
 ---
 
-## 2. Generalization: Underfitting vs. Overfitting
+## 3. Underfitting và Overfitting
 
-When evaluating a model parameter vector $\boldsymbol{\beta}$ on an unseen test dataset $\mathcal{D}_{\text{test}}$ sampled from the true underlying distribution $\mathcal{D}$, we analyze the average test loss:
+Khi mô hình gặp dữ liệu mới, ta quan tâm test loss:
 
-$$L_{\text{test}}(\boldsymbol{\beta}) = \mathbb{E}_{(\mathbf{x}, y) \sim \mathcal{D}} \left[ \left(y - \hat{f}_{\boldsymbol{\beta}}(\mathbf{x})\right)^2 \right]$$
+$$L_{\text{test}}=\mathbb{E}_{(\mathbf{x},y)\sim\mathcal{D}}
+\left[(y-\hat{f}(\mathbf{x}))^2\right]$$
 
-### The Two Failure Modes
+Hai kiểu lỗi chính:
 
-1. **Underfitting (High Bias):**
-   * **Symptom:** Both training error and test error are exceptionally large.
-   * **Cause:** The chosen model architecture lacks structural capacity and is too simple to capture the underlying pattern of the data.
-   * **Weights:** Parameter magnitudes $\|\boldsymbol{\beta}\|$ are often very small or suppressed.
+- **Underfitting, high bias:** train loss cao, test loss cao. Mô hình quá đơn giản, không học được quy luật thật.
+- **Overfitting, high variance:** train loss thấp, test loss cao. Mô hình quá linh hoạt, học cả nhiễu của tập train.
 
-2. **Overfitting (High Variance):**
-   * **Symptom:** Training error is remarkably low, but test error skyrockets.
-   * **Cause:** The model is overly complex (over-parameterized, where number of parameters $p \gg n$). It memorizes the random training noise instead of discovering generalizable patterns.
-   * **Weights:** Parameter values $\|\boldsymbol{\beta}\|$ fluctuate erratically with extreme magnitudes.
+Một câu nhớ nhanh: bias là lỗi do giả định quá cứng; variance là lỗi do mô hình thay đổi quá mạnh khi tập train thay đổi.
 
 ---
 
-## 3. Mathematical Proof of Bias-Variance Decomposition
+## 4. Bias-Variance Decomposition
 
-To understand why a model fails to generalize, we decompose the Mean Squared Error (MSE) at a specific unseen test point $\mathbf{x}$ into three distinct mathematical components.
+Giả sử:
 
-### Setup and Assumptions
-* True generative function: $y = f(\mathbf{x}) + \epsilon$
-* Noise properties: $\mathbb{E}[\epsilon] = 0$ and $\text{Var}(\epsilon) = \sigma^2$ (Intrinsic Irreducible Error)
-* Estimated model trained on a random dataset $\mathcal{D}$: $\hat{f}(\mathbf{x}; \mathcal{D})$ (written as $\hat{f}$ for brevity).
+$$y=f(\mathbf{x})+\epsilon,\quad \mathbb{E}[\epsilon]=0,\quad \operatorname{Var}(\epsilon)=\sigma^2$$
 
-Note that across random dataset realizations, the true function value $f(\mathbf{x})$ is a fixed constant, meaning $\mathbb{E}_{\mathcal{D}}[f(\mathbf{x})] = f(\mathbf{x})$.
+Mô hình học từ một tập dữ liệu ngẫu nhiên $\mathcal{D}$, nên dự đoán $\hat{f}(\mathbf{x};\mathcal{D})$ cũng là biến ngẫu nhiên. Tại một điểm $\mathbf{x}$ cố định:
 
-### The Step-by-Step Derivation
+$$
+\mathbb{E}\left[(y-\hat{f})^2\right]
+=\operatorname{Bias}(\hat{f})^2+\operatorname{Var}(\hat{f})+\sigma^2
+$$
 
-We start by expanding the expected prediction error:
+Suy luận từng bước:
 
-$$\mathbb{E}_{\mathcal{D}, \epsilon} \left[ (y - \hat{f})^2 \right] = \mathbb{E}_{\mathcal{D}, \epsilon} \left[ (f(\mathbf{x}) + \epsilon - \hat{f})^2 \right]$$
+$$
+\mathbb{E}\left[(y-\hat{f})^2\right]
+=
+\mathbb{E}\left[(f+\epsilon-\hat{f})^2\right]
+$$
 
-$$\mathbb{E}_{\mathcal{D}, \epsilon} \left[ (f(\mathbf{x}) - \hat{f})^2 + 2\epsilon(f(\mathbf{x}) - \hat{f}) + \epsilon^2 \right]$$
+Khai triển bình phương:
 
-Since the noise $\epsilon$ is independent of the training data $\mathcal{D}$, the expectation of the cross-product simplifies to zero:  
-$\mathbb{E}_{\mathcal{D}, \epsilon}[2\epsilon(f(\mathbf{x}) - \hat{f})] = 2\mathbb{E}[\epsilon] \cdot \mathbb{E}_{\mathcal{D}}[f(\mathbf{x}) - \hat{f}] = 0$.  
-Additionally, by definition, $\mathbb{E}[\epsilon^2] = \text{Var}(\epsilon) = \sigma^2$. This leaves:
+$$
+\mathbb{E}\left[(f-\hat{f})^2
++2\epsilon(f-\hat{f})
++\epsilon^2\right]
+$$
 
-$$\mathbb{E}_{\mathcal{D}} \left[ (f(\mathbf{x}) - \hat{f})^2 \right] + \sigma^2 \quad \text{(Equation 1)}$$
+Vì $\mathbb{E}[\epsilon]=0$, hạng chéo bằng $0$. Vì $\mathbb{E}[\epsilon^2]=\sigma^2$, còn:
 
-Now, let us apply the algebraic trick of adding and subtracting the expected model prediction $\mathbb{E}_{\mathcal{D}}[\hat{f}]$ inside the remaining squared expression:
+$$\mathbb{E}_{\mathcal{D}}\left[(f-\hat{f})^2\right]+\sigma^2$$
 
-$$\mathbb{E}_{\mathcal{D}} \left[ \left( f(\mathbf{x}) - \mathbb{E}_{\mathcal{D}}[\hat{f}] + \mathbb{E}_{\mathcal{D}}[\hat{f}] - \hat{f} \right)^2 \right]$$
+Thêm và bớt dự đoán trung bình $\mathbb{E}_{\mathcal{D}}[\hat{f}]$:
 
-Let $A = f(\mathbf{x}) - \mathbb{E}_{\mathcal{D}}[\hat{f}]$ (which is a constant with respect to $\mathcal{D}$) and $B = \mathbb{E}_{\mathcal{D}}[\hat{f}] - \hat{f}$. Expanding $(A + B)^2$:
+$$
+f-\hat{f}
+=
+\left(f-\mathbb{E}_{\mathcal{D}}[\hat{f}]\right)
++
+\left(\mathbb{E}_{\mathcal{D}}[\hat{f}]-\hat{f}\right)
+$$
 
-$$\mathbb{E}_{\mathcal{D}} \left[ A^2 + 2AB + B^2 \right] = \mathbb{E}_{\mathcal{D}}[A^2] + 2\mathbb{E}_{\mathcal{D}}[AB] + \mathbb{E}_{\mathcal{D}}[B^2]$$
-
-Let's evaluate each component individually:
-* $\mathbb{E}_{\mathcal{D}}[A^2] = \left( f(\mathbf{x}) - \mathbb{E}_{\mathcal{D}}[\hat{f}] \right)^2 = \text{Bias}^2\left(\hat{f}\right)$
-* $2\mathbb{E}_{\mathcal{D}}[AB] = 2\left(f(\mathbf{x}) - \mathbb{E}_{\mathcal{D}}[\hat{f}]\right) \cdot \mathbb{E}_{\mathcal{D}}\left[ \mathbb{E}_{\mathcal{D}}[\hat{f}] - \hat{f} \right]$.  
-    Since $\mathbb{E}_{\mathcal{D}}\left[ \mathbb{E}_{\mathcal{D}}[\hat{f}] - \hat{f} \right] = \mathbb{E}_{\mathcal{D}}[\hat{f}] - \mathbb{E}_{\mathcal{D}}[\hat{f}] = 0$, this entire cross-term vanishes.
-* $\mathbb{E}_{\mathcal{D}}[B^2] = \mathbb{E}_{\mathcal{D}} \left[ \left( \mathbb{E}_{\mathcal{D}}[\hat{f}] - \hat{f} \right)^2 \right] = \text{Var}\left(\hat{f}\right)$
-
-Combining all evaluated terms yields the definitive structural equation:
-
-$$\text{Total Expected Error} = \text{Bias}\left(\hat{f}\right)^2 + \text{Var}\left(\hat{f}\right) + \sigma^2$$
-
----
-
-## 4. Regularization: Managing Overfitting
-
-To prevent complex models from fitting noise, we append an explicit structural penalty $R(\boldsymbol{\beta})$ to our objective cost function. This forces the optimization to favor smoother patterns with smaller parameter weights:
-
-$$L_{\text{reg}}(\boldsymbol{\beta}) = L(\boldsymbol{\beta}) + \lambda R(\boldsymbol{\beta})$$
-
-Where $\lambda \geq 0$ is a hyperparameter that controls the regularization strength.
-
-### Explicit Regularization Paradigms
-
-1. **Ridge Regularization ($L_2$ Penalty)**
-   * **Penalty term:** $R(\boldsymbol{\beta}) = \|\boldsymbol{\beta}\|_2^2 = \sum_{j=1}^{p} \beta_j^2$
-   * **Behavior:** Penalizes the square of parameter magnitudes. It shrinks all coefficients towards zero uniformly, mitigating high variance while maintaining all features.
-2. **Lasso Regularization ($L_1$ Penalty)**
-   * **Penalty term:** $R(\boldsymbol{\beta}) = \|\boldsymbol{\beta}\|_1 = \sum_{j=1}^{p} |\beta_j|$
-   * **Behavior:** Penalizes absolute magnitudes. Due to the geometric nature of absolute values, it drives less informative weights exactly to zero, performing intrinsic feature selection.
-
-### Implicit Regularization
-Over-parameterized regimes ($p \gg n$) often exhibit implicit regularization. For instance, initialization choices or optimization path bounds in certain architectures naturally encourage the algorithm to converge toward smooth, low-norm solutions without an explicit penalty term.
+Hạng thứ nhất tạo **bias bình phương**. Hạng thứ hai tạo **variance**. Hạng chéo bằng $0$ vì độ lệch quanh trung bình có kỳ vọng bằng $0$.
 
 ---
 
-## 5. Hyperparameter Selection: Cross-Validation
+## 5. Regularization
 
-To find the optimal regularization balance ($\lambda = \{\lambda_1, \lambda_2, \dots, \lambda_k\}$), we partition our training data to simulate unseen environments without touching our final evaluation test set.
+Regularization thêm hình phạt vào loss để mô hình bớt đuổi theo nhiễu:
 
-### $K$-Fold Cross-Validation Protocol
-1. Split the primary training data partition into $K$ equal, distinct folds.
-2. For each unique hyperparameter candidate $\lambda_j$:
-   * Iterate $K$ times, treating a different fold as the validation set while training on the remaining $K-1$ folds.
-   * Record the average validation score across all $K$ iterations.
-3. Select the $\lambda$ candidate that achieves the lowest average validation loss, then re-train the global model on the entire training set using that optimal hyperparameter value.
+$$L_{\text{reg}}(\boldsymbol{\beta})
+=L(\boldsymbol{\beta})+\lambda R(\boldsymbol{\beta})$$
+
+Trong đó $\lambda\ge0$ điều khiển độ mạnh của phạt.
+
+| Phương pháp | Penalty | Tác dụng |
+| :--- | :--- | :--- |
+| Ridge, $L_2$ | $\lambda\sum_j\beta_j^2$ | Co nhỏ hệ số một cách mượt, giảm variance. |
+| Lasso, $L_1$ | $\lambda\sum_j|\beta_j|$ | Có thể đẩy một số hệ số về đúng $0$, chọn đặc trưng. |
+| Elastic Net | $\lambda_1\|\boldsymbol{\beta}\|_1+\lambda_2\|\boldsymbol{\beta}\|_2^2$ | Kết hợp sparse và ổn định. |
+
+Nếu $\lambda$ quá nhỏ, mô hình có thể overfit. Nếu $\lambda$ quá lớn, mô hình có thể underfit.
+
+---
+
+## 6. Chọn siêu tham số bằng Cross-validation
+
+Quy trình $K$-fold cross-validation:
+
+1. Chia tập train thành $K$ fold.
+2. Với mỗi ứng viên $\lambda$, train trên $K-1$ fold và validate trên fold còn lại.
+3. Lặp để mỗi fold được làm validation một lần.
+4. Lấy trung bình validation loss.
+5. Chọn $\lambda$ có validation loss trung bình nhỏ nhất.
+6. Train lại trên toàn bộ tập train bằng $\lambda$ đã chọn.
+
+Không dùng test set để chọn $\lambda$, vì test set phải là phần đánh giá cuối cùng.
+
+```{python}
+#| label: bias-variance-visual
+#| fig-cap: "Underfitting, fit hợp lý, và overfitting trên cùng một bộ dữ liệu nhiễu."
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+np.random.seed(3)
+x = np.linspace(-3, 3, 35)
+true_y = np.sin(x)
+y = true_y + np.random.normal(0, 0.22, size=x.shape)
+x_grid = np.linspace(-3, 3, 300)
+true_grid = np.sin(x_grid)
+
+degrees = [1, 5, 18]
+titles = ["High bias\nunderfit", "Cân bằng", "High variance\noverfit"]
+fig, axes = plt.subplots(1, 3, figsize=(10, 3.4), sharey=True)
+
+for ax, degree, title in zip(axes, degrees, titles):
+    coef = np.polyfit(x, y, degree)
+    pred = np.polyval(coef, x_grid)
+    train_mse = np.mean((np.polyval(coef, x) - y) ** 2)
+    test_mse = np.mean((pred - true_grid) ** 2)
+    ax.scatter(x, y, color="#4C78A8", s=35, label="mẫu train")
+    ax.plot(x_grid, true_grid, color="black", linestyle="--", label="hàm thật")
+    ax.plot(x_grid, pred, color="#F58518", linewidth=2, label="mô hình")
+    ax.set_title(f"{title}\nbậc={degree}")
+    ax.text(-2.9, 1.15, f"train MSE={train_mse:.2f}\ntest MSE={test_mse:.2f}", fontsize=8)
+    ax.set_ylim(-1.5, 1.5)
+    ax.grid(alpha=0.25)
+axes[0].legend(fontsize=8, loc="lower left")
+plt.tight_layout()
+plt.show()
+```
+
+---
+
+## 7. Bảng Công thức Thi: Bias, Variance, Regularization
+
+| Dấu hiệu | Chẩn đoán | Cách xử lý |
+| :--- | :--- | :--- |
+| Train loss cao, test loss cao | High bias | Thêm đặc trưng, tăng bậc mô hình, giảm regularization. |
+| Train loss thấp, test loss cao | High variance | Tăng regularization, đơn giản hóa mô hình, thêm dữ liệu. |
+| Train loss thấp, test loss thấp | Fit tốt | Giữ mô hình, kiểm tra thêm bằng dữ liệu mới. |
+| Validation loss nhỏ nhất tại $\lambda$ trung bình | Trade-off tốt | Chọn $\lambda$ đó rồi train lại trên full train. |
+| Loss dao động mạnh khi train | Learning rate lớn hoặc SGD nhiễu | Giảm $\alpha$, dùng mini-batch, chuẩn hóa dữ liệu. |
+
+Gradient cần nhớ:
+
+$$\nabla L=-\frac{1}{n}\mathbf{X}^T(\mathbf{y}-\mathbf{X}\boldsymbol{\beta})$$
+
+Ridge gradient add-on:
+
+$$\nabla L_{\text{ridge}}=\nabla L+2\lambda\boldsymbol{\beta}$$
+
+Bias-variance:
+
+$$\operatorname{MSE}=\operatorname{Bias}^2+\operatorname{Variance}+\text{Noise}$$
+
+---
+
+## 8. Bộ bài tập mẫu có lời giải
+
+### Bài 1: Tính objective Ridge
+
+**Đề bài.** Một mô hình có train loss $0.20$ và trọng số $\boldsymbol{\beta}=(2,-1,0.5)$. Tính ridge objective với $\lambda=0.1$.
+
+**Lời giải.**
+
+Tính penalty:
+
+$$\|\boldsymbol{\beta}\|_2^2=2^2+(-1)^2+0.5^2=4+1+0.25=5.25$$
+
+Nhân với $\lambda$:
+
+$$\lambda\|\boldsymbol{\beta}\|_2^2=0.1(5.25)=0.525$$
+
+Cộng với loss gốc:
+
+$$L_{\text{reg}}=0.20+0.525=0.725$$
+
+**Kết luận.** Ridge objective bằng $0.725$.
+
+### Bài 2: Chọn $\lambda$ từ bảng cross-validation
+
+**Đề bài.** Sau 5-fold cross-validation, ta có validation MSE:
+
+| $\lambda$ | fold 1 | fold 2 | fold 3 | fold 4 | fold 5 |
+| :--- | ---: | ---: | ---: | ---: | ---: |
+| 0.00 | 0.92 | 1.10 | 0.98 | 1.05 | 1.20 |
+| 0.01 | 0.70 | 0.78 | 0.74 | 0.76 | 0.81 |
+| 0.10 | 0.54 | 0.57 | 0.55 | 0.58 | 0.56 |
+| 1.00 | 0.61 | 0.65 | 0.64 | 0.62 | 0.67 |
+| 10.00 | 1.20 | 1.15 | 1.25 | 1.18 | 1.22 |
+
+Chọn $\lambda$ tốt nhất.
+
+**Lời giải.** Tính trung bình từng dòng:
+
+$$
+\lambda=0:
+\frac{0.92+1.10+0.98+1.05+1.20}{5}
+=1.050
+$$
+
+$$
+\lambda=0.01:
+\frac{0.70+0.78+0.74+0.76+0.81}{5}
+=0.758
+$$
+
+$$
+\lambda=0.10:
+\frac{0.54+0.57+0.55+0.58+0.56}{5}
+=0.560
+$$
+
+$$
+\lambda=1.00:
+\frac{0.61+0.65+0.64+0.62+0.67}{5}
+=0.638
+$$
+
+$$
+\lambda=10.00:
+\frac{1.20+1.15+1.25+1.18+1.22}{5}
+=1.200
+$$
+
+Bảng tóm tắt:
+
+| $\lambda$ | validation MSE trung bình |
+| :--- | ---: |
+| 0.00 | 1.050 |
+| 0.01 | 0.758 |
+| 0.10 | 0.560 |
+| 1.00 | 0.638 |
+| 10.00 | 1.200 |
+
+**Kết luận.** Chọn $\lambda=0.10$ vì validation MSE trung bình nhỏ nhất. $\lambda=0$ có dấu hiệu overfit, còn $\lambda=10$ quá mạnh nên dễ underfit.
+
+### Bài 3: Một bước Gradient Descent trên dữ liệu 12 dòng
+
+**Đề bài.** Dữ liệu có một đặc trưng $x$ và intercept. Bắt đầu với $\beta_0=0,\beta_1=0$, learning rate $\alpha=0.01$. Tính một bước batch gradient descent cho loss MSE.
+
+| dòng | $x$ | $y$ |
+| :--- | ---: | ---: |
+| 1 | 1 | 4 |
+| 2 | 2 | 5 |
+| 3 | 3 | 7 |
+| 4 | 4 | 8 |
+| 5 | 5 | 11 |
+| 6 | 6 | 13 |
+| 7 | 7 | 15 |
+| 8 | 8 | 16 |
+| 9 | 9 | 19 |
+| 10 | 10 | 21 |
+| 11 | 11 | 22 |
+| 12 | 12 | 25 |
+
+**Lời giải.** Với $\beta_0=\beta_1=0$, mọi dự đoán ban đầu bằng $0$, nên residual $r_i=y_i$.
+
+Gradient theo dạng cập nhật cộng:
+
+$$
+\beta_j\leftarrow
+\beta_j+\frac{\alpha}{n}\sum_{i=1}^{n}r_ix_{i,j}
+$$
+
+Với intercept, $x_{i,0}=1$.
+
+Tính tổng residual:
+
+$$\sum r_i=4+5+7+8+11+13+15+16+19+21+22+25=166$$
+
+Tính tổng residual nhân đặc trưng:
+
+$$
+\sum r_ix_i
+=4(1)+5(2)+7(3)+8(4)+11(5)+13(6)+15(7)+16(8)+19(9)+21(10)+22(11)+25(12)
+=1356
+$$
+
+Cập nhật intercept:
+
+$$
+\beta_0^{new}
+=0+\frac{0.01}{12}(166)
+\approx0.1383
+$$
+
+Cập nhật slope:
+
+$$
+\beta_1^{new}
+=0+\frac{0.01}{12}(1356)
+=1.1300
+$$
+
+**Kết luận.** Một bước cập nhật đã kéo đường dự đoán từ đường phẳng $\hat{y}=0$ về phía dữ liệu. Trong bài thi, chỉ cần nhớ: residual nhân đặc trưng rồi lấy trung bình.

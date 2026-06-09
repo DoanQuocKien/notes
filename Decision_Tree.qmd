@@ -1,5 +1,5 @@
 ---
-title: "Machine Learning: Advanced Decision Trees and Ensemble Methods"
+title: "Học máy: Cây Quyết định Nâng cao và Phương pháp Kết hợp"
 author: "Quoc Kien"
 jupyter: science_env
 format: 
@@ -153,3 +153,200 @@ Bỏ qua các hằng số không ảnh hưởng đến quá trình tối ưu hó
 $$\tilde{\mathcal{L}}^{(t)} = \sum_{i=1}^{n} \left[ g_i f_t(\mathbf{x}^{(i)}) + \frac{1}{2} h_i f_t^2(\mathbf{x}^{(i)}) \right] + \gamma |T| + \frac{1}{2}\lambda \sum_{j=1}^{|T|} w_j^2$$
 
 Thông tin đạo hàm bậc hai $h_i$ đóng vai trò như một hệ số điều hướng độ cong của không gian lỗi, giúp XGBoost hội tụ nhanh vượt trội so với Gradient Boosting truyền thống chỉ dùng đạo hàm bậc một.
+
+---
+
+## 5. Bảng Công thức Thi: Máy tính Phân tách Cây Quyết định
+
+Khi đề bài hỏi một phép tách có tốt hay không, hãy tính độ ô nhiễm trước và sau khi tách.
+
+| Đại lượng | Công thức | Giá trị tốt nhất |
+| :--- | :--- | :--- |
+| Xác suất lớp | $p_c=\frac{\#\text{mẫu thuộc lớp }c}{|R|}$ | Dùng bên trong Entropy/Gini. |
+| Entropy | $H(R)=-\sum_c p_c\log_2 p_c$ | $0$ nghĩa là nút hoàn toàn thuần nhất. |
+| Gini | $G(R)=1-\sum_c p_c^2$ | $0$ nghĩa là nút hoàn toàn thuần nhất. |
+| Độ ô nhiễm con có trọng số | $\frac{|R_1|}{|R|}I(R_1)+\frac{|R_2|}{|R|}I(R_2)$ | Càng thấp càng tốt. |
+| Information Gain | $I(R)-\left[\frac{|R_1|}{|R|}I(R_1)+\frac{|R_2|}{|R|}I(R_2)\right]$ | Càng cao càng tốt. |
+| Giá trị lá hồi quy | $\bar{y}_R=\frac{1}{|R|}\sum_{i\in R}y_i$ | Dự đoán trung bình mục tiêu trong nút lá. |
+| Cost-complexity pruning | $C_\alpha(T)=\sum_m |R_m|L(R_m)+\alpha|T|$ | $\alpha$ càng lớn, cây càng bị cắt gọn. |
+
+```{python}
+#| label: tree-impurity-calculator
+#| fig-cap: "Information gain compares parent impurity with weighted child impurity."
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+def entropy(counts):
+    counts = np.array(counts, dtype=float)
+    probs = counts[counts > 0] / counts.sum()
+    return -np.sum(probs * np.log2(probs))
+
+def gini(counts):
+    counts = np.array(counts, dtype=float)
+    probs = counts / counts.sum()
+    return 1 - np.sum(probs ** 2)
+
+parent = [5, 5]
+left = [4, 1]
+right = [1, 4]
+n_parent = sum(parent)
+weighted_entropy = (sum(left) / n_parent) * entropy(left) + (sum(right) / n_parent) * entropy(right)
+weighted_gini = (sum(left) / n_parent) * gini(left) + (sum(right) / n_parent) * gini(right)
+
+print("Entropy nút cha:", round(entropy(parent), 3))
+print("Entropy con có trọng số:", round(weighted_entropy, 3))
+print("Information Gain:", round(entropy(parent) - weighted_entropy, 3))
+print("Gini nút cha:", round(gini(parent), 3))
+print("Gini con có trọng số:", round(weighted_gini, 3))
+
+labels = ["nút cha", "nút con"]
+entropy_vals = [entropy(parent), weighted_entropy]
+gini_vals = [gini(parent), weighted_gini]
+x = np.arange(len(labels))
+width = 0.35
+plt.figure(figsize=(6, 3.5))
+plt.bar(x - width / 2, entropy_vals, width, label="entropy")
+plt.bar(x + width / 2, gini_vals, width, label="gini")
+plt.xticks(x, labels)
+plt.ylabel("độ ô nhiễm")
+plt.title("Phép tách tốt làm giảm độ ô nhiễm")
+plt.legend()
+plt.grid(axis="y", alpha=0.25)
+plt.show()
+```
+
+### Bộ bài tập mẫu có lời giải
+
+**Đề bài.** Một nút cha có 10 mẫu: 5 mẫu lớp 0 và 5 mẫu lớp 1. Một phép tách tạo ra:
+
+- Nút trái: 4 mẫu lớp 0, 1 mẫu lớp 1.
+- Nút phải: 1 mẫu lớp 0, 4 mẫu lớp 1.
+
+Hãy tính Information Gain theo Entropy.
+
+**Lời giải từng bước.**
+
+1. Entropy nút cha:
+   $$H(R)=-0.5\log_2(0.5)-0.5\log_2(0.5)=1$$
+2. Entropy nút trái:
+   $$H(R_1)=-0.8\log_2(0.8)-0.2\log_2(0.2)\approx 0.722$$
+3. Entropy nút phải có cùng phân phối đảo ngược, nên:
+   $$H(R_2)\approx 0.722$$
+4. Entropy sau tách:
+   $$\frac{5}{10}(0.722)+\frac{5}{10}(0.722)=0.722$$
+5. Information Gain:
+   $$IG=1-0.722=0.278$$
+
+**Kết luận.** Phép tách này hữu ích vì làm Entropy giảm từ $1$ xuống $0.722$.
+
+### Bài 2: Chọn split tốt nhất từ bộ dữ liệu 12 dòng
+
+**Đề bài.** Cho bộ dữ liệu nhị phân sau. Hãy so sánh hai split: $x_1\le 2.5$ và $x_2\le 1.5$ bằng Information Gain theo Gini. Split nào tốt hơn?
+
+| dòng | $x_1$ | $x_2$ | $y$ |
+| :--- | ---: | ---: | ---: |
+| 1 | 1.0 | 1.0 | 0 |
+| 2 | 1.2 | 1.4 | 0 |
+| 3 | 1.5 | 2.0 | 0 |
+| 4 | 2.0 | 1.1 | 0 |
+| 5 | 2.4 | 1.8 | 1 |
+| 6 | 2.8 | 1.2 | 1 |
+| 7 | 3.0 | 2.0 | 1 |
+| 8 | 3.2 | 2.4 | 1 |
+| 9 | 3.8 | 1.0 | 1 |
+| 10 | 4.0 | 2.8 | 1 |
+| 11 | 4.3 | 1.7 | 1 |
+| 12 | 4.8 | 2.2 | 1 |
+
+**Lời giải.** Gini của một nút:
+
+$$G(R)=1-p_0^2-p_1^2$$
+
+Information Gain theo Gini:
+
+$$IG=G(R)-\frac{|R_L|}{|R|}G(R_L)-\frac{|R_R|}{|R|}G(R_R)$$
+
+Nút cha có 4 mẫu lớp 0 và 8 mẫu lớp 1:
+
+$$G(R)=1-\left(\frac{4}{12}\right)^2-\left(\frac{8}{12}\right)^2
+=1-\frac{16}{144}-\frac{64}{144}
+=0.444$$
+
+Với split $x_1\le2.5$:
+
+- Nút trái có 5 mẫu: 4 lớp 0, 1 lớp 1.
+- Nút phải có 7 mẫu: 0 lớp 0, 7 lớp 1.
+
+$$G(R_L)=1-\left(\frac{4}{5}\right)^2-\left(\frac{1}{5}\right)^2=0.320$$
+
+$$G(R_R)=1-0^2-1^2=0$$
+
+Gini sau split:
+
+$$\frac{5}{12}(0.320)+\frac{7}{12}(0)=0.133$$
+
+Gain:
+
+$$IG_{x_1}=0.444-0.133=0.311$$
+
+Với split $x_2\le1.5$:
+
+- Nút trái có 5 mẫu: 2 lớp 0, 3 lớp 1.
+- Nút phải có 7 mẫu: 2 lớp 0, 5 lớp 1.
+
+$$G(R_L)=1-\left(\frac{2}{5}\right)^2-\left(\frac{3}{5}\right)^2=0.480$$
+
+$$G(R_R)=1-\left(\frac{2}{7}\right)^2-\left(\frac{5}{7}\right)^2\approx0.245$$
+
+Gini sau split:
+
+$$\frac{5}{12}(0.480)+\frac{7}{12}(0.245)\approx0.343$$
+
+Gain:
+
+$$IG_{x_2}=0.444-0.343=0.102$$
+
+**Kết luận.** Chọn split có gain lớn hơn. Trong bài thi, nếu hai split cùng hợp lý trực giác, cứ để Gini/Entropy quyết định.
+
+### Bài 3: Lá hồi quy và MSE sau split
+
+**Đề bài.** Với dữ liệu hồi quy 10 dòng, xét split $x\le5$. Mỗi lá dự đoán bằng trung bình $y$ trong lá. Tính MSE sau split.
+
+| $x$ | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 |
+| :--- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| $y$ | 3 | 4 | 5 | 6 | 8 | 13 | 14 | 16 | 18 | 20 |
+
+**Lời giải.**
+
+Lá trái chứa $y=\{3,4,5,6,8\}$:
+
+$$\hat{y}_L=\frac{3+4+5+6+8}{5}=\frac{26}{5}=5.2$$
+
+Sai số bình phương trong lá trái:
+
+$$
+(3-5.2)^2+(4-5.2)^2+(5-5.2)^2+(6-5.2)^2+(8-5.2)^2
+=14.8
+$$
+
+Lá phải chứa $y=\{13,14,16,18,20\}$:
+
+$$\hat{y}_R=\frac{13+14+16+18+20}{5}=\frac{81}{5}=16.2$$
+
+Sai số bình phương trong lá phải:
+
+$$
+(13-16.2)^2+(14-16.2)^2+(16-16.2)^2+(18-16.2)^2+(20-16.2)^2
+=32.8
+$$
+
+Tổng SSE sau split:
+
+$$SSE=14.8+32.8=47.6$$
+
+MSE sau split:
+
+$$MSE=\frac{47.6}{10}=4.76$$
+
+**Kết luận.** Với cây hồi quy, lá không bỏ phiếu lớp mà lấy trung bình mục tiêu. Split tốt là split làm tổng sai số trong lá nhỏ đi.

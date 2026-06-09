@@ -1,5 +1,5 @@
 ---
-title: "Machine Learning: Neural Networks and Fully Vectorized Backpropagation"
+title: "Học máy: Mạng Nơ-ron và Lan truyền Ngược Vector hóa"
 author: "Quoc Kien"
 jupyter: science_env
 format: 
@@ -64,17 +64,17 @@ The plot shows why deep networks often avoid sigmoid activations in hidden layer
 
 ## 2. Kiến trúc Mạng Nơ-ron Đa Tầng (Multilayer Perceptron - MLP)
 
-The easiest way to read an MLP is layer by layer. Each circle stores one scalar activation, and each edge has a learnable weight. A fully connected layer means every activation from the previous layer contributes to every neuron in the next layer.
+Cách dễ nhất để đọc một MLP là nhìn theo từng tầng. Mỗi hình tròn lưu một activation vô hướng, và mỗi cạnh mang một trọng số học được. Một tầng fully connected nghĩa là mọi activation ở tầng trước đều đóng góp vào mọi nơ-ron ở tầng sau.
 
 ```{python}
 #| label: nn-layering-graph
-#| fig-cap: "A fully connected neural network with input, hidden, and output layers."
+#| fig-cap: "Mạng nơ-ron fully connected gồm tầng đầu vào, tầng ẩn và tầng đầu ra."
 #| echo: false
 
 import matplotlib.pyplot as plt
 
 layers = [3, 4, 3, 2]
-layer_names = ["Input\n$A^{[0]}$", "Hidden 1\n$A^{[1]}$", "Hidden 2\n$A^{[2]}$", "Output\n$A^{[3]}$"]
+layer_names = ["Đầu vào\n$A^{[0]}$", "Ẩn 1\n$A^{[1]}$", "Ẩn 2\n$A^{[2]}$", "Đầu ra\n$A^{[3]}$"]
 positions = {}
 
 fig, ax = plt.subplots(figsize=(8, 4.8))
@@ -97,10 +97,10 @@ for layer_idx in range(len(layers) - 1):
 for layer_idx, name in enumerate(layer_names):
     ax.text(layer_idx, -0.7, name, ha="center", va="top", fontsize=10, fontweight="bold")
 
-ax.annotate("forward pass", xy=(2.55, 4.2), xytext=(0.45, 4.2),
+ax.annotate("lan truyền xuôi", xy=(2.55, 4.2), xytext=(0.45, 4.2),
             arrowprops=dict(arrowstyle="->", lw=1.5, color="#2F855A"),
             color="#2F855A", ha="center", va="center", fontsize=10)
-ax.annotate("backpropagation", xy=(0.45, 4.55), xytext=(2.55, 4.55),
+ax.annotate("lan truyền ngược", xy=(0.45, 4.55), xytext=(2.55, 4.55),
             arrowprops=dict(arrowstyle="->", lw=1.5, color="#C05621"),
             color="#C05621", ha="center", va="center", fontsize=10)
 ax.set_xlim(-0.5, len(layers) - 0.5)
@@ -109,7 +109,7 @@ ax.axis("off")
 plt.show()
 ```
 
-This diagram also clarifies the matrix notation below: multiplying by $\mathbf{W}^{[l]}$ collects all incoming edges for layer $l$, adding $\mathbf{b}^{[l]}$ shifts each neuron, and applying $g^{[l]}$ turns the linear score into the activation passed forward.
+Sơ đồ này giúp đọc ký hiệu ma trận phía dưới: nhân với $\mathbf{W}^{[l]}$ là gom toàn bộ cạnh đi vào tầng $l$, cộng $\mathbf{b}^{[l]}$ là dịch từng nơ-ron, và áp dụng $g^{[l]}$ là biến điểm tuyến tính thành activation truyền tiếp về phía trước.
 
 
 
@@ -182,3 +182,218 @@ $$\hat{\mathbf{z}}^{(i)} = \frac{\mathbf{z}^{(i)} - \boldsymbol{\mu}_{\mathcal{B
 $$\tilde{\mathbf{z}}^{(i)} = \boldsymbol{\gamma} \odot \hat{\mathbf{z}}^{(i)} + \boldsymbol{\beta}$$
 
 Giá trị $\tilde{\mathbf{z}}^{(i)}$ này mới là giá trị thực tế được đưa vào hàm kích hoạt $g(\cdot)$. Batch Normalization hoạt động như một chất bôi trơn toán học mạnh mẽ, cho phép mạng sử dụng learning rate lớn hơn và tăng tốc độ hội tụ lên gấp nhiều lần.
+
+---
+
+## 5. Bảng Công thức Thi: Lan truyền Xuôi và Lan truyền Ngược
+
+Dùng phần này khi cần kiểm tra kích thước ma trận hoặc suy luận gradient theo từng tầng.
+
+| Đại lượng | Công thức | Kích thước |
+| :--- | :--- | :--- |
+| Batch đầu vào | $\mathbf{A}^{[0]}=\mathbf{X}^T$ | $n_0\times m$ |
+| Điểm tuyến tính | $\mathbf{Z}^{[l]}=\mathbf{W}^{[l]}\mathbf{A}^{[l-1]}+\mathbf{b}^{[l]}$ | $n_l\times m$ |
+| Activation | $\mathbf{A}^{[l]}=g^{[l]}(\mathbf{Z}^{[l]})$ | $n_l\times m$ |
+| Sai số đầu ra softmax + CE | $\mathbf{dZ}^{[L]}=\mathbf{A}^{[L]}-\mathbf{Y}$ | $n_L\times m$ |
+| Sai số tầng ẩn | $\mathbf{dZ}^{[l]}=((\mathbf{W}^{[l+1]})^T\mathbf{dZ}^{[l+1]})\odot g'(\mathbf{Z}^{[l]})$ | $n_l\times m$ |
+| Gradient trọng số | $\mathbf{dW}^{[l]}=\frac{1}{m}\mathbf{dZ}^{[l]}(\mathbf{A}^{[l-1]})^T$ | $n_l\times n_{l-1}$ |
+| Gradient bias | $\mathbf{db}^{[l]}=\frac{1}{m}\sum_i \mathbf{dZ}^{(i)[l]}$ | $n_l\times 1$ |
+
+**Quy tắc kiểm tra kích thước:** mọi gradient phải có cùng kích thước với tham số mà nó cập nhật. Nếu $\mathbf{W}^{[l]}$ có kích thước $n_l\times n_{l-1}$, thì $\mathbf{dW}^{[l]}$ cũng phải có kích thước $n_l\times n_{l-1}$.
+
+```{python}
+#| label: neural-gradient-check
+
+import numpy as np
+
+np.random.seed(2)
+x = np.array([[0.7], [-1.1]])
+y = np.array([[1.0]])
+W = np.array([[0.4, -0.3]])
+b = np.array([[0.2]])
+
+def sigmoid(z):
+    return 1 / (1 + np.exp(-z))
+
+def loss(W_value):
+    z = W_value @ x + b
+    a = sigmoid(z)
+    return float(np.sum(0.5 * (a - y) ** 2))
+
+z = W @ x + b
+a = sigmoid(z)
+dz = (a - y) * a * (1 - a)
+dW = dz @ x.T
+
+eps = 1e-5
+numeric_dW = np.zeros_like(W)
+for j in range(W.shape[1]):
+    W_plus = W.copy()
+    W_minus = W.copy()
+    W_plus[0, j] += eps
+    W_minus[0, j] -= eps
+    numeric_dW[0, j] = (loss(W_plus) - loss(W_minus)) / (2 * eps)
+
+print("dW từ backprop:", np.round(dW, 6))
+print("dW từ sai phân số:", np.round(numeric_dW, 6))
+print("Sai lệch tuyệt đối:", np.round(np.abs(dW - numeric_dW), 10))
+```
+
+### Bộ bài tập mẫu có lời giải
+
+**Đề bài.** Một mini-batch có $m=5$ mẫu, tầng trước có $n_{l-1}=3$ nơ-ron, tầng hiện tại có $n_l=4$ nơ-ron. Hãy xác định kích thước của $\mathbf{A}^{[l-1]}$, $\mathbf{W}^{[l]}$, $\mathbf{b}^{[l]}$, $\mathbf{Z}^{[l]}$, $\mathbf{dW}^{[l]}$.
+
+**Lời giải từng bước.**
+
+1. Vì tầng trước có 3 nơ-ron và batch có 5 mẫu:
+   $$\mathbf{A}^{[l-1]}\in\mathbb{R}^{3\times 5}$$
+2. Vì tầng hiện tại có 4 nơ-ron và nhận 3 đầu vào:
+   $$\mathbf{W}^{[l]}\in\mathbb{R}^{4\times 3}$$
+3. Bias có một giá trị cho mỗi nơ-ron tầng hiện tại:
+   $$\mathbf{b}^{[l]}\in\mathbb{R}^{4\times 1}$$
+4. Điểm tuyến tính:
+   $$\mathbf{Z}^{[l]}=\mathbf{W}^{[l]}\mathbf{A}^{[l-1]}+\mathbf{b}^{[l]}\in\mathbb{R}^{4\times 5}$$
+5. Gradient trọng số phải cùng kích thước với trọng số:
+   $$\mathbf{dW}^{[l]}\in\mathbb{R}^{4\times 3}$$
+
+**Kết luận.** Nếu khi làm bài bạn ra $\mathbf{dW}^{[l]}$ khác kích thước $\mathbf{W}^{[l]}$, phép nhân ma trận đã bị sai.
+
+### Bài 2: Lan truyền xuôi hoàn chỉnh qua mạng 2-2-1
+
+**Đề bài.** Cho một mạng có 2 input, 2 neuron ẩn dùng ReLU, và 1 output dùng sigmoid:
+
+$$
+\mathbf{x}=
+\begin{pmatrix}
+1.0\\2.0
+\end{pmatrix},
+\quad
+\mathbf{W}^{[1]}=
+\begin{pmatrix}
+0.5&-0.4\\
+0.3&0.8
+\end{pmatrix},
+\quad
+\mathbf{b}^{[1]}=
+\begin{pmatrix}
+0.1\\-0.2
+\end{pmatrix}
+$$
+
+$$
+\mathbf{W}^{[2]}=
+\begin{pmatrix}
+1.2&-0.7
+\end{pmatrix},
+\quad
+b^{[2]}=0.05
+$$
+
+Tính $\mathbf{Z}^{[1]}$, $\mathbf{A}^{[1]}$, $Z^{[2]}$, và xác suất output.
+
+**Lời giải.** Tính tầng ẩn:
+
+$$
+\mathbf{Z}^{[1]}
+=
+\begin{pmatrix}
+0.5&-0.4\\
+0.3&0.8
+\end{pmatrix}
+\begin{pmatrix}
+1\\2
+\end{pmatrix}
++
+\begin{pmatrix}
+0.1\\-0.2
+\end{pmatrix}
+$$
+
+Neuron ẩn thứ nhất:
+
+$$z_1^{[1]}=0.5(1)-0.4(2)+0.1=-0.2$$
+
+Neuron ẩn thứ hai:
+
+$$z_2^{[1]}=0.3(1)+0.8(2)-0.2=1.7$$
+
+Vì dùng ReLU:
+
+$$
+\mathbf{A}^{[1]}
+=\operatorname{ReLU}
+\begin{pmatrix}
+-0.2\\1.7
+\end{pmatrix}
+=
+\begin{pmatrix}
+0\\1.7
+\end{pmatrix}
+$$
+
+Tính output logit:
+
+$$
+Z^{[2]}
+=
+\begin{pmatrix}
+1.2&-0.7
+\end{pmatrix}
+\begin{pmatrix}
+0\\1.7
+\end{pmatrix}
++0.05
+=1.2(0)-0.7(1.7)+0.05
+=-1.14
+$$
+
+Đưa qua sigmoid:
+
+$$
+A^{[2]}=\sigma(-1.14)
+=\frac{1}{1+e^{1.14}}
+\approx0.242
+$$
+
+**Kết luận.** Lan truyền xuôi chỉ là lặp lại hai bước: affine transform rồi activation. ReLU đặt giá trị âm về $0$, sigmoid đổi logit cuối thành xác suất.
+
+### Bài 3: Một bước backprop cho output sigmoid
+
+**Đề bài.** Với output của Bài 2 và nhãn thật $y=1$, dùng binary cross-entropy. Tính $dZ^{[2]}$, $dW^{[2]}$, $db^{[2]}$.
+
+**Lời giải.** Với sigmoid + binary cross-entropy:
+
+$$dZ^{[2]}=A^{[2]}-y$$
+
+Vì chỉ có một mẫu:
+
+$$dW^{[2]}=dZ^{[2]}(A^{[1]})^T,\quad db^{[2]}=dZ^{[2]}$$
+
+Từ Bài 2, $A^{[2]}\approx0.242$ và $y=1$:
+
+$$dZ^{[2]}=0.242-1=-0.758$$
+
+Tính gradient trọng số output:
+
+$$
+dW^{[2]}
+=dZ^{[2]}(A^{[1]})^T
+=-0.758
+\begin{pmatrix}
+0&1.7
+\end{pmatrix}
+$$
+
+$$
+dW^{[2]}
+\approx
+\begin{pmatrix}
+0&-1.289
+\end{pmatrix}
+$$
+
+Bias gradient:
+
+$$db^{[2]}=dZ^{[2]}\approx-0.758$$
+
+**Kết luận.** Nếu dự đoán thấp hơn nhãn thật $1$, $dZ^{[2]}$ âm. Gradient âm làm gradient descent tăng các trọng số liên quan để output lần sau cao hơn.

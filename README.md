@@ -36,11 +36,20 @@ The goal is to turn dense machine learning theory into notes that are easier to 
 +-- quarto/               # Quarto source notebooks
 +-- html/                 # Rendered HTML previews and their *_files assets
 +-- output/               # Rendered PDF files
++-- exam/                 # Sample and practice exams with step-by-step answer keys
 +-- temp/                 # Quarto/Jupyter intermediate files and scratch artifacts
 +-- README.md             # Project overview
 ```
 
 The `.qmd` files in `quarto/` are the source of truth. The HTML, PDF, and temp files are generated artifacts.
+
+## Practice Exams
+
+In addition to the notebooks, this repository contains a set of practice exams located in the `exam/` directory. These are designed to test both mechanical calculation and deep conceptual understanding:
+
+- **sample_exam**: The original recovered exam and its detailed answer key.
+- **exam_01 to exam_05**: Five additional practice exams, each containing 6 standard questions covering the full scope of the notebooks, plus a final **advanced question** designed to challenge deeper theoretical understanding (e.g., Generalization in SGD, Curse of Dimensionality, MAP estimation for Regularization, Inductive Bias).
+- Every exam is accompanied by a step-by-step mathematical answer key.
 
 ## Requirements
 

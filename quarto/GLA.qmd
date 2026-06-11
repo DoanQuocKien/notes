@@ -356,13 +356,13 @@ print("Lớp dự đoán:", int(posterior_y1 >= 0.5))
 
 ### Dạng bài: Naive Bayes từ bảng dữ liệu rời rạc
 
-Với dữ liệu email có ba thuộc tính nhị phân như `free`, `win`, `meeting`, cách làm luôn giống nhau.
+Với dữ liệu email có ba thuộc tính nhị phân như `promo`, `urgent`, `team`, cách làm luôn giống nhau.
 
 Giả sử cần phân loại email mới:
 
-| free | win | meeting |
+| promo | urgent | team |
 | :--- | :--- | :--- |
-| Yes | Yes | No |
+| Yes | No | Yes |
 
 Bước 1: tính prior:
 
@@ -370,23 +370,23 @@ $$P(\text{Spam})=\frac{\#\text{Spam}}{n},\quad P(\text{Not Spam})=\frac{\#\text{
 
 Bước 2: tính likelihood theo từng lớp:
 
-$$P(\text{free=Yes}\mid \text{Spam}),\quad
-P(\text{win=Yes}\mid \text{Spam}),\quad
-P(\text{meeting=No}\mid \text{Spam})$$
+$$P(\text{promo=Yes}\mid \text{Spam}),\quad
+P(\text{urgent=No}\mid \text{Spam}),\quad
+P(\text{team=Yes}\mid \text{Spam})$$
 
 và tương tự cho lớp Not Spam.
 
 Bước 3: nhân điểm số chưa chuẩn hóa:
 
 $$score(\text{Spam})=P(\text{Spam})
-P(\text{free=Yes}\mid\text{Spam})
-P(\text{win=Yes}\mid\text{Spam})
-P(\text{meeting=No}\mid\text{Spam})$$
+P(\text{promo=Yes}\mid\text{Spam})
+P(\text{urgent=No}\mid\text{Spam})
+P(\text{team=Yes}\mid\text{Spam})$$
 
 $$score(\text{Not Spam})=P(\text{Not Spam})
-P(\text{free=Yes}\mid\text{Not Spam})
-P(\text{win=Yes}\mid\text{Not Spam})
-P(\text{meeting=No}\mid\text{Not Spam})$$
+P(\text{promo=Yes}\mid\text{Not Spam})
+P(\text{urgent=No}\mid\text{Not Spam})
+P(\text{team=Yes}\mid\text{Not Spam})$$
 
 Bước 4: chọn lớp có score lớn hơn. Nếu muốn xác suất chuẩn hóa:
 
@@ -419,9 +419,9 @@ Hãy tính $P(y=1\mid\mathbf{x})$ và lớp dự đoán.
 
 ### Bài 2: Naive Bayes với bảng đếm từ
 
-**Đề bài.** Một bộ phân loại spam dùng 10 email huấn luyện. Bảng dưới là số email trong từng lớp có chứa mỗi từ. Dùng Laplace smoothing $\alpha=1$ để phân loại email mới chứa các từ `sale`, `free`, `meeting`.
+**Đề bài.** Một bộ phân loại spam dùng 10 email huấn luyện. Bảng dưới là số email trong từng lớp có chứa mỗi từ. Dùng Laplace smoothing $\alpha=1$ để phân loại email mới chứa các từ `coupon`, `discount`, `report`.
 
-| lớp | số email | sale | free | meeting | project |
+| lớp | số email | coupon | discount | report | team |
 | :--- | ---: | ---: | ---: | ---: | ---: |
 | spam | 4 | 3 | 4 | 0 | 1 |
 | normal | 6 | 1 | 0 | 5 | 4 |
@@ -438,11 +438,11 @@ $$P(w=1\mid c)=\frac{\#(w=1,c)+\alpha}{N_c+2\alpha}$$
 
 Với lớp spam:
 
-$$P(sale=1\mid spam)=\frac{3+1}{4+2}=\frac{4}{6}=0.667$$
+$$P(coupon=1\mid spam)=\frac{3+1}{4+2}=\frac{4}{6}=0.667$$
 
-$$P(free=1\mid spam)=\frac{4+1}{4+2}=\frac{5}{6}=0.833$$
+$$P(discount=1\mid spam)=\frac{4+1}{4+2}=\frac{5}{6}=0.833$$
 
-$$P(meeting=1\mid spam)=\frac{0+1}{4+2}=\frac{1}{6}=0.167$$
+$$P(report=1\mid spam)=\frac{0+1}{4+2}=\frac{1}{6}=0.167$$
 
 Joint score spam:
 
@@ -452,11 +452,11 @@ $$
 
 Với lớp normal:
 
-$$P(sale=1\mid normal)=\frac{1+1}{6+2}=\frac{2}{8}=0.250$$
+$$P(coupon=1\mid normal)=\frac{1+1}{6+2}=\frac{2}{8}=0.250$$
 
-$$P(free=1\mid normal)=\frac{0+1}{6+2}=\frac{1}{8}=0.125$$
+$$P(discount=1\mid normal)=\frac{0+1}{6+2}=\frac{1}{8}=0.125$$
 
-$$P(meeting=1\mid normal)=\frac{5+1}{6+2}=\frac{6}{8}=0.750$$
+$$P(report=1\mid normal)=\frac{5+1}{6+2}=\frac{6}{8}=0.750$$
 
 Joint score normal:
 

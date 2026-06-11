@@ -254,7 +254,7 @@ plt.show()
 
 ### Dạng bài: Information Gain từ bảng nhiều thuộc tính
 
-Khi bảng có nhiều cột như `Outlook`, `Temperature`, `Humidity`, `Wind`, hãy tính từng thuộc tính theo cùng một khung.
+Khi bảng có nhiều cột rời rạc như `Schedule`, `Load`, `Budget`, `Deadline`, hãy tính từng thuộc tính theo cùng một khung.
 
 Với thuộc tính $A$ có các giá trị $v_1,\ldots,v_k$:
 

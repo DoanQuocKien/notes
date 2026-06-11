@@ -2080,13 +2080,13 @@ print("Lớp dự đoán:", int(posterior_y1 >= 0.5))
 
 ### Dạng bài: Naive Bayes từ bảng dữ liệu rời rạc
 
-Với dữ liệu email có ba thuộc tính nhị phân như `free`, `win`, `meeting`, cách làm luôn giống nhau.
+Với dữ liệu email có ba thuộc tính nhị phân như `promo`, `urgent`, `team`, cách làm luôn giống nhau.
 
 Giả sử cần phân loại email mới:
 
-| free | win | meeting |
+| promo | urgent | team |
 | :--- | :--- | :--- |
-| Yes | Yes | No |
+| Yes | No | Yes |
 
 Bước 1: tính prior:
 
@@ -2094,23 +2094,23 @@ $$P(\text{Spam})=\frac{\#\text{Spam}}{n},\quad P(\text{Not Spam})=\frac{\#\text{
 
 Bước 2: tính likelihood theo từng lớp:
 
-$$P(\text{free=Yes}\mid \text{Spam}),\quad
-P(\text{win=Yes}\mid \text{Spam}),\quad
-P(\text{meeting=No}\mid \text{Spam})$$
+$$P(\text{promo=Yes}\mid \text{Spam}),\quad
+P(\text{urgent=No}\mid \text{Spam}),\quad
+P(\text{team=Yes}\mid \text{Spam})$$
 
 và tương tự cho lớp Not Spam.
 
 Bước 3: nhân điểm số chưa chuẩn hóa:
 
 $$score(\text{Spam})=P(\text{Spam})
-P(\text{free=Yes}\mid\text{Spam})
-P(\text{win=Yes}\mid\text{Spam})
-P(\text{meeting=No}\mid\text{Spam})$$
+P(\text{promo=Yes}\mid\text{Spam})
+P(\text{urgent=No}\mid\text{Spam})
+P(\text{team=Yes}\mid\text{Spam})$$
 
 $$score(\text{Not Spam})=P(\text{Not Spam})
-P(\text{free=Yes}\mid\text{Not Spam})
-P(\text{win=Yes}\mid\text{Not Spam})
-P(\text{meeting=No}\mid\text{Not Spam})$$
+P(\text{promo=Yes}\mid\text{Not Spam})
+P(\text{urgent=No}\mid\text{Not Spam})
+P(\text{team=Yes}\mid\text{Not Spam})$$
 
 Bước 4: chọn lớp có score lớn hơn. Nếu muốn xác suất chuẩn hóa:
 
@@ -2143,9 +2143,9 @@ Hãy tính $P(y=1\mid\mathbf{x})$ và lớp dự đoán.
 
 ### Bài 2: Naive Bayes với bảng đếm từ
 
-**Đề bài.** Một bộ phân loại spam dùng 10 email huấn luyện. Bảng dưới là số email trong từng lớp có chứa mỗi từ. Dùng Laplace smoothing $\alpha=1$ để phân loại email mới chứa các từ `sale`, `free`, `meeting`.
+**Đề bài.** Một bộ phân loại spam dùng 10 email huấn luyện. Bảng dưới là số email trong từng lớp có chứa mỗi từ. Dùng Laplace smoothing $\alpha=1$ để phân loại email mới chứa các từ `coupon`, `discount`, `report`.
 
-| lớp | số email | sale | free | meeting | project |
+| lớp | số email | coupon | discount | report | team |
 | :--- | ---: | ---: | ---: | ---: | ---: |
 | spam | 4 | 3 | 4 | 0 | 1 |
 | normal | 6 | 1 | 0 | 5 | 4 |
@@ -2162,11 +2162,11 @@ $$P(w=1\mid c)=\frac{\#(w=1,c)+\alpha}{N_c+2\alpha}$$
 
 Với lớp spam:
 
-$$P(sale=1\mid spam)=\frac{3+1}{4+2}=\frac{4}{6}=0.667$$
+$$P(coupon=1\mid spam)=\frac{3+1}{4+2}=\frac{4}{6}=0.667$$
 
-$$P(free=1\mid spam)=\frac{4+1}{4+2}=\frac{5}{6}=0.833$$
+$$P(discount=1\mid spam)=\frac{4+1}{4+2}=\frac{5}{6}=0.833$$
 
-$$P(meeting=1\mid spam)=\frac{0+1}{4+2}=\frac{1}{6}=0.167$$
+$$P(report=1\mid spam)=\frac{0+1}{4+2}=\frac{1}{6}=0.167$$
 
 Joint score spam:
 
@@ -2176,11 +2176,11 @@ $$
 
 Với lớp normal:
 
-$$P(sale=1\mid normal)=\frac{1+1}{6+2}=\frac{2}{8}=0.250$$
+$$P(coupon=1\mid normal)=\frac{1+1}{6+2}=\frac{2}{8}=0.250$$
 
-$$P(free=1\mid normal)=\frac{0+1}{6+2}=\frac{1}{8}=0.125$$
+$$P(discount=1\mid normal)=\frac{0+1}{6+2}=\frac{1}{8}=0.125$$
 
-$$P(meeting=1\mid normal)=\frac{5+1}{6+2}=\frac{6}{8}=0.750$$
+$$P(report=1\mid normal)=\frac{5+1}{6+2}=\frac{6}{8}=0.750$$
 
 Joint score normal:
 
@@ -2530,7 +2530,7 @@ plt.show()
 
 ### Dạng bài: Information Gain từ bảng nhiều thuộc tính
 
-Khi bảng có nhiều cột như `Outlook`, `Temperature`, `Humidity`, `Wind`, hãy tính từng thuộc tính theo cùng một khung.
+Khi bảng có nhiều cột rời rạc như `Schedule`, `Load`, `Budget`, `Deadline`, hãy tính từng thuộc tính theo cùng một khung.
 
 Với thuộc tính $A$ có các giá trị $v_1,\ldots,v_k$:
 
@@ -2897,6 +2897,44 @@ $$
 $$
 
 Phần $(\mathbf{W}^{[l+1]})^T\mathbf{dZ}^{[l+1]}$ kéo lỗi từ tầng sau về tầng trước. Phần $\odot g'(\mathbf{Z}^{[l]})$ kiểm tra hàm kích hoạt ở tầng này có cho gradient đi qua hay không.
+
+**Hadamard product $\odot$ là gì?**
+
+Ký hiệu $\odot$ nghĩa là nhân từng phần tử tương ứng, không phải nhân ma trận. Hai ma trận/vector phải có cùng kích thước:
+
+$$
+\begin{pmatrix}
+2 & -1\\
+3 & 4
+\end{pmatrix}
+\odot
+\begin{pmatrix}
+5 & 6\\
+0 & -2
+\end{pmatrix}
+=
+\begin{pmatrix}
+2\cdot5 & (-1)\cdot6\\
+3\cdot0 & 4\cdot(-2)
+\end{pmatrix}
+=
+\begin{pmatrix}
+10 & -6\\
+0 & -8
+\end{pmatrix}
+$$
+
+Trong backprop, Hadamard product xuất hiện vì mỗi neuron ở cùng một tầng có “cổng đạo hàm activation” riêng. Ví dụ:
+
+$$
+\mathbf{dZ}^{[l]}
+=
+\underbrace{(\mathbf{W}^{[l+1]})^T\mathbf{dZ}^{[l+1]}}_{\text{lỗi được kéo từ tầng sau}}
+\odot
+\underbrace{g'(\mathbf{Z}^{[l]})}_{\text{đạo hàm activation của từng neuron}}
+$$
+
+Nếu neuron nào có đạo hàm activation gần 0, phần tử tương ứng trong $\mathbf{dZ}^{[l]}$ cũng bị làm nhỏ lại. Đây là lý do sigmoid bão hòa gây vanishing gradient.
 
 ```{python}
 #| label: nn-backprop-map
@@ -3496,19 +3534,19 @@ $$L=\frac12(\hat{y}-y)^2$$
 
 Một mẫu dữ liệu:
 
-$$x_1=1,\quad x_2=2,\quad y=1$$
+$$x_1=2,\quad x_2=-1,\quad y=0$$
 
 Tham số ban đầu:
 
 | Kết nối hoặc bias | Giá trị |
 | :--- | :--- |
-| $w_{x_1\to h_1}$ | 0.1 |
-| $w_{x_2\to h_1}$ | 0.2 |
-| $w_{x_1\to h_2}$ | 0.3 |
-| $w_{x_2\to h_2}$ | 0.4 |
-| $w_{h_1\to o}$ | 0.5 |
-| $w_{h_2\to o}$ | 0.6 |
-| $b_{h_1},b_{h_2},b_o$ | 0.1, 0.1, 0.1 |
+| $w_{x_1\to h_1}$ | 0.25 |
+| $w_{x_2\to h_1}$ | -0.15 |
+| $w_{x_1\to h_2}$ | -0.35 |
+| $w_{x_2\to h_2}$ | 0.45 |
+| $w_{h_1\to o}$ | 0.55 |
+| $w_{h_2\to o}$ | -0.25 |
+| $b_{h_1},b_{h_2},b_o$ | -0.05, 0.20, -0.10 |
 
 Tính forward, loss, toàn bộ gradient, rồi cập nhật với $\eta=0.1$.
 
@@ -3516,49 +3554,49 @@ Tính forward, loss, toàn bộ gradient, rồi cập nhật với $\eta=0.1$.
 
 Forward tầng ẩn:
 
-$$z_{h_1}=0.1(1)+0.2(2)+0.1=0.6,\quad h_1=\sigma(0.6)\approx0.6457$$
+$$z_{h_1}=0.25(2)+(-0.15)(-1)-0.05=0.60,\quad h_1=\sigma(0.60)\approx0.6457$$
 
-$$z_{h_2}=0.3(1)+0.4(2)+0.1=1.2,\quad h_2=\sigma(1.2)\approx0.7685$$
+$$z_{h_2}=(-0.35)(2)+0.45(-1)+0.20=-0.95,\quad h_2=\sigma(-0.95)\approx0.2789$$
 
 Forward output:
 
-$$z_o=0.5(0.6457)+0.6(0.7685)+0.1\approx0.8840$$
+$$z_o=0.55(0.6457)+(-0.25)(0.2789)-0.10\approx0.1854$$
 
-$$\hat{y}=\sigma(0.8840)\approx0.7076$$
+$$\hat{y}=\sigma(0.1854)\approx0.5462$$
 
 Loss:
 
-$$L=\frac12(0.7076-1)^2\approx0.04275$$
+$$L=\frac12(0.5462-0)^2\approx0.1492$$
 
 Output error:
 
 $$\delta_o=\frac{\partial L}{\partial z_o}
 =(\hat{y}-y)\hat{y}(1-\hat{y})
-=(0.7076-1)(0.7076)(0.2924)\approx-0.06050$$
+=(0.5462-0)(0.5462)(0.4538)\approx0.1354$$
 
 Gradient tầng output:
 
-$$\frac{\partial L}{\partial w_{h_1\to o}}=\delta_o h_1=(-0.06050)(0.6457)\approx-0.03907$$
+$$\frac{\partial L}{\partial w_{h_1\to o}}=\delta_o h_1=(0.1354)(0.6457)\approx0.0874$$
 
-$$\frac{\partial L}{\partial w_{h_2\to o}}=\delta_o h_2=(-0.06050)(0.7685)\approx-0.04650$$
+$$\frac{\partial L}{\partial w_{h_2\to o}}=\delta_o h_2=(0.1354)(0.2789)\approx0.0378$$
 
-$$\frac{\partial L}{\partial b_o}=\delta_o\approx-0.06050$$
+$$\frac{\partial L}{\partial b_o}=\delta_o\approx0.1354$$
 
 Hidden error:
 
 $$\delta_{h_1}=\delta_o w_{h_1\to o}h_1(1-h_1)
-=(-0.06050)(0.5)(0.6457)(0.3543)\approx-0.00692$$
+=(0.1354)(0.55)(0.6457)(0.3543)\approx0.0170$$
 
 $$\delta_{h_2}=\delta_o w_{h_2\to o}h_2(1-h_2)
-=(-0.06050)(0.6)(0.7685)(0.2315)\approx-0.00646$$
+=(0.1354)(-0.25)(0.2789)(0.7211)\approx-0.0068$$
 
 Gradient tầng ẩn:
 
-$$\frac{\partial L}{\partial w_{x_1\to h_1}}=\delta_{h_1}x_1=-0.00692,\quad
-\frac{\partial L}{\partial w_{x_2\to h_1}}=\delta_{h_1}x_2=-0.01384$$
+$$\frac{\partial L}{\partial w_{x_1\to h_1}}=\delta_{h_1}x_1=(0.0170)(2)\approx0.0341,\quad
+\frac{\partial L}{\partial w_{x_2\to h_1}}=\delta_{h_1}x_2=(0.0170)(-1)\approx-0.0170$$
 
-$$\frac{\partial L}{\partial w_{x_1\to h_2}}=\delta_{h_2}x_1=-0.00646,\quad
-\frac{\partial L}{\partial w_{x_2\to h_2}}=\delta_{h_2}x_2=-0.01292$$
+$$\frac{\partial L}{\partial w_{x_1\to h_2}}=\delta_{h_2}x_1=(-0.0068)(2)\approx-0.0136,\quad
+\frac{\partial L}{\partial w_{x_2\to h_2}}=\delta_{h_2}x_2=(-0.0068)(-1)\approx0.0068$$
 
 $$\frac{\partial L}{\partial b_{h_1}}=\delta_{h_1},\quad
 \frac{\partial L}{\partial b_{h_2}}=\delta_{h_2}$$
@@ -3567,17 +3605,17 @@ Update với $\eta=0.1$:
 
 | Tham số | Giá trị mới |
 | :--- | :--- |
-| $w_{x_1\to h_1}$ | $0.1-0.1(-0.00692)=0.10069$ |
-| $w_{x_2\to h_1}$ | $0.2-0.1(-0.01384)=0.20138$ |
-| $w_{x_1\to h_2}$ | $0.3-0.1(-0.00646)=0.30065$ |
-| $w_{x_2\to h_2}$ | $0.4-0.1(-0.01292)=0.40129$ |
-| $w_{h_1\to o}$ | $0.5-0.1(-0.03907)=0.50391$ |
-| $w_{h_2\to o}$ | $0.6-0.1(-0.04650)=0.60465$ |
-| $b_{h_1}$ | $0.1-0.1(-0.00692)=0.10069$ |
-| $b_{h_2}$ | $0.1-0.1(-0.00646)=0.10065$ |
-| $b_o$ | $0.1-0.1(-0.06050)=0.10605$ |
+| $w_{x_1\to h_1}$ | $0.25-0.1(0.0341)=0.2466$ |
+| $w_{x_2\to h_1}$ | $-0.15-0.1(-0.0170)=-0.1483$ |
+| $w_{x_1\to h_2}$ | $-0.35-0.1(-0.0136)=-0.3486$ |
+| $w_{x_2\to h_2}$ | $0.45-0.1(0.0068)=0.4493$ |
+| $w_{h_1\to o}$ | $0.55-0.1(0.0874)=0.5413$ |
+| $w_{h_2\to o}$ | $-0.25-0.1(0.0378)=-0.2538$ |
+| $b_{h_1}$ | $-0.05-0.1(0.0170)=-0.0517$ |
+| $b_{h_2}$ | $0.20-0.1(-0.0068)=0.2007$ |
+| $b_o$ | $-0.10-0.1(0.1354)=-0.1135$ |
 
-**Cách tự kiểm tra dấu.** Vì $y=1$ nhưng $\hat{y}=0.7076$ còn thấp, $\delta_o<0$. Khi cập nhật $w\leftarrow w-\eta dW$, các gradient âm làm nhiều trọng số tăng lên, giúp lần dự đoán sau có xu hướng đẩy $\hat{y}$ cao hơn.
+**Cách tự kiểm tra dấu.** Vì $y=0$ nhưng $\hat{y}=0.5462$ còn cao, $\delta_o>0$. Khi cập nhật $w\leftarrow w-\eta dW$, các gradient dương bị trừ đi, giúp lần dự đoán sau có xu hướng kéo $\hat{y}$ xuống thấp hơn.
 
 
 \clearpage

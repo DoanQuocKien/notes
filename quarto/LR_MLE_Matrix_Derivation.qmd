@@ -62,12 +62,12 @@ Trực giác: nếu mô hình dự đoán gần $y_i$, sai số nhỏ, mũ âm n
 Vì các mẫu độc lập, xác suất quan sát toàn bộ bộ dữ liệu là tích của xác suất từng mẫu:
 
 $$L(\boldsymbol{\beta})
-=\prod_{i=1}^{n}p(y_i\mid\mathbf{x}_i;\boldsymbol{\beta})$$
+=\prod\nolimits_{i=1}^{n}p(y_i\mid\mathbf{x}_i;\boldsymbol{\beta})$$
 
 Thay công thức Gaussian vào:
 
 $$L(\boldsymbol{\beta})
-=\prod_{i=1}^{n}
+=\prod\nolimits_{i=1}^{n}
 \frac{1}{\sqrt{2\pi}\sigma}
 \exp\left(-\frac{(y_i-\boldsymbol{\beta}^T\mathbf{x}_i)^2}{2\sigma^2}\right)$$
 
@@ -280,7 +280,7 @@ $$\mathbf{X}^T(\mathbf{y}-\mathbf{X}\hat{\boldsymbol{\beta}})=\mathbf{0}$$
 | Nhiệm vụ | Công thức | Cách dùng khi làm bài |
 | :--- | :--- | :--- |
 | Mô hình xác suất | $y_i\mid\mathbf{x}_i\sim\mathcal{N}(\boldsymbol{\beta}^T\mathbf{x}_i,\sigma^2)$ | Nhận ra OLS từ giả định nhiễu Gaussian. |
-| Likelihood | $L=\prod_i p(y_i\mid\mathbf{x}_i;\boldsymbol{\beta})$ | Mẫu độc lập nên xác suất nhân lại. |
+| Likelihood | $L=\prod\nolimits_i p(y_i\mid\mathbf{x}_i;\boldsymbol{\beta})$ | Mẫu độc lập nên xác suất nhân lại. |
 | Log-likelihood | $\ell=\log L$ | Biến tích thành tổng, dễ đạo hàm. |
 | Loss ma trận | $L=\frac{1}{2}\|\mathbf{y}-\mathbf{X}\boldsymbol{\beta}\|_2^2$ | Dạng ngắn của RSS. |
 | Gradient | $\nabla L=-\mathbf{X}^T\mathbf{y}+\mathbf{X}^T\mathbf{X}\boldsymbol{\beta}$ | Đặt bằng $0$ để tìm nghiệm đóng. |

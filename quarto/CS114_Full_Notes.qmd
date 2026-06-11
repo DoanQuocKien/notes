@@ -391,12 +391,12 @@ Trực giác: nếu mô hình dự đoán gần $y_i$, sai số nhỏ, mũ âm n
 Vì các mẫu độc lập, xác suất quan sát toàn bộ bộ dữ liệu là tích của xác suất từng mẫu:
 
 $$L(\boldsymbol{\beta})
-=\prod_{i=1}^{n}p(y_i\mid\mathbf{x}_i;\boldsymbol{\beta})$$
+=\prod\nolimits_{i=1}^{n}p(y_i\mid\mathbf{x}_i;\boldsymbol{\beta})$$
 
 Thay công thức Gaussian vào:
 
 $$L(\boldsymbol{\beta})
-=\prod_{i=1}^{n}
+=\prod\nolimits_{i=1}^{n}
 \frac{1}{\sqrt{2\pi}\sigma}
 \exp\left(-\frac{(y_i-\boldsymbol{\beta}^T\mathbf{x}_i)^2}{2\sigma^2}\right)$$
 
@@ -609,7 +609,7 @@ $$\mathbf{X}^T(\mathbf{y}-\mathbf{X}\hat{\boldsymbol{\beta}})=\mathbf{0}$$
 | Nhiệm vụ | Công thức | Cách dùng khi làm bài |
 | :--- | :--- | :--- |
 | Mô hình xác suất | $y_i\mid\mathbf{x}_i\sim\mathcal{N}(\boldsymbol{\beta}^T\mathbf{x}_i,\sigma^2)$ | Nhận ra OLS từ giả định nhiễu Gaussian. |
-| Likelihood | $L=\prod_i p(y_i\mid\mathbf{x}_i;\boldsymbol{\beta})$ | Mẫu độc lập nên xác suất nhân lại. |
+| Likelihood | $L=\prod\nolimits_i p(y_i\mid\mathbf{x}_i;\boldsymbol{\beta})$ | Mẫu độc lập nên xác suất nhân lại. |
 | Log-likelihood | $\ell=\log L$ | Biến tích thành tổng, dễ đạo hàm. |
 | Loss ma trận | $L=\frac{1}{2}\|\mathbf{y}-\mathbf{X}\boldsymbol{\beta}\|_2^2$ | Dạng ngắn của RSS. |
 | Gradient | $\nabla L=-\mathbf{X}^T\mathbf{y}+\mathbf{X}^T\mathbf{X}\boldsymbol{\beta}$ | Đặt bằng $0$ để tìm nghiệm đóng. |
@@ -896,7 +896,7 @@ $$P(y^{(i)} \mid \mathbf{x}^{(i)}; \boldsymbol{\beta}) = \left[f_{\boldsymbol{\b
 
 Với giả định các mẫu dữ liệu trong tập huấn luyện độc lập và phân phối cùng quy luật (i.i.d.), hàm lực lượng liên hợp xác suất (Likelihood Function) được thiết lập bằng tích xác suất của tất cả các mẫu:
 
-$$L(\boldsymbol{\beta}) = \prod_{i=1}^{n} P(y^{(i)} \mid \mathbf{x}^{(i)}; \boldsymbol{\beta}) = \prod_{i=1}^{n} \left[f_{\boldsymbol{\beta}}(\mathbf{x}^{(i)})\right]^{y^{(i)}} \left[1 - f_{\boldsymbol{\beta}}(\mathbf{x}^{(i)})\right]^{1 - y^{(i)}}$$
+$$L(\boldsymbol{\beta}) = \prod\nolimits_{i=1}^{n} P(y^{(i)} \mid \mathbf{x}^{(i)}; \boldsymbol{\beta}) = \prod\nolimits_{i=1}^{n} \left[f_{\boldsymbol{\beta}}(\mathbf{x}^{(i)})\right]^{y^{(i)}} \left[1 - f_{\boldsymbol{\beta}}(\mathbf{x}^{(i)})\right]^{1 - y^{(i)}}$$
 
 Theo nguyên lý ước lượng hợp lý cực đại (Maximum Likelihood Estimation - MLE), ta cần tìm bộ tham số $\boldsymbol{\beta}$ sao cho giá trị $L(\boldsymbol{\beta})$ đạt cực đại. Vì hàm logarit là hàm đồng biến đơn điệu, bài toán tương đương với việc tối đa hóa hàm Log-Likelihood:
 
@@ -1147,7 +1147,7 @@ $$P(y_i\mid x_i;\boldsymbol{\beta})=p_i^{y_i}(1-p_i)^{1-y_i}$$
 
 Likelihood toàn bộ dữ liệu:
 
-$$L(\boldsymbol{\beta})=\prod_{i=1}^{n}p_i^{y_i}(1-p_i)^{1-y_i}$$
+$$L(\boldsymbol{\beta})=\prod\nolimits_{i=1}^{n}p_i^{y_i}(1-p_i)^{1-y_i}$$
 
 Log-likelihood:
 
@@ -2067,7 +2067,7 @@ Nếu không có giả định đơn giản hóa, để mô hình hóa một vec
 
 Giả định "Ngây thơ" (Naive) đặt ra là: **Các đặc trưng đầu vào $x_j$ độc lập với nhau khi biết trước nhãn lớp $y$**.
 
-$$P(x_1, x_2, \dots, x_p \mid y) = \prod_{j=1}^{p} P(x_j \mid y)$$
+$$P(x_1, x_2, \dots, x_p \mid y) = \prod\nolimits_{j=1}^{p} P(x_j \mid y)$$
 
 ### 5.2 Thiết lập các Tham số và MLE
 Xét bài toán phân loại văn bản (Text Classification) với từ điển kích thước $p$. Đặt:
@@ -2081,7 +2081,7 @@ $$
 \ell(\phi_y, \phi_{j \mid y=1}, \phi_{j \mid y=0})
 &= \sum_{i=1}^{n}
 \log \left(
-\prod_{j=1}^{p} P(x_j^{(i)} \mid y^{(i)})
+\prod\nolimits_{j=1}^{p} P(x_j^{(i)} \mid y^{(i)})
 \cdot P(y^{(i)})
 \right).
 \end{aligned}
@@ -2247,7 +2247,7 @@ $$
 
 4. Nhân các xác suất:
 
-$$score(c)=P(y=c)\prod_jP(x_j\mid y=c)$$
+$$score(c)=P(y=c)\prod\nolimits_j P(x_j\mid y=c)$$
 
 **Bẫy thường gặp:** không cần tính mẫu số $P(x)$ nếu chỉ so sánh lớp, vì nó giống nhau cho mọi lớp.
 
@@ -3278,14 +3278,14 @@ $$
 \frac{\partial L}{\partial w_1}
 =
 \frac{\partial L}{\partial a^{[L]}}
-\left[\prod_{\ell=2}^{L}\sigma'(z^{[\ell]})w_{\ell}\right]
+\left[\prod\nolimits_{\ell=2}^{L}\sigma'(z^{[\ell]})w_{\ell}\right]
 \sigma'(z^{[1]})a^{[0]}
 $$
 
 Nếu $|w_{\ell}|\leq1$, phần tín hiệu đi từ tầng cuối về tầng đầu bị chặn bởi:
 
 $$
-\prod_{\ell=2}^{L}|\sigma'(z^{[\ell]})w_{\ell}|
+\prod\nolimits_{\ell=2}^{L}|\sigma'(z^{[\ell]})w_{\ell}|
 \leq
 \left(\frac14\right)^{L-1}
 $$

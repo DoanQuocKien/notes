@@ -330,14 +330,14 @@ $$
 \frac{\partial L}{\partial w_1}
 =
 \frac{\partial L}{\partial a^{[L]}}
-\left[\prod_{\ell=2}^{L}\sigma'(z^{[\ell]})w_{\ell}\right]
+\left[\prod\nolimits_{\ell=2}^{L}\sigma'(z^{[\ell]})w_{\ell}\right]
 \sigma'(z^{[1]})a^{[0]}
 $$
 
 Nếu $|w_{\ell}|\leq1$, phần tín hiệu đi từ tầng cuối về tầng đầu bị chặn bởi:
 
 $$
-\prod_{\ell=2}^{L}|\sigma'(z^{[\ell]})w_{\ell}|
+\prod\nolimits_{\ell=2}^{L}|\sigma'(z^{[\ell]})w_{\ell}|
 \leq
 \left(\frac14\right)^{L-1}
 $$

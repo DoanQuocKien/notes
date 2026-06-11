@@ -343,7 +343,7 @@ Nếu không có giả định đơn giản hóa, để mô hình hóa một vec
 
 Giả định "Ngây thơ" (Naive) đặt ra là: **Các đặc trưng đầu vào $x_j$ độc lập với nhau khi biết trước nhãn lớp $y$**.
 
-$$P(x_1, x_2, \dots, x_p \mid y) = \prod_{j=1}^{p} P(x_j \mid y)$$
+$$P(x_1, x_2, \dots, x_p \mid y) = \prod\nolimits_{j=1}^{p} P(x_j \mid y)$$
 
 ### 5.2 Thiết lập các Tham số và MLE
 Xét bài toán phân loại văn bản (Text Classification) với từ điển kích thước $p$. Đặt:
@@ -357,7 +357,7 @@ $$
 \ell(\phi_y, \phi_{j \mid y=1}, \phi_{j \mid y=0})
 &= \sum_{i=1}^{n}
 \log \left(
-\prod_{j=1}^{p} P(x_j^{(i)} \mid y^{(i)})
+\prod\nolimits_{j=1}^{p} P(x_j^{(i)} \mid y^{(i)})
 \cdot P(y^{(i)})
 \right).
 \end{aligned}
@@ -523,7 +523,7 @@ $$
 
 4. Nhân các xác suất:
 
-$$score(c)=P(y=c)\prod_jP(x_j\mid y=c)$$
+$$score(c)=P(y=c)\prod\nolimits_j P(x_j\mid y=c)$$
 
 **Bẫy thường gặp:** không cần tính mẫu số $P(x)$ nếu chỉ so sánh lớp, vì nó giống nhau cho mọi lớp.
 

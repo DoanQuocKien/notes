@@ -71,7 +71,7 @@ $$P(y^{(i)} \mid \mathbf{x}^{(i)}; \boldsymbol{\beta}) = \left[f_{\boldsymbol{\b
 
 Với giả định các mẫu dữ liệu trong tập huấn luyện độc lập và phân phối cùng quy luật (i.i.d.), hàm lực lượng liên hợp xác suất (Likelihood Function) được thiết lập bằng tích xác suất của tất cả các mẫu:
 
-$$L(\boldsymbol{\beta}) = \prod_{i=1}^{n} P(y^{(i)} \mid \mathbf{x}^{(i)}; \boldsymbol{\beta}) = \prod_{i=1}^{n} \left[f_{\boldsymbol{\beta}}(\mathbf{x}^{(i)})\right]^{y^{(i)}} \left[1 - f_{\boldsymbol{\beta}}(\mathbf{x}^{(i)})\right]^{1 - y^{(i)}}$$
+$$L(\boldsymbol{\beta}) = \prod\nolimits_{i=1}^{n} P(y^{(i)} \mid \mathbf{x}^{(i)}; \boldsymbol{\beta}) = \prod\nolimits_{i=1}^{n} \left[f_{\boldsymbol{\beta}}(\mathbf{x}^{(i)})\right]^{y^{(i)}} \left[1 - f_{\boldsymbol{\beta}}(\mathbf{x}^{(i)})\right]^{1 - y^{(i)}}$$
 
 Theo nguyên lý ước lượng hợp lý cực đại (Maximum Likelihood Estimation - MLE), ta cần tìm bộ tham số $\boldsymbol{\beta}$ sao cho giá trị $L(\boldsymbol{\beta})$ đạt cực đại. Vì hàm logarit là hàm đồng biến đơn điệu, bài toán tương đương với việc tối đa hóa hàm Log-Likelihood:
 
@@ -322,7 +322,7 @@ $$P(y_i\mid x_i;\boldsymbol{\beta})=p_i^{y_i}(1-p_i)^{1-y_i}$$
 
 Likelihood toàn bộ dữ liệu:
 
-$$L(\boldsymbol{\beta})=\prod_{i=1}^{n}p_i^{y_i}(1-p_i)^{1-y_i}$$
+$$L(\boldsymbol{\beta})=\prod\nolimits_{i=1}^{n}p_i^{y_i}(1-p_i)^{1-y_i}$$
 
 Log-likelihood:
 

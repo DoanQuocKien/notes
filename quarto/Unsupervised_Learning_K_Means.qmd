@@ -92,7 +92,14 @@ $$c^{(i)} \leftarrow \arg\min_{k} \|\mathbf{x}^{(i)} - \boldsymbol{\mu}_k\|^2$$
 
 2. **Bước cập nhật tâm cụm (Centroid Update Step):** Giữ cố định toàn bộ các chỉ số gán cụm $c^{(i)}$, tối ưu hóa tọa độ các tâm cụm $\boldsymbol{\mu}_k$ bằng cách lấy đạo hàm riêng của $J$ theo từng $\boldsymbol{\mu}_k$ và đặt bằng 0. Kết quả nghiệm đóng chính là tọa độ trung bình cộng:
 
-$$\boldsymbol{\mu}_k \leftarrow \frac{\sum_{i=1}^{n} \mathbb{I}(c^{(i)} = k)\mathbf{x}^{(i)}}{\sum_{i=1}^{n} \mathbb{I}(c^{(i)} = k)} = \frac{1}{|C_k|} \sum_{i \in C_k} \mathbf{x}^{(i)}$$
+$$
+\boldsymbol{\mu}_k
+\leftarrow
+\frac{\sum_{i=1}^{n} \mathbf{1}\{c^{(i)} = k\}\mathbf{x}^{(i)}}
+{\sum_{i=1}^{n} \mathbf{1}\{c^{(i)} = k\}}
+=
+\frac{1}{|C_k|} \sum_{i \in C_k} \mathbf{x}^{(i)}
+$$
 
 
 

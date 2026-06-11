@@ -99,7 +99,7 @@ The important visual property is axis alignment: each split cuts one feature at 
 ### 2.1 Đối với Bài toán Phân loại (Classification)
 Gọi $p_c$ là tỷ lệ số mẫu thuộc lớp $c \in \{1, 2, \dots, C\}$ bên trong vùng $R$:
 
-$$p_c = \frac{1}{|R|} \sum_{i \in R} \mathbb{I}(y^{(i)} = c)$$
+$$p_c = \frac{1}{|R|} \sum_{i \in R} \mathbf{1}\{y^{(i)} = c\}$$
 
 * **Độ bất định Entropy (Entropy):** Đo lường mức độ hỗn loạn của thông tin. Hàm số đạt cực đại bằng $\log_2 C$ khi dữ liệu phân phối đều và đạt cực tiểu bằng $0$ khi toàn bộ mẫu thuộc về một lớp duy nhất:
     $$H(R) = - \sum_{c=1}^{C} p_c \log_2 p_c$$

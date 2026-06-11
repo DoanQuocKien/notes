@@ -86,8 +86,12 @@ format:
     number-sections: false
     include-in-header:
       text: |
+        \\usepackage{{amsmath}}
+        \\usepackage{{mathtools}}
         \\usepackage{{fvextra}}
         \\DefineVerbatimEnvironment{{Highlighting}}{{Verbatim}}{{breaklines,breakanywhere,commandchars=\\\\\\{{\\}}}}
+        \\allowdisplaybreaks
+        \\setlength{{\\emergencystretch}}{{3em}}
         \\AtBeginDocument{{\\hypersetup{{bookmarksopen=true,bookmarksnumbered=true,bookmarksdepth=3}}}}
 ---
 

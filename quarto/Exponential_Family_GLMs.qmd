@@ -16,6 +16,19 @@ format:
 
 ## 1. Họ Phân Phối Số Mũ (Exponential Family Distribution - EFD)
 
+### Bản đồ ký hiệu Exponential Family
+
+| Ký hiệu | Nghĩa | Câu hỏi cần tự hỏi |
+| :--- | :--- | :--- |
+| $y$ | Biến ngẫu nhiên/nhãn được mô hình hóa | $y$ là nhị phân, liên tục, hay đếm? |
+| $\eta$ | Natural parameter | Thường liên hệ với $\theta^T x$. |
+| $T(y)$ | Sufficient statistic | Dữ liệu đi vào likelihood qua thống kê nào? |
+| $a(\eta)$ | Log-partition function | Đảm bảo phân phối chuẩn hóa về tổng/xác suất 1. |
+| $b(y)$ | Base measure | Phần phụ thuộc vào $y$ nhưng không phụ thuộc $\eta$. |
+| $\mu=\mathbb{E}[T(y)]$ | Kỳ vọng của sufficient statistic | Bằng $a'(\eta)$ trong dạng chuẩn. |
+
+Mẹo nhận diện: đưa phân phối về dạng $b(y)\exp(\eta T(y)-a(\eta))$, sau đó đọc ra $\eta$, $T(y)$, $a(\eta)$, $b(y)$. Với GLM, phần học máy nằm ở cách nối $\eta$ với đặc trưng $\mathbf{x}$.
+
 Một phân phối xác suất đơn biến thuộc **Họ phân phối số mũ** nếu hàm mật độ xác suất (hoặc hàm khối xác suất) của nó có thể biến đổi về dạng chuẩn tắc sau:
 
 $$P(y \mid \eta) = b(y) \exp \left( \eta^T T(y) - a(\eta) \right)$$
@@ -227,7 +240,33 @@ plt.show()
 
 ---
 
-## 8. Bảng Công thức Thi: Chọn GLM và Thay số
+## 8. Quy trình nhận diện Exponential Family và GLM
+
+Khi đề yêu cầu chứng minh một phân phối thuộc Exponential Family:
+
+1. Viết lại mật độ/xác suất dưới dạng log:
+
+$$\log P(y\mid\eta)=\log b(y)+\eta^TT(y)-a(\eta)$$
+
+2. Nhóm các phần theo ba loại:
+
+- Phần nhân với tham số là $\eta^TT(y)$.
+- Phần chỉ phụ thuộc tham số và dùng để chuẩn hóa là $a(\eta)$.
+- Phần chỉ phụ thuộc dữ liệu là $b(y)$.
+
+3. Nếu đề hỏi GLM, xác định:
+
+$$\eta=\theta^T x,\quad \mu=\mathbb{E}[Y\mid X=x],\quad g(\mu)=\eta$$
+
+4. Nếu đề hỏi tối ưu, dùng tính chất:
+
+$$a'(\eta)=\mathbb{E}[T(Y)],\quad a''(\eta)=\operatorname{Var}(T(Y))\ge 0$$
+
+**Bẫy thường gặp:** đừng nhầm $\eta$ với $\mu$. $\eta$ là tham số tự nhiên trong không gian tuyến tính; $\mu$ là kỳ vọng ở không gian dữ liệu.
+
+---
+
+## 9. Bảng Công thức Thi: Chọn GLM và Thay số
 
 Bắt đầu mọi bài GLM bằng cách xác định kiểu của biến mục tiêu.
 

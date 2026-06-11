@@ -16,6 +16,19 @@ format:
 
 ## 1. Vì sao OLS có thể xuất hiện từ xác suất?
 
+### Bản đồ ký hiệu ma trận
+
+| Ký hiệu | Nghĩa | Kích thước thường gặp |
+| :--- | :--- | :--- |
+| $\mathbf{X}$ | Ma trận thiết kế, thường có cột 1 cho bias | $n\times p$ |
+| $\mathbf{y}$ | Vector mục tiêu thật | $n\times1$ |
+| $\boldsymbol{\beta}$ | Vector hệ số cần học | $p\times1$ |
+| $\hat{\mathbf{y}}$ | Vector dự đoán | $\mathbf{X}\boldsymbol{\beta}$ |
+| $\mathbf{r}$ | Vector residual | $\mathbf{y}-\mathbf{X}\boldsymbol{\beta}$ |
+| $\sigma^2$ | Phương sai nhiễu Gaussian | Một số dương |
+
+Khi gặp bài MLE dẫn tới OLS, hãy đọc theo chuỗi: giả định Gaussian cho $y_i$, viết likelihood, lấy log, bỏ các hằng số không phụ thuộc $\boldsymbol{\beta}$, rồi nhận ra cực đại log-likelihood tương đương cực tiểu $\|\mathbf{y}-\mathbf{X}\boldsymbol{\beta}\|_2^2$.
+
 Trong mô hình hồi quy tuyến tính, ta không giả sử dữ liệu nằm hoàn hảo trên một đường hoặc một mặt phẳng. Ta giả sử mỗi nhãn thật được tạo bởi phần tín hiệu tuyến tính cộng với nhiễu:
 
 $$y_i=\boldsymbol{\beta}^T\mathbf{x}_i+\epsilon_i$$
@@ -237,7 +250,32 @@ plt.show()
 
 ---
 
-## 6. Bảng Công thức Thi: Matrix OLS
+## 6. Quy trình giải bài Matrix OLS
+
+Khi đề cho nhiều biến hoặc yêu cầu dùng ma trận, hãy làm theo checklist:
+
+1. Tạo $\mathbf{X}$, nhớ thêm cột 1 nếu mô hình có intercept.
+2. Kiểm tra kích thước:
+
+$$\mathbf{X}:n\times p,\quad \boldsymbol{\beta}:p\times1,\quad \mathbf{y}:n\times1$$
+
+3. Tính ba khối:
+
+$$\mathbf{X}^T\mathbf{X},\quad \mathbf{X}^T\mathbf{y},\quad (\mathbf{X}^T\mathbf{X})^{-1}$$
+
+4. Tính nghiệm:
+
+$$\hat{\boldsymbol{\beta}}=(\mathbf{X}^T\mathbf{X})^{-1}\mathbf{X}^T\mathbf{y}$$
+
+5. Kiểm tra residual bằng trực giao:
+
+$$\mathbf{X}^T(\mathbf{y}-\mathbf{X}\hat{\boldsymbol{\beta}})=\mathbf{0}$$
+
+**Bẫy thường gặp:** nếu $\mathbf{X}^T\mathbf{X}$ không khả nghịch, không dùng được công thức inverse trực tiếp. Khi đó cần pseudo-inverse, regularization, hoặc loại bỏ đặc trưng phụ thuộc tuyến tính.
+
+---
+
+## 7. Bảng Công thức Thi: Matrix OLS
 
 | Nhiệm vụ | Công thức | Cách dùng khi làm bài |
 | :--- | :--- | :--- |
@@ -261,7 +299,7 @@ Quy trình thay số:
 
 ---
 
-## 7. Bộ bài tập mẫu có lời giải
+## 8. Bộ bài tập mẫu có lời giải
 
 ### Bài 1: Giải OLS bằng ma trận với hai điểm
 

@@ -16,6 +16,20 @@ format:
 
 ## 1. Bản chất của Bài toán Phân loại (Classification)
 
+### Bản đồ ký hiệu và luồng tính
+
+| Ký hiệu | Nghĩa | Cách dùng khi thay số |
+| :--- | :--- | :--- |
+| $\mathbf{x}^{(i)}$ | Vector đặc trưng của mẫu thứ $i$ | Nhân với vector hệ số. |
+| $\boldsymbol{\beta}$ | Vector trọng số, gồm cả bias nếu đã thêm cột 1 | Thứ được học/cập nhật. |
+| $z^{(i)}$ | Điểm tuyến tính trước sigmoid | $z^{(i)}=\boldsymbol{\beta}^T\mathbf{x}^{(i)}$. |
+| $p_i$ hoặc $\hat{y}^{(i)}$ | Xác suất dự đoán lớp 1 | $p_i=\sigma(z^{(i)})$. |
+| $y^{(i)}$ | Nhãn thật, 0 hoặc 1 | So với $p_i$ để tính loss/gradient. |
+| $J$ | Cross-entropy loss | Hàm cần tối thiểu hóa. |
+| $\nabla J$ | Gradient | Dùng trong cập nhật $\boldsymbol{\beta}\leftarrow\boldsymbol{\beta}-\alpha\nabla J$. |
+
+Luồng làm bài: tính $z$, đưa qua sigmoid để có $p$, áp ngưỡng để dự đoán lớp, tính loss, rồi nếu cần cập nhật thì dùng sai số $p-y$ nhân với đặc trưng.
+
 Trong bài toán phân loại nhị phân (Binary Classification), tập dữ liệu huấn luyện bao gồm $n$ mẫu có dạng $\mathcal{D} = \{(\mathbf{x}^{(i)}, y^{(i)})\}_{i=1}^{n}$, trong đó nhãn mục tiêu bị giới hạn trong hai giá trị rời rạc:
 
 $$y^{(i)} \in \{0, 1\}$$
@@ -229,7 +243,32 @@ plt.show()
 
 ---
 
-## 7. Bảng Công thức Thi: Quy trình Thay số cho Logistic Regression
+## 7. Quy trình giải bài Logistic Regression
+
+Một bài Logistic Regression thường chỉ xoay quanh bốn thao tác:
+
+1. **Tính điểm tuyến tính**
+
+$$z_i=\boldsymbol{\beta}^T\mathbf{x}_i$$
+
+2. **Đổi thành xác suất**
+
+$$p_i=\sigma(z_i)=\frac{1}{1+e^{-z_i}}$$
+
+3. **Tính loss**
+
+$$J_i=-y_i\log p_i-(1-y_i)\log(1-p_i)$$
+
+4. **Tính gradient hoặc cập nhật**
+
+$$\nabla J=\frac{1}{n}\mathbf{X}^T(\mathbf{p}-\mathbf{y}),\quad
+\boldsymbol{\beta}_{new}=\boldsymbol{\beta}-\alpha\nabla J$$
+
+**Bẫy thường gặp:** nếu đang tối thiểu hóa cross-entropy thì dùng $(p-y)$; nếu đang cực đại hóa log-likelihood thì dấu đổi thành $(y-p)$. Hai cách viết đúng nhưng cập nhật phải nhất quán với mục tiêu.
+
+---
+
+## 8. Bảng Công thức Thi: Quy trình Thay số cho Logistic Regression
 
 Dùng phần này khi đề bài nhắc đến "phân loại nhị phân", "xác suất thuộc lớp 1", "log odds", hoặc "cross-entropy".
 

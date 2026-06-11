@@ -16,6 +16,21 @@ format:
 
 ## 1. Tối ưu hóa bằng Gradient Descent
 
+### Bản đồ ký hiệu tối ưu hóa và regularization
+
+| Ký hiệu | Nghĩa | Cách dùng |
+| :--- | :--- | :--- |
+| $J(\theta)$ | Hàm mục tiêu/loss cần tối thiểu hóa | Theo dõi xem mô hình đang tốt lên hay xấu đi. |
+| $\theta$ hoặc $\boldsymbol{\beta}$ | Tham số mô hình | Thứ được cập nhật qua gradient descent. |
+| $\alpha$ | Learning rate | Bước đi lớn hay nhỏ trên hướng gradient. |
+| $\nabla J$ | Gradient | Hướng tăng nhanh nhất của loss. |
+| $\lambda$ | Độ mạnh regularization | Lớn hơn nghĩa là phạt mô hình phức tạp mạnh hơn. |
+| Bias | Sai lệch hệ thống của mô hình trung bình | Cao khi mô hình quá đơn giản. |
+| Variance | Độ nhạy với tập huấn luyện | Cao khi mô hình quá phức tạp. |
+| Train/validation/test | Ba vai trò dữ liệu khác nhau | Học tham số, chọn siêu tham số, đánh giá cuối. |
+
+Quy trình khi gặp bài tính: viết loss, tính gradient của phần dữ liệu, cộng gradient của penalty nếu có, cập nhật tham số, rồi giải thích kết quả theo bias/variance hoặc overfit/underfit.
+
 Giả sử ta tối thiểu hóa loss hồi quy tuyến tính:
 
 $$L(\boldsymbol{\beta})
@@ -221,7 +236,30 @@ plt.show()
 
 ---
 
-## 7. Bảng Công thức Thi: Bias, Variance, Regularization
+## 7. Quy trình xử lý bài tối ưu hóa và regularization
+
+Khi đề yêu cầu một bước cập nhật:
+
+1. Viết dự đoán hiện tại $\hat{y}$.
+2. Viết residual hoặc sai số dự đoán.
+3. Tính gradient phần loss dữ liệu.
+4. Tính gradient penalty:
+
+$$\nabla_{\boldsymbol{\beta}}\lambda\|\boldsymbol{\beta}\|_2^2=2\lambda\boldsymbol{\beta}$$
+
+5. Cộng gradient:
+
+$$\nabla J_{total}=\nabla J_{data}+\nabla J_{penalty}$$
+
+6. Cập nhật:
+
+$$\boldsymbol{\beta}_{new}=\boldsymbol{\beta}-\alpha\nabla J_{total}$$
+
+**Bẫy thường gặp:** regularization thường không phạt bias/intercept trong nhiều triển khai. Nếu đề không nói rõ, hãy nêu giả định trước khi tính.
+
+---
+
+## 8. Bảng Công thức Thi: Bias, Variance, Regularization
 
 | Dấu hiệu | Chẩn đoán | Cách xử lý |
 | :--- | :--- | :--- |
@@ -245,7 +283,7 @@ $$\operatorname{MSE}=\operatorname{Bias}^2+\operatorname{Variance}+\text{Noise}$
 
 ---
 
-## 8. Bộ bài tập mẫu có lời giải
+## 9. Bộ bài tập mẫu có lời giải
 
 ### Bài 1: Tính objective Ridge
 

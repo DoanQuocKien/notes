@@ -16,6 +16,20 @@ format:
 
 ## 1. Mô hình Hồi quy Tuyến tính Đơn
 
+### Bản đồ ký hiệu và quy trình thay số
+
+| Ký hiệu | Nghĩa | Khi làm bài dùng thế nào? |
+| :--- | :--- | :--- |
+| $x_i$ | Giá trị đầu vào của mẫu thứ $i$ | Cột dữ liệu độc lập. |
+| $y_i$ | Giá trị mục tiêu thật của mẫu thứ $i$ | Cột cần dự đoán. |
+| $\hat{y}_i$ | Giá trị mô hình dự đoán | $\hat{y}_i=\beta_0+\beta_1x_i$. |
+| $\bar{x},\bar{y}$ | Trung bình của $x$ và $y$ | Dùng để tính hệ số góc và hệ số chặn. |
+| $\beta_1$ | Hệ số góc | Đo $y$ đổi bao nhiêu khi $x$ tăng 1 đơn vị. |
+| $\beta_0$ | Hệ số chặn | Giá trị dự đoán khi $x=0$. |
+| $e_i$ | Residual/sai số | $e_i=y_i-\hat{y}_i$. |
+
+Quy trình tính tay: tính $\bar{x},\bar{y}$ trước, sau đó tính $\sum(x_i-\bar{x})(y_i-\bar{y})$ và $\sum(x_i-\bar{x})^2$, cuối cùng suy ra $\beta_1$, $\beta_0$, rồi kiểm tra bằng residual.
+
 Trong hồi quy tuyến tính đơn, ta mô hình hóa quan hệ giữa biến phụ thuộc $y$ và biến độc lập $x$ bằng một đường thẳng:
 
 $$\hat{y}_i = \beta_0 + \beta_1x_i$$
@@ -115,7 +129,32 @@ Tử số đo mức $x$ và $y$ cùng biến thiên; mẫu số đo độ phân 
 
 ---
 
-## 5. Bảng Công thức Thi: Quy trình Thay số OLS
+## 5. Quy trình giải bài OLS trong 60 giây
+
+Khi gặp một bài OLS tuyến tính đơn, hãy đi theo thứ tự này:
+
+1. Lập bảng $x_i$, $y_i$, $x_i-\bar{x}$, $y_i-\bar{y}$.
+2. Tính hai tổng quan trọng:
+
+$$S_{xy}=\sum_i(x_i-\bar{x})(y_i-\bar{y}),\quad S_{xx}=\sum_i(x_i-\bar{x})^2$$
+
+3. Tính:
+
+$$\beta_1=\frac{S_{xy}}{S_{xx}},\quad \beta_0=\bar{y}-\beta_1\bar{x}$$
+
+4. Viết mô hình cuối:
+
+$$\hat{y}=\beta_0+\beta_1x$$
+
+5. Nếu đề hỏi kiểm tra chất lượng, tính residual:
+
+$$e_i=y_i-\hat{y}_i$$
+
+**Bẫy thường gặp:** không được dùng công thức $\beta_1=\frac{\sum x_iy_i}{\sum x_i^2}$ trừ khi dữ liệu đã được centered hoặc mô hình không có intercept. Với OLS thường có intercept, phải dùng độ lệch quanh trung bình.
+
+---
+
+## 6. Bảng Công thức Thi: Quy trình Thay số OLS
 
 | Bước | Công thức | Ý nghĩa |
 | :--- | :--- | :--- |
@@ -136,7 +175,7 @@ Tử số đo mức $x$ và $y$ cùng biến thiên; mẫu số đo độ phân 
 
 ---
 
-## 6. Minh họa bằng Python
+## 7. Minh họa bằng Python
 
 ```{python}
 #| label: ols-visual-check
@@ -173,7 +212,7 @@ plt.show()
 
 ---
 
-## 7. Bộ bài tập mẫu có lời giải
+## 8. Bộ bài tập mẫu có lời giải
 
 ### Bài 1: Tính đường OLS từ 3 điểm
 

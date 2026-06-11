@@ -16,6 +16,19 @@ format:
 
 ## 1. Triết lý Mô hình Phân biệt (Discriminative) vs. Mô hình Sinh (Generative)
 
+### Bản đồ ký hiệu cho mô hình sinh
+
+| Ký hiệu | Nghĩa | Cách dùng khi giải bài |
+| :--- | :--- | :--- |
+| $\phi$ | Prior của lớp 1, $P(y=1)$ | Đếm số mẫu lớp 1 chia tổng số mẫu. |
+| $\boldsymbol{\mu}_0,\boldsymbol{\mu}_1$ | Mean của từng lớp trong GDA | Lấy trung bình các vector thuộc mỗi lớp. |
+| $\boldsymbol{\Sigma}$ | Hiệp phương sai chung trong GDA | Gộp sai lệch quanh mean của đúng lớp. |
+| $P(x\mid y)$ | Likelihood sinh dữ liệu trong từng lớp | Gaussian với GDA, tích xác suất rời rạc với Naive Bayes. |
+| $P(y\mid x)$ | Posterior để phân loại | Tỉ lệ với $P(x\mid y)P(y)$. |
+| $\alpha$ | Hệ số Laplace smoothing | Cộng vào bộ đếm để tránh xác suất bằng 0. |
+
+Quy trình chung: đếm prior, ước lượng phân phối của $x$ trong từng lớp, nhân likelihood với prior, rồi chuẩn hóa hoặc so sánh hai điểm số chưa chuẩn hóa.
+
 Khi giải quyết một bài toán phân loại, hai hướng tiếp cận cốt lõi bao gồm:
 
 * **Mô hình Phân biệt (Discriminative Models):** Học trực tiếp xác suất điều kiện $P(y \mid \mathbf{x})$ từ dữ liệu (ví dụ: Logistic Regression). Mô hình này cố gắng tìm ra một đường ranh giới tối ưu để phân tách các lớp dữ liệu mà không cần quan tâm đến việc dữ liệu đó được sinh ra như thế nào.
@@ -270,7 +283,36 @@ plt.show()
 
 ---
 
-## 7. Bảng Công thức Thi: Cách Thay số cho Bộ phân loại Sinh
+## 7. Quy trình giải bài GDA và Naive Bayes
+
+Với mô hình sinh, luôn tách bài thành hai phần: học phân phối và so sánh posterior.
+
+**GDA:**
+
+1. Tính prior $\phi=P(y=1)$.
+2. Tính mean từng lớp $\boldsymbol{\mu}_0,\boldsymbol{\mu}_1$.
+3. Tính covariance chung $\boldsymbol{\Sigma}$ nếu đề yêu cầu.
+4. Với điểm mới, so sánh:
+
+$$P(\mathbf{x}\mid y=1)P(y=1)\quad \text{và}\quad P(\mathbf{x}\mid y=0)P(y=0)$$
+
+**Naive Bayes:**
+
+1. Đếm prior của từng lớp.
+2. Đếm likelihood từng thuộc tính theo từng lớp.
+3. Nếu có xác suất 0, dùng Laplace smoothing:
+
+$$P(x_j=v\mid y=c)=\frac{\text{count}(x_j=v,y=c)+\alpha}{\text{count}(y=c)+\alpha|\mathcal{V}_j|}$$
+
+4. Nhân các xác suất:
+
+$$score(c)=P(y=c)\prod_jP(x_j\mid y=c)$$
+
+**Bẫy thường gặp:** không cần tính mẫu số $P(x)$ nếu chỉ so sánh lớp, vì nó giống nhau cho mọi lớp.
+
+---
+
+## 8. Bảng Công thức Thi: Cách Thay số cho Bộ phân loại Sinh
 
 Mô hình sinh luôn đi theo mẫu Bayes sau:
 

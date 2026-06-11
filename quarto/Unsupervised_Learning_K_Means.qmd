@@ -16,6 +16,19 @@ jupyter: science_env
 
 ## 1. Tổng quan về Học Không Giám Sát (Unsupervised Learning)
 
+### Bản đồ ký hiệu K-means
+
+| Ký hiệu | Nghĩa | Vai trò trong thuật toán |
+| :--- | :--- | :--- |
+| $\mathbf{x}^{(i)}$ | Điểm dữ liệu thứ $i$ | Được gán vào một cụm. |
+| $K$ | Số cụm cần tìm | Chọn trước hoặc chọn bằng elbow/silhouette. |
+| $c_i$ | Nhãn cụm của điểm $i$ | Kết quả của bước gán cụm. |
+| $\boldsymbol{\mu}_k$ | Tâm cụm thứ $k$ | Trung bình các điểm đang thuộc cụm $k$. |
+| $J$ | Distortion/SSE | Tổng khoảng cách bình phương tới tâm cụm. |
+| Iteration | Một vòng gán cụm rồi cập nhật tâm | Lặp đến khi nhãn/tâm không đổi. |
+
+Quy trình tính tay: lập bảng khoảng cách từ từng điểm tới từng tâm, chọn khoảng cách nhỏ nhất để gán cụm, tính lại tâm bằng trung bình, rồi tính distortion để kiểm tra thuật toán có giảm lỗi hay không.
+
 Trong khi Học có giám sát (Supervised Learning) làm việc với cặp dữ liệu huấn luyện đầy đủ nhãn $\{(\mathbf{x}^{(i)}, y^{(i)})\}$, **Học không giám sát** chỉ nhận đầu vào là một tập hợp các vector đặc trưng không có nhãn mục tiêu kèm theo:
 
 $$\mathcal{D} = \{\mathbf{x}^{(i)}\}_{i=1}^{n} \quad \text{với } \mathbf{x}^{(i)} \in \mathbb{R}^p$$
@@ -345,7 +358,25 @@ plt.show()
 
 ---
 
-## 6. Bảng Công thức Thi: Các Điểm Cốt lõi của K-means
+## 6. Quy trình trace K-means bằng tay
+
+Khi đề yêu cầu chạy K-means vài vòng:
+
+1. Ghi tâm hiện tại $\boldsymbol{\mu}_1,\ldots,\boldsymbol{\mu}_K$.
+2. Lập bảng khoảng cách bình phương từ từng điểm tới từng tâm.
+3. Gán điểm vào tâm gần nhất.
+4. Tính tâm mới bằng trung bình từng cụm.
+5. Tính distortion:
+
+$$J=\sum_i\|\mathbf{x}^{(i)}-\boldsymbol{\mu}_{c_i}\|_2^2$$
+
+6. Lặp lại đến khi nhãn hoặc tâm không đổi.
+
+**Bẫy thường gặp:** distortion nên được tính bằng tâm sau khi cập nhật nếu đề hỏi cuối vòng lặp hoàn chỉnh. Nếu đề hỏi sau bước gán, hãy nói rõ đang dùng tâm cũ hay tâm mới.
+
+---
+
+## 7. Bảng Công thức Thi: Các Điểm Cốt lõi của K-means
 
 | Khái niệm | Điều cần nhớ |
 | :--- | :--- |

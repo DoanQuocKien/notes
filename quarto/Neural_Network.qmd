@@ -428,7 +428,88 @@ $$\frac{\partial L}{\partial \beta}=0,\quad
 
 ---
 
-## 7. Bảng Công thức Thi: Lan truyền Xuôi, Lan truyền Ngược, Cập nhật
+## 7. Từ ký hiệu đến thao tác: đọc một bài backprop không bị lẫn
+
+Khi làm tay một mạng nhỏ, điều dễ gây nhầm nhất là cùng một neuron có nhiều ký hiệu. Bảng sau cố định nghĩa của từng loại ký hiệu:
+
+| Ký hiệu | Nghĩa | Có phải tham số học được không? | Dùng ở đâu? |
+| :--- | :--- | :--- | :--- |
+| $x_1,x_2$ | Đầu vào của mẫu dữ liệu | Không | Dùng để tính tầng ẩn. |
+| $w_{x_1\to h_1}$ | Trọng số nối từ $x_1$ sang neuron ẩn $h_1$ | Có | Cập nhật bằng gradient descent. |
+| $b_{h_1}$ | Bias của neuron $h_1$ | Có | Cộng vào trước activation. |
+| $z_{h_1}$ | Tổng tuyến tính đi vào neuron $h_1$ | Không | $z_{h_1}=w_{x_1\to h_1}x_1+w_{x_2\to h_1}x_2+b_{h_1}$. |
+| $h_1$ hoặc $a_{h_1}$ | Activation sau sigmoid/ReLU của neuron $h_1$ | Không | $h_1=\sigma(z_{h_1})$. |
+| $z_o$ | Tổng tuyến tính đi vào output neuron | Không | $z_o=w_{h_1\to o}h_1+w_{h_2\to o}h_2+b_o$. |
+| $\hat{y}$ | Dự đoán cuối cùng | Không | $\hat{y}=\sigma(z_o)$. |
+| $\delta_o$ | Lỗi tại output trước activation | Không | $\delta_o=\frac{\partial L}{\partial z_o}$. |
+| $\delta_{h_1}$ | Lỗi tại hidden neuron trước activation | Không | $\delta_{h_1}=\frac{\partial L}{\partial z_{h_1}}$. |
+| $\frac{\partial L}{\partial w}$ hoặc $dW$ | Gradient của loss theo trọng số | Không | Dùng để cập nhật $w\leftarrow w-\eta\frac{\partial L}{\partial w}$. |
+
+Quy tắc một dòng: **$z$ là trước activation, $a/h/\hat{y}$ là sau activation, $\delta$ là lỗi quay ngược về trước activation, còn $dW/db$ là thứ dùng để sửa tham số.**
+
+### Công thức thao tác cho mạng 2-2-1, squared error
+
+Với hidden sigmoid và output sigmoid:
+
+$$L=\frac12(\hat{y}-y)^2$$
+
+Forward:
+
+$$z_{h_1}=w_{x_1\to h_1}x_1+w_{x_2\to h_1}x_2+b_{h_1},\quad h_1=\sigma(z_{h_1})$$
+
+$$z_{h_2}=w_{x_1\to h_2}x_1+w_{x_2\to h_2}x_2+b_{h_2},\quad h_2=\sigma(z_{h_2})$$
+
+$$z_o=w_{h_1\to o}h_1+w_{h_2\to o}h_2+b_o,\quad \hat{y}=\sigma(z_o)$$
+
+Backward:
+
+$$\delta_o=(\hat{y}-y)\hat{y}(1-\hat{y})$$
+
+$$\frac{\partial L}{\partial w_{h_1\to o}}=\delta_o h_1,\quad
+\frac{\partial L}{\partial w_{h_2\to o}}=\delta_o h_2,\quad
+\frac{\partial L}{\partial b_o}=\delta_o$$
+
+$$\delta_{h_1}=\delta_o w_{h_1\to o}h_1(1-h_1),\quad
+\delta_{h_2}=\delta_o w_{h_2\to o}h_2(1-h_2)$$
+
+$$\frac{\partial L}{\partial w_{x_1\to h_1}}=\delta_{h_1}x_1,\quad
+\frac{\partial L}{\partial w_{x_2\to h_1}}=\delta_{h_1}x_2$$
+
+$$\frac{\partial L}{\partial w_{x_1\to h_2}}=\delta_{h_2}x_1,\quad
+\frac{\partial L}{\partial w_{x_2\to h_2}}=\delta_{h_2}x_2$$
+
+Update:
+
+$$w_{new}=w_{old}-\eta\frac{\partial L}{\partial w},\quad
+b_{new}=b_{old}-\eta\frac{\partial L}{\partial b}$$
+
+---
+
+## 8. Quy trình debug một bài neural network
+
+Trước khi tính dài, kiểm tra theo thứ tự:
+
+1. Vẽ cấu trúc tầng: input, hidden, output.
+2. Ghi rõ mỗi cạnh là trọng số nào và mỗi node có bias nào.
+3. Tính toàn bộ $z$ trước, rồi mới tính activation. Đừng trộn $z_h$ với $h$.
+4. Backprop luôn bắt đầu từ output:
+
+$$\delta_o=\frac{\partial L}{\partial z_o}$$
+
+5. Gradient của một trọng số luôn bằng:
+
+$$\text{lỗi tại neuron nhận} \times \text{activation của neuron gửi}$$
+
+Ví dụ:
+
+$$\frac{\partial L}{\partial w_{h_1\to o}}=\delta_o h_1,\quad
+\frac{\partial L}{\partial w_{x_1\to h_1}}=\delta_{h_1}x_1$$
+
+**Bẫy thường gặp:** $\delta_h$ phải nhân thêm đạo hàm activation của hidden neuron. Nếu quên $h(1-h)$ với sigmoid, gradient hidden sẽ quá lớn và sai bản chất.
+
+---
+
+## 9. Bảng Công thức Thi: Lan truyền Xuôi, Lan truyền Ngược, Cập nhật
 
 | Giai đoạn | Công thức | Kích thước |
 | :--- | :--- | :--- |
@@ -491,7 +572,7 @@ print("Sai lệch tuyệt đối:", np.round(np.abs(dW - numeric_dW), 10))
 
 ---
 
-## 8. Bộ bài tập mẫu có lời giải
+## 10. Bộ bài tập mẫu có lời giải
 
 ### Bài 1: Xác định kích thước ma trận
 
@@ -691,3 +772,94 @@ b^{[2]}\leftarrow0.05-0.1(-0.758)=0.126
 $$
 
 **Kết luận.** Vì mô hình dự đoán quá thấp so với nhãn $1$, đạo hàm làm độ lệch tầng đầu ra tăng và làm trọng số nối từ giá trị kích hoạt $1.7$ bớt âm để lần sau xác suất lớp 1 cao hơn.
+
+### Bài 4: Backprop đầy đủ qua hidden layer với ký hiệu rõ ràng
+
+**Đề bài.** Cho mạng 2-2-1, hidden sigmoid, output sigmoid, squared error:
+
+$$L=\frac12(\hat{y}-y)^2$$
+
+Một mẫu dữ liệu:
+
+$$x_1=1,\quad x_2=2,\quad y=1$$
+
+Tham số ban đầu:
+
+| Kết nối hoặc bias | Giá trị |
+| :--- | :--- |
+| $w_{x_1\to h_1}$ | 0.1 |
+| $w_{x_2\to h_1}$ | 0.2 |
+| $w_{x_1\to h_2}$ | 0.3 |
+| $w_{x_2\to h_2}$ | 0.4 |
+| $w_{h_1\to o}$ | 0.5 |
+| $w_{h_2\to o}$ | 0.6 |
+| $b_{h_1},b_{h_2},b_o$ | 0.1, 0.1, 0.1 |
+
+Tính forward, loss, toàn bộ gradient, rồi cập nhật với $\eta=0.1$.
+
+**Lời giải.**
+
+Forward tầng ẩn:
+
+$$z_{h_1}=0.1(1)+0.2(2)+0.1=0.6,\quad h_1=\sigma(0.6)\approx0.6457$$
+
+$$z_{h_2}=0.3(1)+0.4(2)+0.1=1.2,\quad h_2=\sigma(1.2)\approx0.7685$$
+
+Forward output:
+
+$$z_o=0.5(0.6457)+0.6(0.7685)+0.1\approx0.8840$$
+
+$$\hat{y}=\sigma(0.8840)\approx0.7076$$
+
+Loss:
+
+$$L=\frac12(0.7076-1)^2\approx0.04275$$
+
+Output error:
+
+$$\delta_o=\frac{\partial L}{\partial z_o}
+=(\hat{y}-y)\hat{y}(1-\hat{y})
+=(0.7076-1)(0.7076)(0.2924)\approx-0.06050$$
+
+Gradient tầng output:
+
+$$\frac{\partial L}{\partial w_{h_1\to o}}=\delta_o h_1=(-0.06050)(0.6457)\approx-0.03907$$
+
+$$\frac{\partial L}{\partial w_{h_2\to o}}=\delta_o h_2=(-0.06050)(0.7685)\approx-0.04650$$
+
+$$\frac{\partial L}{\partial b_o}=\delta_o\approx-0.06050$$
+
+Hidden error:
+
+$$\delta_{h_1}=\delta_o w_{h_1\to o}h_1(1-h_1)
+=(-0.06050)(0.5)(0.6457)(0.3543)\approx-0.00692$$
+
+$$\delta_{h_2}=\delta_o w_{h_2\to o}h_2(1-h_2)
+=(-0.06050)(0.6)(0.7685)(0.2315)\approx-0.00646$$
+
+Gradient tầng ẩn:
+
+$$\frac{\partial L}{\partial w_{x_1\to h_1}}=\delta_{h_1}x_1=-0.00692,\quad
+\frac{\partial L}{\partial w_{x_2\to h_1}}=\delta_{h_1}x_2=-0.01384$$
+
+$$\frac{\partial L}{\partial w_{x_1\to h_2}}=\delta_{h_2}x_1=-0.00646,\quad
+\frac{\partial L}{\partial w_{x_2\to h_2}}=\delta_{h_2}x_2=-0.01292$$
+
+$$\frac{\partial L}{\partial b_{h_1}}=\delta_{h_1},\quad
+\frac{\partial L}{\partial b_{h_2}}=\delta_{h_2}$$
+
+Update với $\eta=0.1$:
+
+| Tham số | Giá trị mới |
+| :--- | :--- |
+| $w_{x_1\to h_1}$ | $0.1-0.1(-0.00692)=0.10069$ |
+| $w_{x_2\to h_1}$ | $0.2-0.1(-0.01384)=0.20138$ |
+| $w_{x_1\to h_2}$ | $0.3-0.1(-0.00646)=0.30065$ |
+| $w_{x_2\to h_2}$ | $0.4-0.1(-0.01292)=0.40129$ |
+| $w_{h_1\to o}$ | $0.5-0.1(-0.03907)=0.50391$ |
+| $w_{h_2\to o}$ | $0.6-0.1(-0.04650)=0.60465$ |
+| $b_{h_1}$ | $0.1-0.1(-0.00692)=0.10069$ |
+| $b_{h_2}$ | $0.1-0.1(-0.00646)=0.10065$ |
+| $b_o$ | $0.1-0.1(-0.06050)=0.10605$ |
+
+**Cách tự kiểm tra dấu.** Vì $y=1$ nhưng $\hat{y}=0.7076$ còn thấp, $\delta_o<0$. Khi cập nhật $w\leftarrow w-\eta dW$, các gradient âm làm nhiều trọng số tăng lên, giúp lần dự đoán sau có xu hướng đẩy $\hat{y}$ cao hơn.

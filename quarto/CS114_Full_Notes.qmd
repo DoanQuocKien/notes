@@ -1916,6 +1916,65 @@ $$
 \end{aligned}
 $$
 
+Với bài GDA một chiều ($p=1$), ma trận hiệp phương sai chung trở thành **variance chung**:
+
+$$
+\sigma^2
+=
+\frac{1}{n}\sum_{i=1}^{n}(x_i-\mu_{y_i})^2
+$$
+
+Điểm dễ sai nhất là ký hiệu $\mu_{y_i}$. Nó không phải một mean cố định cho mọi dòng. Mỗi dòng dùng mean của đúng lớp chứa dòng đó:
+
+| Nếu dòng có nhãn | Số hạng phải cộng vào variance |
+| :--- | :--- |
+| $y_i=0$ | $(x_i-\mu_0)^2$ |
+| $y_i=1$ | $(x_i-\mu_1)^2$ |
+
+**Quy trình thay số bằng tay.**
+
+1. Tính $\mu_0$ từ tất cả điểm thuộc lớp 0.
+2. Tính $\mu_1$ từ tất cả điểm thuộc lớp 1.
+3. Lập hai tổng sai lệch bình phương:
+
+$$
+SS_0=\sum_{i:y_i=0}(x_i-\mu_0)^2,
+\quad
+SS_1=\sum_{i:y_i=1}(x_i-\mu_1)^2
+$$
+
+4. Gộp lại bằng mẫu số là tổng số điểm $n$, không phải $n-1$:
+
+$$
+\sigma^2=\frac{SS_0+SS_1}{n}
+$$
+
+Ví dụ nhanh: nếu lớp 0 có $x=\{1.0,1.5,2.0,2.5\}$ thì $\mu_0=1.75$ và:
+
+$$
+SS_0=(1.0-1.75)^2+(1.5-1.75)^2+(2.0-1.75)^2+(2.5-1.75)^2=1.25
+$$
+
+Nếu lớp 1 có $x=\{4.8,5.2,5.6,6.0\}$ thì $\mu_1=5.40$ và:
+
+$$
+SS_1=(4.8-5.4)^2+(5.2-5.4)^2+(5.6-5.4)^2+(6.0-5.4)^2=0.80
+$$
+
+Với $n=8$:
+
+$$
+\sigma^2=\frac{1.25+0.80}{8}=0.25625
+$$
+
+Đây là variance dùng tiếp trong mật độ Gaussian:
+
+$$
+p(x\mid y=c)=
+\frac{1}{\sqrt{2\pi\sigma^2}}
+\exp\left(-\frac{(x-\mu_c)^2}{2\sigma^2}\right)
+$$
+
 ---
 
 ## 4. Chứng minh GDA tương đương toán học với Hàm Sigmoid
@@ -3409,6 +3468,54 @@ Nếu $g=(1,-1,2,-2)$:
 
 $$\frac{\partial L}{\partial \beta}=0,\quad
 \frac{\partial L}{\partial \gamma}=\frac{-6}{\sqrt5}\approx-2.683$$
+
+Để tính tiếp gradient quay về từng $z_i$, dùng:
+
+$$
+\sum_i g_i=1-1+2-2=0,
+\quad
+\sum_i g_i\hat{z}_i
+=-\frac{6}{\sqrt5}
+$$
+
+Vì $m=4$, $\gamma=2$, $\sqrt{\sigma_{\mathcal{B}}^2}=\sqrt5$:
+
+$$
+\frac{\partial L}{\partial z_i}
+=
+\frac{2}{4\sqrt5}
+\left[
+4g_i-\hat{z}_i\left(-\frac{6}{\sqrt5}\right)
+\right]
+$$
+
+Thay từng phần tử:
+
+| $i$ | $g_i$ | $\hat{z}_i$ | $\frac{\partial L}{\partial z_i}$ |
+| :--- | ---: | :--- | ---: |
+| 1 | 1 | $-\frac{3}{\sqrt5}$ | $\frac{0.4}{2\sqrt5}\approx0.089$ |
+| 2 | -1 | $-\frac{1}{\sqrt5}$ | $\frac{-5.2}{2\sqrt5}\approx-1.163$ |
+| 3 | 2 | $\frac{1}{\sqrt5}$ | $\frac{9.2}{2\sqrt5}\approx2.057$ |
+| 4 | -2 | $\frac{3}{\sqrt5}$ | $\frac{-4.4}{2\sqrt5}\approx-0.984$ |
+
+Kiểm tra nhanh:
+
+$$
+\sum_i\frac{\partial L}{\partial z_i}
+\approx 0.089-1.163+2.057-0.984
+\approx 0
+$$
+
+Tổng gradient về $z$ gần bằng 0 vì BatchNorm đã trừ mean của batch; nếu mọi $z_i$ cùng tăng một lượng như nhau, giá trị chuẩn hóa gần như không đổi.
+
+**Checklist BatchNorm khi làm tay.**
+
+1. Tính $\mu_{\mathcal{B}}$.
+2. Tính $\sigma_{\mathcal{B}}^2$ bằng mẫu số $m$.
+3. Tính từng $\hat{z}_i$.
+4. Tính $\tilde{z}_i=\gamma\hat{z}_i+\beta$.
+5. Với backward, tính trước $\sum_i g_i$ và $\sum_i g_i\hat{z}_i$.
+6. Thay vào công thức $\partial L/\partial z_i$.
 
 Đây là đúng kiểu thay số cần cho câu BatchNorm trong đề thi.
 

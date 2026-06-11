@@ -462,6 +462,54 @@ Nếu $g=(1,-1,2,-2)$:
 $$\frac{\partial L}{\partial \beta}=0,\quad
 \frac{\partial L}{\partial \gamma}=\frac{-6}{\sqrt5}\approx-2.683$$
 
+Để tính tiếp gradient quay về từng $z_i$, dùng:
+
+$$
+\sum_i g_i=1-1+2-2=0,
+\quad
+\sum_i g_i\hat{z}_i
+=-\frac{6}{\sqrt5}
+$$
+
+Vì $m=4$, $\gamma=2$, $\sqrt{\sigma_{\mathcal{B}}^2}=\sqrt5$:
+
+$$
+\frac{\partial L}{\partial z_i}
+=
+\frac{2}{4\sqrt5}
+\left[
+4g_i-\hat{z}_i\left(-\frac{6}{\sqrt5}\right)
+\right]
+$$
+
+Thay từng phần tử:
+
+| $i$ | $g_i$ | $\hat{z}_i$ | $\frac{\partial L}{\partial z_i}$ |
+| :--- | ---: | :--- | ---: |
+| 1 | 1 | $-\frac{3}{\sqrt5}$ | $\frac{0.4}{2\sqrt5}\approx0.089$ |
+| 2 | -1 | $-\frac{1}{\sqrt5}$ | $\frac{-5.2}{2\sqrt5}\approx-1.163$ |
+| 3 | 2 | $\frac{1}{\sqrt5}$ | $\frac{9.2}{2\sqrt5}\approx2.057$ |
+| 4 | -2 | $\frac{3}{\sqrt5}$ | $\frac{-4.4}{2\sqrt5}\approx-0.984$ |
+
+Kiểm tra nhanh:
+
+$$
+\sum_i\frac{\partial L}{\partial z_i}
+\approx 0.089-1.163+2.057-0.984
+\approx 0
+$$
+
+Tổng gradient về $z$ gần bằng 0 vì BatchNorm đã trừ mean của batch; nếu mọi $z_i$ cùng tăng một lượng như nhau, giá trị chuẩn hóa gần như không đổi.
+
+**Checklist BatchNorm khi làm tay.**
+
+1. Tính $\mu_{\mathcal{B}}$.
+2. Tính $\sigma_{\mathcal{B}}^2$ bằng mẫu số $m$.
+3. Tính từng $\hat{z}_i$.
+4. Tính $\tilde{z}_i=\gamma\hat{z}_i+\beta$.
+5. Với backward, tính trước $\sum_i g_i$ và $\sum_i g_i\hat{z}_i$.
+6. Thay vào công thức $\partial L/\partial z_i$.
+
 Đây là đúng kiểu thay số cần cho câu BatchNorm trong đề thi.
 
 ---

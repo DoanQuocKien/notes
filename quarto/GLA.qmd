@@ -192,6 +192,65 @@ $$
 \end{aligned}
 $$
 
+Với bài GDA một chiều ($p=1$), ma trận hiệp phương sai chung trở thành **variance chung**:
+
+$$
+\sigma^2
+=
+\frac{1}{n}\sum_{i=1}^{n}(x_i-\mu_{y_i})^2
+$$
+
+Điểm dễ sai nhất là ký hiệu $\mu_{y_i}$. Nó không phải một mean cố định cho mọi dòng. Mỗi dòng dùng mean của đúng lớp chứa dòng đó:
+
+| Nếu dòng có nhãn | Số hạng phải cộng vào variance |
+| :--- | :--- |
+| $y_i=0$ | $(x_i-\mu_0)^2$ |
+| $y_i=1$ | $(x_i-\mu_1)^2$ |
+
+**Quy trình thay số bằng tay.**
+
+1. Tính $\mu_0$ từ tất cả điểm thuộc lớp 0.
+2. Tính $\mu_1$ từ tất cả điểm thuộc lớp 1.
+3. Lập hai tổng sai lệch bình phương:
+
+$$
+SS_0=\sum_{i:y_i=0}(x_i-\mu_0)^2,
+\quad
+SS_1=\sum_{i:y_i=1}(x_i-\mu_1)^2
+$$
+
+4. Gộp lại bằng mẫu số là tổng số điểm $n$, không phải $n-1$:
+
+$$
+\sigma^2=\frac{SS_0+SS_1}{n}
+$$
+
+Ví dụ nhanh: nếu lớp 0 có $x=\{1.0,1.5,2.0,2.5\}$ thì $\mu_0=1.75$ và:
+
+$$
+SS_0=(1.0-1.75)^2+(1.5-1.75)^2+(2.0-1.75)^2+(2.5-1.75)^2=1.25
+$$
+
+Nếu lớp 1 có $x=\{4.8,5.2,5.6,6.0\}$ thì $\mu_1=5.40$ và:
+
+$$
+SS_1=(4.8-5.4)^2+(5.2-5.4)^2+(5.6-5.4)^2+(6.0-5.4)^2=0.80
+$$
+
+Với $n=8$:
+
+$$
+\sigma^2=\frac{1.25+0.80}{8}=0.25625
+$$
+
+Đây là variance dùng tiếp trong mật độ Gaussian:
+
+$$
+p(x\mid y=c)=
+\frac{1}{\sqrt{2\pi\sigma^2}}
+\exp\left(-\frac{(x-\mu_c)^2}{2\sigma^2}\right)
+$$
+
 ---
 
 ## 4. Chứng minh GDA tương đương toán học với Hàm Sigmoid

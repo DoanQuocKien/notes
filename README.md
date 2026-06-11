@@ -54,6 +54,26 @@ In addition to the notebooks, this repository contains a set of practice exams l
 - **exam_01 to exam_05**: Five additional practice exams, each containing 6 standard questions covering the full scope of the notebooks, plus a final **advanced question** designed to challenge deeper theoretical understanding (e.g., Generalization in SGD, Curse of Dimensionality, MAP estimation for Regularization, Inductive Bias).
 - Every exam is accompanied by a step-by-step mathematical answer key.
 
+## Exam Coverage Audit
+
+The exam directory was checked against the notebook knowledgebase. The current notebooks cover the following exam skills:
+
+| Exam skill | Where to study |
+| :--- | :--- |
+| Simple OLS by hand, residuals, prediction | `quarto/LR_OLS_Derivation.qmd` |
+| Matrix OLS, normal equations, Gaussian MLE to OLS | `quarto/LR_MLE_Matrix_Derivation.qmd` |
+| Logistic probability, cross-entropy, gradient descent, Hessian convexity, Newton's method | `quarto/Classification_Logistic_Regression.qmd` |
+| Bernoulli/Gaussian/Poisson exponential-family forms, GLM inverse links, MLE convexity | `quarto/Exponential_Family_GLMs.qmd` |
+| GDA priors, means, shared variance/covariance, Gaussian density, linear boundary proof | `quarto/GLA.qmd` |
+| Naive Bayes, conditional counts, Laplace smoothing, posterior normalization | `quarto/GLA.qmd` |
+| Decision-tree entropy, Gini, information gain, regression-tree SSE/MSE | `quarto/Decision_Tree.qmd` |
+| Neural-network shapes, forward pass, backpropagation, Hadamard product, vanishing gradient | `quarto/Neural_Network.qmd` |
+| Dropout, inverted dropout, Batch Normalization forward and backward | `quarto/Neural_Network.qmd` |
+| Gradient descent, Ridge/Lasso, cross-validation, bias-variance decomposition | `quarto/Optimization_Bias_Variance_Regularization.qmd` |
+| K-means trace, distortion, elbow method, centroid proof, convergence and local minima | `quarto/Unsupervised_Learning_K_Means.qmd` |
+
+Current known caveat: `sample_exam` still contains a recovered question marked as missing in the original recovered exam file. The rest of the sample exam and exams 01-05 map to the notebooks above.
+
 ## Requirements
 
 To render the notebooks, the local setup should have:

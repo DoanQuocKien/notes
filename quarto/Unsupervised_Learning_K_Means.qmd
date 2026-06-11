@@ -85,6 +85,44 @@ $$\boldsymbol{\mu}_k \leftarrow \frac{\sum_{i=1}^{n} \mathbb{I}(c^{(i)} = k)\mat
 
 > **Chứng minh tính hội tụ:** Vì tại mỗi phân đoạn của Bước 1 và Bước 2, giá trị của hàm chi phí $J$ luôn luôn giảm hoặc giữ nguyên ($J^{(t+1)} \le J^{(t)}$), đồng thời hàm $J$ luôn bị chặn dưới bởi số 0, nên giải thuật $K$-means **chắc chắn luôn luôn hội tụ** về một điểm cực trị sau một số hữu hạn vòng lặp. Tuy nhiên, vì đây là hàm không lồi hoàn toàn, thuật toán có thể bị kẹt ở điểm cực tiểu cục bộ (Local Minimum) phụ thuộc vào cách khởi tạo tâm cụm ban đầu.
 
+**Bản chứng minh đầy đủ hơn để dùng khi thi.**
+
+K-means tối ưu hàm:
+
+$$J(\mathbf{c},\boldsymbol{\mu})=\sum_{i=1}^{m}\left\|\mathbf{x}^{(i)}-\boldsymbol{\mu}_{c_i}\right\|_2^2$$
+
+trong đó $c_i$ là nhãn cụm của điểm thứ $i$.
+
+**Bước 1: Gán cụm khi tâm cố định.** Với các tâm cụm không đổi, mỗi điểm được gán về tâm gần nhất:
+
+$$c_i^{new}=\arg\min_k\left\|\mathbf{x}^{(i)}-\boldsymbol{\mu}_k\right\|_2^2$$
+
+nên:
+
+$$\left\|\mathbf{x}^{(i)}-\boldsymbol{\mu}_{c_i^{new}}\right\|_2^2
+\leq
+\left\|\mathbf{x}^{(i)}-\boldsymbol{\mu}_{c_i^{old}}\right\|_2^2$$
+
+cho từng điểm. Cộng trên toàn bộ dữ liệu suy ra $J$ không tăng.
+
+**Bước 2: Cập nhật tâm khi nhãn cố định.** Với một cụm $C_k$ đã cố định, ta cần giải:
+
+$$\min_{\boldsymbol{\mu}_k}\sum_{\mathbf{x}^{(i)}\in C_k}\left\|\mathbf{x}^{(i)}-\boldsymbol{\mu}_k\right\|_2^2$$
+
+Lấy gradient:
+
+$$-2\sum_{\mathbf{x}^{(i)}\in C_k}\mathbf{x}^{(i)}+2|C_k|\boldsymbol{\mu}_k=0$$
+
+suy ra:
+
+$$\boldsymbol{\mu}_k=\frac{1}{|C_k|}\sum_{\mathbf{x}^{(i)}\in C_k}\mathbf{x}^{(i)}$$
+
+Tức là tâm mới chính là trung bình cộng, nghiệm tối ưu của cụm đó. Vì vậy bước cập nhật tâm cũng không làm tăng $J$.
+
+**Bước 3: Vì sao hữu hạn?** Có tối đa $K^m$ cách gán $m$ điểm vào $K$ cụm. Mỗi vòng lặp làm $J$ giảm hoặc giữ nguyên, và khi phép gán không đổi thì các tâm cũng không đổi. Vì số trạng thái gán cụm là hữu hạn, thuật toán phải dừng sau hữu hạn bước.
+
+**Điều không được hiểu sai:** Hội tụ không có nghĩa là đạt cực tiểu toàn cục. K-means là coordinate descent trên một bài toán có biến rời rạc $c_i$ và tâm liên tục $\boldsymbol{\mu}_k$, nên hàm mục tiêu không lồi toàn cục. Một nghiệm có thể ổn định với hai bước Lloyd nhưng vẫn kém hơn một cách chia khác. Trong thực tế nên dùng K-means++, chạy nhiều lần với nhiều khởi tạo, rồi chọn nghiệm có distortion nhỏ nhất.
+
 ---
 
 ## 3. Cải Tiến Chọn Tâm Ban Đầu: K-means++

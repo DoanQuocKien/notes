@@ -272,11 +272,55 @@ $$\sigma'(z)=\sigma(z)(1-\sigma(z))$$
 
 Khi $z$ rất lớn, $\sigma(z)\approx1$, nên $\sigma'(z)\approx0$. Khi $z$ rất âm, $\sigma(z)\approx0$, nên $\sigma'(z)\approx0$. Nếu nhiều tầng đều nhân với đạo hàm gần 0, tín hiệu đạo hàm về các tầng đầu gần như biến mất. Đây là hiện tượng **gradient biến mất**.
 
+**Cận trên exam-style cho vanishing gradient.**
+
+Vì $\sigma(z)\in(0,1)$, đặt $s=\sigma(z)$ thì:
+
+$$\sigma'(z)=s(1-s)$$
+
+Hàm $s(1-s)$ đạt cực đại tại $s=\frac12$, nên:
+
+$$0<\sigma'(z)\leq\frac14$$
+
+Với một mạng sâu dạng vô hướng:
+
+$$a^{[0]}=x,\quad z^{[\ell]}=w_{\ell}a^{[\ell-1]},\quad a^{[\ell]}=\sigma(z^{[\ell]})$$
+
+gradient về trọng số tầng đầu có dạng tích theo quy tắc chuỗi:
+
+$$
+\frac{\partial L}{\partial w_1}
+=
+\frac{\partial L}{\partial a^{[L]}}
+\left[\prod_{\ell=2}^{L}\sigma'(z^{[\ell]})w_{\ell}\right]
+\sigma'(z^{[1]})a^{[0]}
+$$
+
+Nếu $|w_{\ell}|\leq1$, phần tín hiệu đi từ tầng cuối về tầng đầu bị chặn bởi:
+
+$$
+\prod_{\ell=2}^{L}|\sigma'(z^{[\ell]})w_{\ell}|
+\leq
+\left(\frac14\right)^{L-1}
+$$
+
+Ví dụ với $L=8$:
+
+$$\left(\frac14\right)^7=\frac{1}{16384}\approx0.000061$$
+
+Nghĩa là chỉ riêng việc nhân chuỗi các đạo hàm sigmoid đã có thể làm tín hiệu nhỏ đi hơn 16 nghìn lần. Nếu nhiều neuron rơi vào vùng bão hòa, đạo hàm còn nhỏ hơn $\frac14$, nên gradient biến mất nhanh hơn nữa.
+
 ReLU:
 
 $$g(z)=\max(0,z)$$
 
 Đạo hàm của ReLU bằng $1$ khi $z>0$, nên ở miền dương tín hiệu đạo hàm đi qua dễ hơn.
+
+Ba cách giảm vanishing gradient thường gặp:
+
+- **ReLU:** tránh nhân gradient với một số luôn nhỏ hơn hoặc bằng $0.25$ như sigmoid.
+- **Batch Normalization:** giữ $z$ ít rơi vào vùng bão hòa, nên đạo hàm của sigmoid/tanh ít bị kéo về 0 hơn.
+- **Residual connection:** thêm đường tắt dạng $\mathbf{A}^{[l+1]}=F(\mathbf{A}^{[l]})+\mathbf{A}^{[l]}$, giúp gradient có một nhánh identity để chảy ngược về tầng trước.
 
 ```{python}
 #| label: activation-saturation
@@ -338,6 +382,49 @@ Tác dụng chính:
 - Giúp phân phối đầu vào của mỗi tầng ổn định hơn.
 - Cho phép dùng learning rate lớn hơn.
 - Thường làm quá trình train nhanh và mượt hơn.
+
+**Backward pass của Batch Normalization.**
+
+Trong bài tính tay, nếu một neuron có mini-batch $z_1,\ldots,z_m$ và:
+
+$$\tilde{z}_i=\gamma\hat{z}_i+\beta,\quad
+\hat{z}_i=\frac{z_i-\mu_{\mathcal{B}}}{\sqrt{\sigma_{\mathcal{B}}^2+\epsilon}}$$
+
+thì gradient từ tầng sau thường được ký hiệu:
+
+$$g_i=\frac{\partial L}{\partial \tilde{z}_i}$$
+
+Hai gradient dễ nhất là:
+
+$$\frac{\partial L}{\partial \gamma}=\sum_{i=1}^{m}g_i\hat{z}_i,\quad
+\frac{\partial L}{\partial \beta}=\sum_{i=1}^{m}g_i$$
+
+Gradient quay về từng $z_i$ có dạng gọn:
+
+$$
+\frac{\partial L}{\partial z_i}
+=\frac{\gamma}{m\sqrt{\sigma_{\mathcal{B}}^2+\epsilon}}
+\left[
+m g_i-\sum_{j=1}^{m}g_j-\hat{z}_i\sum_{j=1}^{m}g_j\hat{z}_j
+\right]
+$$
+
+Cách nhớ: có ba phần điều chỉnh. Phần $m g_i$ là gradient trực tiếp của phần tử $i$; phần $-\sum_j g_j$ xuất hiện vì mean phụ thuộc vào cả batch; phần $-\hat{z}_i\sum_j g_j\hat{z}_j$ xuất hiện vì variance cũng phụ thuộc vào cả batch.
+
+**Ví dụ mini-batch nhanh.** Với $z=(1,3,5,7)$, ta có $\mu_{\mathcal{B}}=4$, $\sigma_{\mathcal{B}}^2=5$, và:
+
+$$\hat{z}=\left(-\frac{3}{\sqrt5},-\frac{1}{\sqrt5},\frac{1}{\sqrt5},\frac{3}{\sqrt5}\right)$$
+
+Nếu $\gamma=2$, $\beta=-1$, thì:
+
+$$\tilde{z}=2\hat{z}-1$$
+
+Nếu $g=(1,-1,2,-2)$:
+
+$$\frac{\partial L}{\partial \beta}=0,\quad
+\frac{\partial L}{\partial \gamma}=\frac{-6}{\sqrt5}\approx-2.683$$
+
+Đây là đúng kiểu thay số cần cho câu BatchNorm trong đề thi.
 
 ---
 

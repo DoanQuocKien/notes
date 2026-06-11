@@ -1,3 +1,26 @@
+---
+title: "CS114 - Exam 04 Answer"
+author: "Quoc Kien"
+toc: true
+toc-depth: 3
+format:
+  pdf:
+    documentclass: scrartcl
+    toc: true
+    toc-depth: 3
+    geometry:
+      - margin=0.8in
+    include-in-header:
+      text: |
+        \usepackage{fvextra}
+        \DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,breakanywhere,commandchars=\\\{\}}
+        \usepackage{booktabs}
+        \usepackage{longtable}
+        \usepackage{array}
+        \usepackage{enumitem}
+        \setlist{nosep}
+        \AtBeginDocument{\hypersetup{bookmarksopen=true,bookmarksnumbered=true,bookmarksdepth=3}}
+---
 
 # **ĐÁP ÁN ĐỀ THI MACHINE LEARNING — ĐỀ 04**
 
@@ -249,7 +272,7 @@ $$\nabla(\lambda\|\boldsymbol{\beta}\|_2^2) = 2\lambda\boldsymbol{\beta} = 2(0.1
 
 Gradient tổng = $(-6, -17.5) + (0, 0) = (-6, -17.5)$
 
-$$\boldsymbol{\beta}_{new} = \begin{pmatrix}0\\0\end{pmatrix} - 0.1\begin{pmatrix}-6\\-17.5\end{pmatrix} = \begin{pmatrix}0.6\\1.75\end{pmatrix}$$
+$$\boldsymbol{\beta}_{new} = \begin{pmatrix}0\\0\end{pmatrix} - 0.1\begin{pmatrix}-6-17.5\end{pmatrix} = \begin{pmatrix}0.6\\1.75\end{pmatrix}$$
 
 ### 6.4 Nhận xét
 
@@ -257,15 +280,115 @@ Tại $\boldsymbol{\beta} = (0,0)$, Ridge penalty không ảnh hưởng vì grad
 
 ---
 
-## Câu 7. Batch Normalization trong Mạng Neural (Nâng cao)
+## Câu 7. Thử thách: Batch Normalization Forward và Backward
 
-**Internal Covariate Shift:** Trong một mạng neural sâu, mỗi khi trọng số ở các tầng trước được cập nhật, phân phối dữ liệu đầu ra của chúng (cũng là đầu vào của tầng sau) sẽ liên tục bị thay đổi và xô lệch. Các tầng ẩn sâu luôn phải chạy theo để học một phân phối mục tiêu đang biến động không ngừng, khiến quá trình hội tụ cực kỳ chậm và dễ bị kẹt.
+### 7.1 Forward pass
 
-**Giải pháp Batch Normalization:** Để khắc phục, kỹ thuật này chuẩn hóa trực tiếp điểm số tuyến tính $Z^{[l]}$ trên mỗi mini-batch $\mathcal{B}$ về trạng thái chuẩn (trung bình 0, phương sai 1):
-$$\mu_{\mathcal{B}} = \frac{1}{m}\sum Z_i, \quad \sigma^2_{\mathcal{B}} = \frac{1}{m}\sum (Z_i-\mu_{\mathcal{B}})^2$$
-$$\hat{Z}_i = \frac{Z_i - \mu_{\mathcal{B}}}{\sqrt{\sigma^2_{\mathcal{B}} + \epsilon}}$$
-Sau đó, để không làm mất đi khả năng biểu diễn của tầng, giá trị này được scale và shift bằng hai tham số học được $\gamma$ và $\beta$: $\tilde{Z}_i = \gamma \hat{Z}_i + \beta$.
-BN giúp phân phối dữ liệu truyền giữa các tầng ổn định, bôi trơn không gian lỗi, cho phép sử dụng learning rate lớn hơn và tăng tốc hội tụ lên gấp nhiều lần.
+Với $z=(1,3,5,7)$:
+
+$$\mu_{\mathcal{B}}=\frac{1+3+5+7}{4}=4.$$
+
+$$\sigma_{\mathcal{B}}^2=\frac{(1-4)^2+(3-4)^2+(5-4)^2+(7-4)^2}{4}
+=\frac{9+1+1+9}{4}=5.$$
+
+Vì $\epsilon=0$:
+
+$$\sqrt{\sigma_{\mathcal{B}}^2}= \sqrt{5}.$$
+
+Do đó:
+
+$$\hat{z}=\left(\frac{-3}{\sqrt{5}},\frac{-1}{\sqrt{5}},\frac{1}{\sqrt{5}},\frac{3}{\sqrt{5}}\right)
+\approx (-1.342,-0.447,0.447,1.342).$$
+
+Với $\gamma=2,\beta=-1$:
+
+$$\tilde{z}=2\hat{z}-1\approx(-3.683,-1.894,-0.106,1.683).$$
+
+### 7.2 Gradient theo $\gamma$ và $\beta$
+
+Cho:
+
+$$g=\frac{\partial L}{\partial \tilde{z}}=(1,-1,2,-2).$$
+
+Ta có:
+
+$$\frac{\partial L}{\partial \beta}=\sum_i g_i=1-1+2-2=0.$$
+
+$$\frac{\partial L}{\partial \gamma}=\sum_i g_i\hat{z}_i
+=1\left(\frac{-3}{\sqrt5}\right)
+(-1)\left(\frac{-1}{\sqrt5}\right)
+2\left(\frac{1}{\sqrt5}\right)
+(-2)\left(\frac{3}{\sqrt5}\right).$$
+
+$$\frac{\partial L}{\partial \gamma}
+=\frac{-3+1+2-6}{\sqrt5}
+=\frac{-6}{\sqrt5}
+\approx -2.683.$$
+
+### 7.3 Công thức backward
+
+BatchNorm có ba bước: trừ mean, chia độ lệch chuẩn, rồi scale-shift. Khi gom các đạo hàm trung gian, gradient về từng $z_i$ có thể viết:
+
+$$\frac{\partial L}{\partial z_i}
+=\frac{\gamma}{m\sqrt{\sigma_{\mathcal{B}}^2+\epsilon}}
+\left[
+m g_i-\sum_{j=1}^{m}g_j-\hat{z}_i\sum_{j=1}^{m}g_j\hat{z}_j
+\right].$$
+
+Công thức này có ba thành phần trực giác:
+
+- $m g_i$: gradient trực tiếp của phần tử $i$.
+- $-\sum_j g_j$: hiệu chỉnh vì mean phụ thuộc vào tất cả phần tử.
+- $-\hat{z}_i\sum_j g_j\hat{z}_j$: hiệu chỉnh vì variance cũng phụ thuộc vào tất cả phần tử.
+
+### 7.4 Tính gradient về $z$
+
+Ta đã có:
+
+$$\sum_j g_j=0,\quad \sum_j g_j\hat{z}_j=\frac{-6}{\sqrt5}.$$
+
+Vì $m=4$, $\gamma=2$, $\sqrt{\sigma_{\mathcal{B}}^2}=\sqrt5$:
+
+$$\frac{\gamma}{m\sqrt{\sigma_{\mathcal{B}}^2}}=\frac{2}{4\sqrt5}=\frac{1}{2\sqrt5}.$$
+
+Do $\sum_j g_j=0$:
+
+$$\frac{\partial L}{\partial z_i}
+=\frac{1}{2\sqrt5}\left[4g_i-\hat{z}_i\left(\frac{-6}{\sqrt5}\right)\right].$$
+
+Tính từng phần:
+
+$$i=1:\quad \hat{z}_1=\frac{-3}{\sqrt5},\quad
+4g_1-\hat{z}_1\frac{-6}{\sqrt5}
+=4-\frac{18}{5}=0.4.$$
+
+$$\frac{\partial L}{\partial z_1}=\frac{0.4}{2\sqrt5}\approx 0.0894.$$
+
+$$i=2:\quad \hat{z}_2=\frac{-1}{\sqrt5},\quad
+4g_2-\hat{z}_2\frac{-6}{\sqrt5}
+=-4-\frac{6}{5}=-5.2.$$
+
+$$\frac{\partial L}{\partial z_2}=\frac{-5.2}{2\sqrt5}\approx -1.1628.$$
+
+$$i=3:\quad \hat{z}_3=\frac{1}{\sqrt5},\quad
+4g_3-\hat{z}_3\frac{-6}{\sqrt5}
+=8+\frac{6}{5}=9.2.$$
+
+$$\frac{\partial L}{\partial z_3}=\frac{9.2}{2\sqrt5}\approx 2.0572.$$
+
+$$i=4:\quad \hat{z}_4=\frac{3}{\sqrt5},\quad
+4g_4-\hat{z}_4\frac{-6}{\sqrt5}
+=-8+\frac{18}{5}=-4.4.$$
+
+$$\frac{\partial L}{\partial z_4}=\frac{-4.4}{2\sqrt5}\approx -0.9839.$$
+
+### 7.5 Vì sao tổng gradient bằng 0?
+
+Tổng gradient:
+
+$$0.0894-1.1628+2.0572-0.9839\approx 0.$$
+
+Điều này xảy ra vì BatchNorm trừ mean của mini-batch. Nếu cộng cùng một hằng số vào mọi $z_i$, các giá trị chuẩn hóa $\hat{z}_i$ không đổi. Do đó loss không nhạy với dịch chuyển đồng đều của toàn batch, nên gradient theo hướng $(1,1,1,1)$ phải bằng 0.
 
 ---
 

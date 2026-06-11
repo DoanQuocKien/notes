@@ -1,3 +1,26 @@
+---
+title: "CS114 - Exam 03"
+author: "Quoc Kien"
+toc: true
+toc-depth: 3
+format:
+  pdf:
+    documentclass: scrartcl
+    toc: true
+    toc-depth: 3
+    geometry:
+      - margin=0.8in
+    include-in-header:
+      text: |
+        \usepackage{fvextra}
+        \DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,breakanywhere,commandchars=\\\{\}}
+        \usepackage{booktabs}
+        \usepackage{longtable}
+        \usepackage{array}
+        \usepackage{enumitem}
+        \setlist{nosep}
+        \AtBeginDocument{\hypersetup{bookmarksopen=true,bookmarksnumbered=true,bookmarksdepth=3}}
+---
 
 # **ĐỀ THI MACHINE LEARNING — ĐỀ 03**
 
@@ -7,7 +30,10 @@
 
 ---
 
-Câu 1\. Hồi quy Tuyến tính Đơn (OLS từ đầu)
+
+---
+
+## Câu 1. Hồi quy Tuyến tính Đơn (OLS từ đầu)
 
 Cho 6 điểm dữ liệu:
 
@@ -30,7 +56,10 @@ Cho 6 điểm dữ liệu:
 
 ---
 
-Câu 2\. Chứng minh Hàm Sigmoid từ Exponential Family
+
+---
+
+## Câu 2. Chứng minh Hàm Sigmoid từ Exponential Family
 
 **Hãy:**
 
@@ -41,7 +70,10 @@ Câu 2\. Chứng minh Hàm Sigmoid từ Exponential Family
 
 ---
 
-Câu 3\. Naive Bayes với Laplace Smoothing
+
+---
+
+## Câu 3. Naive Bayes với Laplace Smoothing
 
 Cho bảng dữ liệu phân loại bệnh nhân có bệnh tim hay không:
 
@@ -67,7 +99,10 @@ Bệnh nhân mới: Huyết áp = Cao, Cholesterol = Cao, Hút thuốc = Không.
 
 ---
 
-Câu 4\. Regularization và Ridge Regression
+
+---
+
+## Câu 4. Regularization và Ridge Regression
 
 Cho mô hình hồi quy tuyến tính với hàm loss Ridge:
 
@@ -82,7 +117,10 @@ $$L_{ridge}(\boldsymbol{\beta}) = \frac{1}{2n}\sum_{i=1}^{n}(y_i - \boldsymbol{\
 
 ---
 
-Câu 5\. Neural Network — Xác định Kích thước Ma trận
+
+---
+
+## Câu 5. Neural Network — Xác định Kích thước Ma trận
 
 Cho mạng fully connected có kiến trúc: 4 input → 5 neuron ẩn (tầng 1) → 3 neuron ẩn (tầng 2) → 2 output. Mini-batch có $m = 10$ mẫu.
 
@@ -97,23 +135,43 @@ Cho mạng fully connected có kiến trúc: 4 input → 5 neuron ẩn (tầng 1
 
 ---
 
-Câu 6\. K-means — Chứng minh Tâm Cụm Là Trung Bình
+
+---
+
+## Câu 6. K-means — Chứng minh Tâm Cụm Là Trung Bình
 
 Cho cụm $C_k = \{x_1, x_2, \ldots, x_m\}$. Hàm mục tiêu cụm:
 
-$$f(\mu) = \sum_{i=1}^{m} \|x_i - \mu\|^2$$
+$$f(\mu) = \sum_{i=1}^{m} \|x_i - \mu\|_2^2$$
 
 **Hãy:**
 
-1. Khai triển $f(\mu)$ dưới dạng $\sum \|x_i\|^2 - 2\mu^T\sum x_i + m\|\mu\|^2$.
+1. Khai triển $f(\mu)$ dưới dạng $\sum \|x_i\|_2^2 - 2\mu^T\sum x_i + m\|\mu\|_2^2$.
 2. Tính gradient $\nabla_\mu f$ và đặt bằng $0$.
 3. Chứng minh $\mu^* = \frac{1}{m}\sum_{i=1}^{m} x_i$ (trung bình cộng).
 4. Áp dụng: Cho cụm gồm 4 điểm $(1,3)$, $(2,5)$, $(4,1)$, $(5,3)$. Tính tâm cụm tối ưu và distortion.
 
 ---
 
-Câu 7 (Nâng cao). So sánh Gradient Descent và Newton's Method
+## Câu 7. Thử thách: Newton's Method cho Logistic Regression
 
-Trong quá trình huấn luyện Logistic Regression, thuật toán tối ưu Gradient Descent và Newton's Method thường được cân nhắc sử dụng. Hãy trình bày sự khác biệt cơ bản về cơ chế tính toán, tốc độ hội tụ, và chi phí tính toán phần cứng giữa hai thuật toán này.
+Cho Logistic Regression nhị phân với $m$ mẫu, ma trận thiết kế $\mathbf{X}\in\mathbb{R}^{m\times p}$, nhãn $\mathbf{y}\in\{0,1\}^m$, xác suất dự đoán:
+
+$$\mathbf{p}=\sigma(\mathbf{X}\boldsymbol{\beta})$$
+
+và negative log-likelihood:
+
+$$J(\boldsymbol{\beta})=-\sum_{i=1}^{m}\left[y_i\log p_i+(1-y_i)\log(1-p_i)\right].$$
+
+**Hãy:**
+
+1. Chứng minh $\nabla J(\boldsymbol{\beta})=\mathbf{X}^T(\mathbf{p}-\mathbf{y})$.
+2. Chứng minh Hessian có dạng $\nabla^2J(\boldsymbol{\beta})=\mathbf{X}^T\mathbf{R}\mathbf{X}$, trong đó $\mathbf{R}$ là ma trận đường chéo với $R_{ii}=p_i(1-p_i)$.
+3. Suy ra vì sao $J$ là hàm lồi.
+4. Viết công thức cập nhật Newton:
+
+$$\boldsymbol{\beta}_{new}=\boldsymbol{\beta}-\left(\mathbf{X}^T\mathbf{R}\mathbf{X}\right)^{-1}\mathbf{X}^T(\mathbf{p}-\mathbf{y}).$$
+
+5. So sánh Newton's Method với Gradient Descent về tốc độ hội tụ và chi phí tính toán khi $p$ rất lớn.
 
 **HẾT**

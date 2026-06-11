@@ -129,6 +129,34 @@ Công thức cập nhật đa biến sử dụng ma trận nghịch đảo Hessi
 
 $$\boldsymbol{\beta}^{(t+1)} = \boldsymbol{\beta}^{(t)} - H^{-1} \nabla J(\boldsymbol{\beta}^{(t)})$$
 
+**Dạng ma trận dùng trong bài thi Newton.**
+
+Với ma trận thiết kế $\mathbf{X}\in\mathbb{R}^{n\times p}$, vector xác suất $\mathbf{p}=\sigma(\mathbf{X}\boldsymbol{\beta})$, và vector nhãn $\mathbf{y}$:
+
+$$\nabla J(\boldsymbol{\beta})=\mathbf{X}^T(\mathbf{p}-\mathbf{y})$$
+
+Đặt ma trận đường chéo:
+
+$$\mathbf{R}=\operatorname{diag}\left(p_1(1-p_1),p_2(1-p_2),\ldots,p_n(1-p_n)\right)$$
+
+thì Hessian là:
+
+$$\nabla^2J(\boldsymbol{\beta})=\mathbf{X}^T\mathbf{R}\mathbf{X}$$
+
+và bước Newton có dạng:
+
+$$\boldsymbol{\beta}_{new}
+=\boldsymbol{\beta}
+-\left(\mathbf{X}^T\mathbf{R}\mathbf{X}\right)^{-1}\mathbf{X}^T(\mathbf{p}-\mathbf{y})$$
+
+Để kiểm tra tính lồi, lấy bất kỳ vector $\mathbf{v}$:
+
+$$\mathbf{v}^T\nabla^2J\mathbf{v}
+=\mathbf{v}^T\mathbf{X}^T\mathbf{R}\mathbf{X}\mathbf{v}
+=(\mathbf{X}\mathbf{v})^T\mathbf{R}(\mathbf{X}\mathbf{v})\ge 0$$
+
+vì mọi phần tử đường chéo $p_i(1-p_i)$ đều không âm. Đây là lý do Logistic Regression với cross-entropy có nghiệm tối ưu toàn cục, còn Newton's Method có thể tận dụng độ cong để đi rất nhanh gần nghiệm.
+
 #### So sánh đặc tính vận hành:
 
 | Thuật toán Tối ưu | Cơ chế Đạo hàm | Ưu điểm Vận hành | Nhược điểm Khuyết góc |

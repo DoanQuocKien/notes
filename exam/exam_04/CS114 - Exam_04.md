@@ -1,3 +1,26 @@
+---
+title: "CS114 - Exam 04"
+author: "Quoc Kien"
+toc: true
+toc-depth: 3
+format:
+  pdf:
+    documentclass: scrartcl
+    toc: true
+    toc-depth: 3
+    geometry:
+      - margin=0.8in
+    include-in-header:
+      text: |
+        \usepackage{fvextra}
+        \DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,breakanywhere,commandchars=\\\{\}}
+        \usepackage{booktabs}
+        \usepackage{longtable}
+        \usepackage{array}
+        \usepackage{enumitem}
+        \setlist{nosep}
+        \AtBeginDocument{\hypersetup{bookmarksopen=true,bookmarksnumbered=true,bookmarksdepth=3}}
+---
 
 # **ĐỀ THI MACHINE LEARNING — ĐỀ 04**
 
@@ -7,7 +30,10 @@
 
 ---
 
-Câu 1\. Logistic Regression — Chứng minh Tính Lồi
+
+---
+
+## Câu 1. Logistic Regression — Chứng minh Tính Lồi
 
 Cho hàm mất mát Binary Cross-Entropy của Logistic Regression:
 
@@ -22,7 +48,10 @@ $$J(\boldsymbol{\beta}) = -\sum_{i=1}^{n}\left[y^{(i)}\log\sigma(\boldsymbol{\be
 
 ---
 
-Câu 2\. OLS bằng Ma trận — Bộ dữ liệu 2 biến
+
+---
+
+## Câu 2. OLS bằng Ma trận — Bộ dữ liệu 2 biến
 
 Cho dữ liệu với mô hình $\hat{y} = \beta_0 + \beta_1 x_1 + \beta_2 x_2$:
 
@@ -43,7 +72,10 @@ Cho dữ liệu với mô hình $\hat{y} = \beta_0 + \beta_1 x_1 + \beta_2 x_2$:
 
 ---
 
-Câu 3\. GDA — Chứng minh Ranh giới Tuyến tính
+
+---
+
+## Câu 3. GDA — Chứng minh Ranh giới Tuyến tính
 
 Trong Gaussian Discriminant Analysis với $\mathbf{x} \mid y=0 \sim \mathcal{N}(\boldsymbol{\mu}_0, \boldsymbol{\Sigma})$ và $\mathbf{x} \mid y=1 \sim \mathcal{N}(\boldsymbol{\mu}_1, \boldsymbol{\Sigma})$ (ma trận hiệp phương sai chung).
 
@@ -58,7 +90,10 @@ Trong Gaussian Discriminant Analysis với $\mathbf{x} \mid y=0 \sim \mathcal{N}
 
 ---
 
-Câu 4\. Decision Tree — Regression Tree với MSE
+
+---
+
+## Câu 4. Decision Tree — Regression Tree với MSE
 
 Cho bảng dữ liệu hồi quy:
 
@@ -82,7 +117,10 @@ Cho bảng dữ liệu hồi quy:
 
 ---
 
-Câu 5\. Backpropagation qua Mạng 2-3-1
+
+---
+
+## Câu 5. Backpropagation qua Mạng 2-3-1
 
 Cho mạng gồm:
 
@@ -109,7 +147,10 @@ $$\mathbf{W}^{[2]} = \begin{pmatrix} 0.5 & -0.3 & 0.4 \end{pmatrix}, \quad b^{[2
 
 ---
 
-Câu 6\. Gradient Descent với Regularization
+
+---
+
+## Câu 6. Gradient Descent với Regularization
 
 Cho mô hình tuyến tính $\hat{y} = \beta_0 + \beta_1 x$ với Ridge regularization. Bắt đầu từ $\beta_0 = 0$, $\beta_1 = 0$.
 
@@ -125,14 +166,44 @@ Dữ liệu:
 **Hãy:**
 
 1. Tính gradient của loss OLS (không có regularization) tại $\boldsymbol{\beta} = (0, 0)$.
-2. Tính gradient của Ridge penalty $\lambda\|\boldsymbol{\beta}\|_2^2$ tại $\boldsymbol{\beta} = (0, 0)$ với $\lambda = 0.1$. 
+2. Tính gradient của Ridge penalty $\lambda\|\boldsymbol{\beta}\|_2^2$ tại $\boldsymbol{\beta} = (0, 0)$ với $\lambda = 0.1$.
 3. Tính gradient tổng và cập nhật $\boldsymbol{\beta}$ sau một bước với $\alpha = 0.1$.
 4. So sánh $\boldsymbol{\beta}$ mới với trường hợp không regularization. Nhận xét.
 
 ---
 
-Câu 7 (Nâng cao). Batch Normalization trong Mạng Neural
+## Câu 7. Thử thách: Batch Normalization Forward và Backward
 
-Trình bày bài toán Internal Covariate Shift (hiện tượng dịch chuyển phân phối nội bộ) gặp phải trong việc huấn luyện các mạng Neural sâu. Kỹ thuật Batch Normalization đã giải quyết vấn đề này như thế nào?
+Cho một mini-batch gồm 4 giá trị tiền kích hoạt của một neuron:
+
+$$z=(1,3,5,7),\quad \epsilon=0,\quad \gamma=2,\quad \beta=-1.$$
+
+Batch Normalization được định nghĩa bởi:
+
+$$\mu_{\mathcal{B}}=\frac{1}{m}\sum_{i=1}^{m}z_i,\quad
+\sigma_{\mathcal{B}}^2=\frac{1}{m}\sum_{i=1}^{m}(z_i-\mu_{\mathcal{B}})^2,$$
+
+$$\hat{z}_i=\frac{z_i-\mu_{\mathcal{B}}}{\sqrt{\sigma_{\mathcal{B}}^2+\epsilon}},\quad
+\tilde{z}_i=\gamma\hat{z}_i+\beta.$$
+
+**Hãy:**
+
+1. Tính $\mu_{\mathcal{B}}$, $\sigma_{\mathcal{B}}^2$, toàn bộ $\hat{z}_i$ và $\tilde{z}_i$.
+2. Giả sử gradient đi từ tầng sau là $\frac{\partial L}{\partial \tilde{z}}=(1,-1,2,-2)$. Tính:
+
+$$\frac{\partial L}{\partial \gamma}=\sum_{i=1}^{m}\frac{\partial L}{\partial \tilde{z}_i}\hat{z}_i,\quad
+\frac{\partial L}{\partial \beta}=\sum_{i=1}^{m}\frac{\partial L}{\partial \tilde{z}_i}.$$
+
+3. Chứng minh công thức ngắn gọn sau cho gradient đi về $z_i$:
+
+$$\frac{\partial L}{\partial z_i}
+=\frac{\gamma}{m\sqrt{\sigma_{\mathcal{B}}^2+\epsilon}}
+\left[
+m g_i-\sum_{j=1}^{m}g_j-\hat{z}_i\sum_{j=1}^{m}g_j\hat{z}_j
+\right],$$
+
+trong đó $g_i=\frac{\partial L}{\partial \tilde{z}_i}$.
+4. Tính $\frac{\partial L}{\partial z_i}$ cho cả 4 phần tử.
+5. Giải thích tại sao kết quả gradient theo $z$ có tổng bằng 0 trong mini-batch này.
 
 **HẾT**

@@ -1,3 +1,26 @@
+---
+title: "CS114 - Exam 05 Answer"
+author: "Quoc Kien"
+toc: true
+toc-depth: 3
+format:
+  pdf:
+    documentclass: scrartcl
+    toc: true
+    toc-depth: 3
+    geometry:
+      - margin=0.8in
+    include-in-header:
+      text: |
+        \usepackage{fvextra}
+        \DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,breakanywhere,commandchars=\\\{\}}
+        \usepackage{booktabs}
+        \usepackage{longtable}
+        \usepackage{array}
+        \usepackage{enumitem}
+        \setlist{nosep}
+        \AtBeginDocument{\hypersetup{bookmarksopen=true,bookmarksnumbered=true,bookmarksdepth=3}}
+---
 
 # **ĐÁP ÁN ĐỀ THI MACHINE LEARNING — ĐỀ 05**
 
@@ -49,7 +72,7 @@ $$= \frac{1}{6}(-0.332+0.218+0-0.578+0.091+0.390) = \frac{-0.211}{6} = -0.0352$$
 
 ### 1.4 Cập nhật
 
-$$\boldsymbol{\beta}_{new} = \begin{pmatrix}-0.5\\1.0\\-0.8\end{pmatrix} - 0.5\begin{pmatrix}-0.1115\\-0.3117\\-0.0352\end{pmatrix} = \begin{pmatrix}-0.4443\\1.1559\\-0.7824\end{pmatrix}$$
+$$\boldsymbol{\beta}_{new} = \begin{pmatrix}-0.5\\1.0-0.8\end{pmatrix} - 0.5\begin{pmatrix}-0.1115-0.3117-0.0352\end{pmatrix} = \begin{pmatrix}-0.4443\\1.1559-0.7824\end{pmatrix}$$
 
 ### 1.5 Nhận xét
 
@@ -171,9 +194,9 @@ $$\mathbf{a}_{dropout} = \frac{\mathbf{a} \odot \mathbf{M}}{1 - p} = \frac{(0.8,
 
 $\mathbf{z} = (2, 4, 6, 8)$
 
-$$\mu_\mathcal{B} = \frac{2+4+6+8}{4} = 5$$
+$$\mu_{\mathcal{B}} = \frac{2+4+6+8}{4} = 5$$
 
-$$\sigma_\mathcal{B}^2 = \frac{(2-5)^2+(4-5)^2+(6-5)^2+(8-5)^2}{4} = \frac{9+1+1+9}{4} = 5$$
+$$\sigma_{\mathcal{B}}^2 = \frac{(2-5)^2+(4-5)^2+(6-5)^2+(8-5)^2}{4} = \frac{9+1+1+9}{4} = 5$$
 
 $$\hat{z}_i = \frac{z_i - 5}{\sqrt{5 + 10^{-8}}} \approx \frac{z_i - 5}{2.236}$$
 
@@ -235,12 +258,111 @@ Vì negative log-likelihood lồi, mọi bài toán MLE cho phân phối thuộc
 
 ---
 
-## Câu 7. Vấn đề Triệt tiêu Đạo hàm (Vanishing Gradient) (Nâng cao)
+## Câu 7. Thử thách: Vanishing Gradient bằng Quy tắc Chuỗi
 
-Đạo hàm của hàm sigmoid là $\sigma'(z) = \sigma(z)(1-\sigma(z))$. 
+### 7.1 Chứng minh $\sigma'(z)\leq \frac14$
 
-Giá trị cực đại của đạo hàm này chỉ đạt được $0.25$ tại $z=0$, và nó hội tụ rất nhanh về $0$ khi $|z|$ tiến ra xa khỏi 0. Theo quy tắc chuỗi (Chain Rule) của thuật toán Backpropagation, gradient truyền về các tầng ẩn đầu tiên bằng tích của các đạo hàm cục bộ qua các tầng trên. 
+Với:
 
-Vì mỗi thành phần đạo hàm $\sigma'(z)$ luôn luôn $\le 0.25$, việc nhân chuỗi nhiều lần qua các tầng sẽ làm gradient nhỏ dần theo cấp số nhân (exponential decay). Khi mạng đủ sâu, tín hiệu gradient triệt tiêu hoàn toàn về 0 ở các tầng ẩn sâu nhất, khiến các trọng số không nhận được tín hiệu để cập nhật (Vanishing Gradient). Hậu quả là mạng bị tê liệt quá trình học, các tầng đầu tiên không thể rút trích được đặc trưng.
+$$\sigma(z)=\frac{1}{1+e^{-z}},$$
+
+ta có:
+
+$$\sigma'(z)=\sigma(z)(1-\sigma(z)).$$
+
+Đặt $s=\sigma(z)$. Vì sigmoid luôn nằm trong $(0,1)$:
+
+$$s(1-s)=s-s^2.$$
+
+Đây là parabola quay xuống, đạt cực đại khi:
+
+$$\frac{d}{ds}(s-s^2)=1-2s=0\Rightarrow s=\frac12.$$
+
+Giá trị cực đại:
+
+$$\frac12\left(1-\frac12\right)=\frac14.$$
+
+Vậy:
+
+$$0<\sigma'(z)\leq \frac14.$$
+
+### 7.2 Gradient tầng đầu bằng tích đạo hàm
+
+Với:
+
+$$L_{oss}=\frac12(a^{[L]}-y)^2,$$
+
+ta có:
+
+$$\frac{\partial L_{oss}}{\partial a^{[L]}}=a^{[L]}-y.$$
+
+Gradient theo $w_1$:
+
+$$\frac{\partial L_{oss}}{\partial w_1}
+=
+\frac{\partial L_{oss}}{\partial a^{[L]}}
+\frac{\partial a^{[L]}}{\partial a^{[L-1]}}
+\cdots
+\frac{\partial a^{[2]}}{\partial a^{[1]}}
+\frac{\partial a^{[1]}}{\partial w_1}.
+$$
+
+Với tầng $\ell\geq2$:
+
+$$\frac{\partial a^{[\ell]}}{\partial a^{[\ell-1]}}
+=\sigma'(z^{[\ell]})w_\ell.$$
+
+Với tầng đầu:
+
+$$\frac{\partial a^{[1]}}{\partial w_1}
+=\sigma'(z^{[1]})a^{[0]}.$$
+
+Do đó:
+
+$$\frac{\partial L_{oss}}{\partial w_1}
+=(a^{[L]}-y)
+\left[\prod_{\ell=2}^{L}\sigma'(z^{[\ell]})w_\ell\right]
+\sigma'(z^{[1]})a^{[0]}.$$
+
+### 7.3 Cận trên cho gradient
+
+Lấy trị tuyệt đối:
+
+$$\left|\frac{\partial L_{oss}}{\partial w_1}\right|
+\leq
+|a^{[L]}-y|
+\left[\prod_{\ell=2}^{L}|\sigma'(z^{[\ell]})||w_\ell|\right]
+|\sigma'(z^{[1]})||a^{[0]}|.$$
+
+Vì $|\sigma'(z)|\leq \frac14$ và $|w_\ell|\leq1$:
+
+$$\prod_{\ell=2}^{L}|\sigma'(z^{[\ell]})||w_\ell|
+\leq
+\left(\frac14\right)^{L-1}.$$
+
+Thêm $|\sigma'(z^{[1]})|\leq\frac14$:
+
+$$\left|\frac{\partial L_{oss}}{\partial w_1}\right|
+\leq
+|a^{[L]}-y|\,|a^{[0]}|
+\left(\frac14\right)^L.$$
+
+Nếu tách riêng phần suy giảm do các tầng sau, tín hiệu truyền từ output về tầng 1 bị nhân bởi ít nhất:
+
+$$\left(\frac14\right)^{L-1}.$$
+
+### 7.4 Ước lượng với $L=8$
+
+Phần suy giảm do các sigmoid tầng sau:
+
+$$\left(\frac14\right)^{7}=\frac{1}{16384}\approx 0.000061.$$
+
+Tức là trước khi gradient chạm tới tầng đầu, chỉ riêng chuỗi đạo hàm sigmoid đã có thể làm tín hiệu nhỏ đi hơn 16 nghìn lần. Nếu nhiều $z$ rơi vào vùng bão hòa của sigmoid, $\sigma'(z)$ còn nhỏ hơn $\frac14$ rất nhiều, nên gradient có thể gần như biến mất.
+
+### 7.5 Vì sao các kỹ thuật hiện đại giúp giảm vấn đề?
+
+- **ReLU:** $g'(z)=1$ khi $z>0$, nên gradient không luôn bị nhân với một số tối đa $0.25$ như sigmoid. Điều này giúp tín hiệu truyền ngược qua nhiều tầng tốt hơn.
+- **Batch Normalization:** Giữ phân phối $z$ ổn định hơn, giảm khả năng sigmoid/tanh rơi sâu vào vùng bão hòa nơi đạo hàm gần 0.
+- **Residual connection:** Tạo đường truyền tắt dạng $a^{[\ell+1]}=F(a^{[\ell]})+a^{[\ell]}$. Khi backprop, gradient có một nhánh cộng trực tiếp qua identity path, giúp tín hiệu không phải đi qua toàn bộ chuỗi đạo hàm phi tuyến.
 
 **HẾT ĐÁP ÁN**

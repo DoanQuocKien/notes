@@ -1,3 +1,27 @@
+---
+title: "CS114 - Exam Answer"
+author: "Quoc Kien"
+toc: true
+toc-depth: 3
+format:
+  pdf:
+    documentclass: scrartcl
+    toc: true
+    toc-depth: 3
+    geometry:
+      - margin=0.8in
+    include-in-header:
+      text: |
+        \usepackage{fvextra}
+        \DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,breakanywhere,commandchars=\\\{\}}
+        \usepackage{booktabs}
+        \usepackage{longtable}
+        \usepackage{array}
+        \usepackage{enumitem}
+        \setlist{nosep}
+        \AtBeginDocument{\hypersetup{bookmarksopen=true,bookmarksnumbered=true,bookmarksdepth=3}}
+---
+
 # **ĐÁP ÁN ĐỀ THI MACHINE LEARNING**
 
 BẢN ĐÁP ÁN CHI TIẾT
@@ -161,7 +185,7 @@ $$\frac{\partial L}{\partial w_{x2 \to h2}} = \delta_{h2} \cdot x_2 = (-0.006459
 Công thức: $w_{new} = w_{old} - \eta \cdot \frac{\partial L}{\partial w}$
 
 | Kết nối | $w_{old}$ | Gradient | $w_{new}$ |
-| :---- | :---- | :---- | :---- |
+| :--- | :--- | :--- | :--- |
 | $x_1 \to h_1$ | 0.1 | -0.006921 | $0.1 - 0.1(-0.006921) = 0.10069$ |
 | $x_2 \to h_1$ | 0.2 | -0.013842 | $0.2 - 0.1(-0.013842) = 0.20138$ |
 | $x_1 \to h_2$ | 0.3 | -0.006459 | $0.3 - 0.1(-0.006459) = 0.30065$ |
@@ -342,59 +366,59 @@ Thuộc tính có Information Gain lớn nhất được chọn vì nó **giảm
 
 Cần chứng minh:
 
-$$\sum_{i=1}^{n} \|x_i - \mu\|^2 = \frac{1}{2n} \sum_{i=1}^{n} \sum_{j=1}^{n} \|x_i - x_j\|^2$$
+$$\sum_{i=1}^{n} |x_i - \mu|^2 = \frac{1}{2n} \sum_{i=1}^{n} \sum_{j=1}^{n} |x_i - x_j|^2$$
 
 **Bước 1: Khai triển vế phải**
 
-$$\|x_i - x_j\|^2 = \|x_i\|^2 - 2x_i^T x_j + \|x_j\|^2$$
+$$|x_i - x_j|^2 = |x_i|^2 - 2x_i^T x_j + |x_j|^2$$
 
 Tính tổng kép:
 
-$$\sum_{i=1}^{n} \sum_{j=1}^{n} \|x_i - x_j\|^2 = \sum_{i=1}^{n} \sum_{j=1}^{n} \left( \|x_i\|^2 - 2x_i^T x_j + \|x_j\|^2 \right)$$
+$$\sum_{i=1}^{n} \sum_{j=1}^{n} |x_i - x_j|^2 = \sum_{i=1}^{n} \sum_{j=1}^{n} \left( |x_i|^2 - 2x_i^T x_j + |x_j|^2 \right)$$
 
 Tách tổng:
 
-$$= \sum_{i=1}^{n} \sum_{j=1}^{n} \|x_i\|^2 - 2\sum_{i=1}^{n} \sum_{j=1}^{n} x_i^T x_j + \sum_{i=1}^{n} \sum_{j=1}^{n} \|x_j\|^2$$
+$$= \sum_{i=1}^{n} \sum_{j=1}^{n} |x_i|^2 - 2\sum_{i=1}^{n} \sum_{j=1}^{n} x_i^T x_j + \sum_{i=1}^{n} \sum_{j=1}^{n} |x_j|^2$$
 
-Mỗi hạng thứ nhất và hạng thứ ba đều bằng $n \sum_{i=1}^{n} \|x_i\|^2$:
+Mỗi hạng thứ nhất và hạng thứ ba đều bằng $n \sum_{i=1}^{n} |x_i|^2$:
 
-$$= 2n \sum_{i=1}^{n} \|x_i\|^2 - 2\left(\sum_{i=1}^{n} x_i\right)^T \left(\sum_{j=1}^{n} x_j\right)$$
+$$= 2n \sum_{i=1}^{n} |x_i|^2 - 2\left(\sum_{i=1}^{n} x_i\right)^T \left(\sum_{j=1}^{n} x_j\right)$$
 
 Vì $\sum_{i=1}^{n} x_i = n\mu$:
 
-$$= 2n \sum_{i=1}^{n} \|x_i\|^2 - 2(n\mu)^T(n\mu)$$
+$$= 2n \sum_{i=1}^{n} |x_i|^2 - 2(n\mu)^T(n\mu)$$
 
-$$= 2n \sum_{i=1}^{n} \|x_i\|^2 - 2n^2 \|\mu\|^2$$
+$$= 2n \sum_{i=1}^{n} |x_i|^2 - 2n^2 |\mu|^2$$
 
 Chia cho $2n$:
 
-$$\frac{1}{2n} \sum_{i=1}^{n} \sum_{j=1}^{n} \|x_i - x_j\|^2 = \sum_{i=1}^{n} \|x_i\|^2 - n\|\mu\|^2$$
+$$\frac{1}{2n} \sum_{i=1}^{n} \sum_{j=1}^{n} |x_i - x_j|^2 = \sum_{i=1}^{n} |x_i|^2 - n|\mu|^2$$
 
 **Bước 2: Khai triển vế trái**
 
-$$\sum_{i=1}^{n} \|x_i - \mu\|^2 = \sum_{i=1}^{n} \left( \|x_i\|^2 - 2x_i^T \mu + \|\mu\|^2 \right)$$
+$$\sum_{i=1}^{n} |x_i - \mu|^2 = \sum_{i=1}^{n} \left( |x_i|^2 - 2x_i^T \mu + |\mu|^2 \right)$$
 
-$$= \sum_{i=1}^{n} \|x_i\|^2 - 2\mu^T \sum_{i=1}^{n} x_i + n\|\mu\|^2$$
+$$= \sum_{i=1}^{n} |x_i|^2 - 2\mu^T \sum_{i=1}^{n} x_i + n|\mu|^2$$
 
 Thay $\sum_{i=1}^{n} x_i = n\mu$:
 
-$$= \sum_{i=1}^{n} \|x_i\|^2 - 2\mu^T (n\mu) + n\|\mu\|^2$$
+$$= \sum_{i=1}^{n} |x_i|^2 - 2\mu^T (n\mu) + n|\mu|^2$$
 
-$$= \sum_{i=1}^{n} \|x_i\|^2 - 2n\|\mu\|^2 + n\|\mu\|^2$$
+$$= \sum_{i=1}^{n} |x_i|^2 - 2n|\mu|^2 + n|\mu|^2$$
 
-$$= \sum_{i=1}^{n} \|x_i\|^2 - n\|\mu\|^2$$
+$$= \sum_{i=1}^{n} |x_i|^2 - n|\mu|^2$$
 
 **Bước 3: So sánh**
 
-Cả vế trái và vế phải đều bằng $\sum_{i=1}^{n} \|x_i\|^2 - n\|\mu\|^2$.
+Cả vế trái và vế phải đều bằng $\sum_{i=1}^{n} |x_i|^2 - n|\mu|^2$.
 
-$$\therefore \sum_{i=1}^{n} \|x_i - \mu\|^2 = \frac{1}{2n} \sum_{i=1}^{n} \sum_{j=1}^{n} \|x_i - x_j\|^2 \quad \blacksquare$$
+$$\therefore \sum_{i=1}^{n} |x_i - \mu|^2 = \frac{1}{2n} \sum_{i=1}^{n} \sum_{j=1}^{n} |x_i - x_j|^2 \quad \blacksquare$$
 
 ### Suy ra hệ quả
 
 Chia cả hai vế cho $n$:
 
-$$\frac{1}{n} \sum_{i=1}^{n} \|x_i - \mu\|^2 = \frac{1}{2n^2} \sum_{i=1}^{n} \sum_{j=1}^{n} \|x_i - x_j\|^2 \quad \blacksquare$$
+$$\frac{1}{n} \sum_{i=1}^{n} |x_i - \mu|^2 = \frac{1}{2n^2} \sum_{i=1}^{n} \sum_{j=1}^{n} |x_i - x_j|^2 \quad \blacksquare$$
 
 **Ý nghĩa:** Trung bình khoảng cách bình phương từ các điểm đến tâm cụm (vế trái — đại lượng K-means tối thiểu hóa) bằng đúng một nửa trung bình khoảng cách bình phương giữa tất cả các cặp điểm (vế phải). Điều này cho thấy việc tối thiểu hóa distortion trong K-means tương đương với việc tối thiểu hóa khoảng cách nội cụm trung bình giữa mọi cặp điểm.
 

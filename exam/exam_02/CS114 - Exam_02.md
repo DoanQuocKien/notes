@@ -1,3 +1,26 @@
+---
+title: "CS114 - Exam 02"
+author: "Quoc Kien"
+toc: true
+toc-depth: 3
+format:
+  pdf:
+    documentclass: scrartcl
+    toc: true
+    toc-depth: 3
+    geometry:
+      - margin=0.8in
+    include-in-header:
+      text: |
+        \usepackage{fvextra}
+        \DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,breakanywhere,commandchars=\\\{\}}
+        \usepackage{booktabs}
+        \usepackage{longtable}
+        \usepackage{array}
+        \usepackage{enumitem}
+        \setlist{nosep}
+        \AtBeginDocument{\hypersetup{bookmarksopen=true,bookmarksnumbered=true,bookmarksdepth=3}}
+---
 
 # **ĐỀ THI MACHINE LEARNING — ĐỀ 02**
 
@@ -7,7 +30,10 @@
 
 ---
 
-Câu 1\. MLE cho Linear Regression — Chứng minh OLS
+
+---
+
+## Câu 1. MLE cho Linear Regression — Chứng minh OLS
 
 Cho tập dữ liệu $\{(x_i, y_i)\}_{i=1}^{n}$ với giả định nhiễu Gaussian:
 
@@ -22,7 +48,10 @@ $$y_i = \boldsymbol{\beta}^T \mathbf{x}_i + \epsilon_i, \quad \epsilon_i \sim \m
 
 ---
 
-Câu 2\. Gaussian Discriminant Analysis (GDA)
+
+---
+
+## Câu 2. Gaussian Discriminant Analysis (GDA)
 
 Cho bảng dữ liệu 1 chiều ($p=1$) với nhãn nhị phân:
 
@@ -47,7 +76,10 @@ Cho bảng dữ liệu 1 chiều ($p=1$) với nhãn nhị phân:
 
 ---
 
-Câu 3\. Logistic Regression — Gradient Descent Một Bước
+
+---
+
+## Câu 3. Logistic Regression — Gradient Descent Một Bước
 
 Cho mô hình Logistic Regression có $\boldsymbol{\beta}_{init} = (0, 0, 0)$ (bias, $\beta_1$, $\beta_2$). Cho 6 mẫu:
 
@@ -69,7 +101,10 @@ Cho mô hình Logistic Regression có $\boldsymbol{\beta}_{init} = (0, 0, 0)$ (b
 
 ---
 
-Câu 4\. Decision Tree — Entropy và Information Gain
+
+---
+
+## Câu 4. Decision Tree — Entropy và Information Gain
 
 Cho bảng dữ liệu phân loại rủi ro tín dụng:
 
@@ -95,7 +130,10 @@ Cho bảng dữ liệu phân loại rủi ro tín dụng:
 
 ---
 
-Câu 5\. Backpropagation — Mạng 2-2-1 với Squared Error
+
+---
+
+## Câu 5. Backpropagation — Mạng 2-2-1 với Squared Error
 
 Cho mạng neural network:
 
@@ -130,7 +168,10 @@ Cho mạng neural network:
 
 ---
 
-Câu 6\. K-means — Chọn K và Distortion
+
+---
+
+## Câu 6. K-means — Chọn K và Distortion
 
 Cho 8 điểm dữ liệu 1D:
 
@@ -144,8 +185,24 @@ $$x = \{1, 2, 3, 10, 11, 12, 20, 21\}$$
 
 ---
 
-Câu 7 (Nâng cao). Hội tụ của thuật toán K-means
+## Câu 7. Thử thách: Hội tụ của K-means và Giới hạn của Đảm bảo Hội tụ
 
-Dựa vào định nghĩa hàm mục tiêu Distortion (Sum of Squared Errors), hãy lập luận toán học để chứng minh vì sao thuật toán K-means (sử dụng Coordinate Descent) luôn luôn hội tụ sau một số vòng lặp hữu hạn, nhưng không thể đảm bảo luôn đạt được cực tiểu toàn cục (global minimum).
+Dựa vào hàm mục tiêu K-means:
+
+$$J(\mathbf{c}, \boldsymbol{\mu})=\sum_{i=1}^{m}\left\|\mathbf{x}^{(i)}-\boldsymbol{\mu}_{c_i}\right\|_2^2$$
+
+với $c_i \in \{1,\ldots,K\}$ là nhãn cụm của điểm $\mathbf{x}^{(i)}$.
+
+**Hãy:**
+
+1. Chứng minh bước gán cụm không thể làm tăng $J$ nếu các tâm cụm được giữ cố định.
+2. Chứng minh bước cập nhật tâm cụm không thể làm tăng $J$ nếu các nhãn cụm được giữ cố định.
+3. Kết hợp hai ý trên để lập luận vì sao K-means hội tụ sau hữu hạn bước lặp.
+4. Dùng bộ dữ liệu 1D $x=\{0,2,3,10,11,12\}$ với $K=2$:
+   - Trường hợp A: khởi tạo $\mu_1=0$, $\mu_2=10$.
+   - Trường hợp B: khởi tạo $\mu_1=2$, $\mu_2=3$.
+   Thực hiện K-means đến khi hội tụ và tính SSE cuối cùng cho mỗi trường hợp.
+5. Giải thích vì sao việc $J$ giảm đơn điệu và hội tụ hữu hạn vẫn không đủ để chứng minh K-means luôn đạt cực tiểu toàn cục.
+6. Nêu một chiến lược thực tế để giảm rủi ro bị kẹt ở nghiệm cục bộ.
 
 **HẾT**

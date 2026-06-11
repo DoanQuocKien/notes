@@ -1,3 +1,26 @@
+---
+title: "CS114 - Exam 03 Answer"
+author: "Quoc Kien"
+toc: true
+toc-depth: 3
+format:
+  pdf:
+    documentclass: scrartcl
+    toc: true
+    toc-depth: 3
+    geometry:
+      - margin=0.8in
+    include-in-header:
+      text: |
+        \usepackage{fvextra}
+        \DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,breakanywhere,commandchars=\\\{\}}
+        \usepackage{booktabs}
+        \usepackage{longtable}
+        \usepackage{array}
+        \usepackage{enumitem}
+        \setlist{nosep}
+        \AtBeginDocument{\hypersetup{bookmarksopen=true,bookmarksnumbered=true,bookmarksdepth=3}}
+---
 
 # **ĐÁP ÁN ĐỀ THI MACHINE LEARNING — ĐỀ 03**
 
@@ -204,11 +227,11 @@ Kích thước: $(3 \times 10)(10 \times 5) = 3 \times 5$ = kích thước $\mat
 
 ### 6.1 Khai triển
 
-$$f(\mu) = \sum_{i=1}^{m}\|x_i - \mu\|^2 = \sum_{i=1}^{m}(x_i - \mu)^T(x_i - \mu)$$
+$$f(\mu) = \sum_{i=1}^{m}\|x_i - \mu\|_2^2 = \sum_{i=1}^{m}(x_i - \mu)^T(x_i - \mu)$$
 
-$$= \sum_{i=1}^{m}(\|x_i\|^2 - 2\mu^T x_i + \|\mu\|^2)$$
+$$= \sum_{i=1}^{m}(\|x_i\|_2^2 - 2\mu^T x_i + \|\mu\|_2^2)$$
 
-$$= \sum_{i=1}^{m}\|x_i\|^2 - 2\mu^T\sum_{i=1}^{m}x_i + m\|\mu\|^2 \quad \blacksquare$$
+$$= \sum_{i=1}^{m}\|x_i\|_2^2 - 2\mu^T\sum_{i=1}^{m}x_i + m\|\mu\|_2^2 \quad \blacksquare$$
 
 ### 6.2 Gradient
 
@@ -224,20 +247,102 @@ $$\mu^* = \frac{1}{4}[(1,3)+(2,5)+(4,1)+(5,3)] = \frac{(12,12)}{4} = (3, 3)$$
 
 Distortion:
 
-$$\|(1,3)-(3,3)\|^2 = 4+0 = 4$$
-$$\|(2,5)-(3,3)\|^2 = 1+4 = 5$$
-$$\|(4,1)-(3,3)\|^2 = 1+4 = 5$$
-$$\|(5,3)-(3,3)\|^2 = 4+0 = 4$$
+$$|(1,3)-(3,3)|^2 = 4+0 = 4$$
+$$|(2,5)-(3,3)|^2 = 1+4 = 5$$
+$$|(4,1)-(3,3)|^2 = 1+4 = 5$$
+$$|(5,3)-(3,3)|^2 = 4+0 = 4$$
 
 $$f(\mu) = (4+5+5+4) = 18$$
 
 ---
 
-## Câu 7. So sánh Gradient Descent và Newton's Method (Nâng cao)
+## Câu 7. Thử thách: Newton's Method cho Logistic Regression
 
-- **Cơ chế:** Gradient Descent là phương pháp tối ưu chỉ sử dụng đạo hàm bậc 1 ($\nabla J$). Newton's Method tối ưu mạnh mẽ hơn bằng cách sử dụng cả đạo hàm bậc 1 và độ cong bậc 2 của hàm số thông qua ma trận Hessian $H$. Công thức cập nhật của nó có chứa $H^{-1}\nabla J$.
-- **Tốc độ hội tụ:** Nhờ có thông tin độ cong, Newton's Method có tốc độ hội tụ bậc 2 (Quadratic Convergence), chỉ cần số bước lặp rất ít và đặc biệt là **không cần điều chỉnh siêu tham số learning rate $\alpha$**. Trong khi đó, Gradient Descent hội tụ tuyến tính (Linear), rất chậm và phụ thuộc lớn vào việc chọn $\alpha$.
-- **Chi phí phần cứng:** Dù Newton's method hội tụ trong ít bước lặp, chi phí ở mỗi bước lại vô cùng lớn. Việc tính và nghịch đảo ma trận Hessian $p \times p$ đòi hỏi chi phí thuật toán $\mathcal{O}(p^3)$. Nếu mô hình có số lượng thuộc tính $p$ rất lớn (hàng triệu), Newton's Method trở nên bất khả thi. Khi đó, Gradient Descent với chi phí $\mathcal{O}(p)$ ở mỗi vòng lặp là lựa chọn duy nhất.
+### 7.1 Gradient
+
+Đặt:
+
+$$z_i=\mathbf{x}_i^T\boldsymbol{\beta},\quad p_i=\sigma(z_i).$$
+
+Với một mẫu:
+
+$$J_i=-y_i\log p_i-(1-y_i)\log(1-p_i).$$
+
+Ta có:
+
+$$\frac{\partial J_i}{\partial p_i}=-\frac{y_i}{p_i}+\frac{1-y_i}{1-p_i},\quad
+\frac{\partial p_i}{\partial z_i}=p_i(1-p_i).$$
+
+Nhân lại:
+
+$$\frac{\partial J_i}{\partial z_i}
+=\left(-\frac{y_i}{p_i}+\frac{1-y_i}{1-p_i}\right)p_i(1-p_i)
+=p_i-y_i.$$
+
+Vì $z_i=\mathbf{x}_i^T\boldsymbol{\beta}$:
+
+$$\nabla_{\boldsymbol{\beta}}J_i=(p_i-y_i)\mathbf{x}_i.$$
+
+Cộng toàn bộ mẫu:
+
+$$\nabla J(\boldsymbol{\beta})=\mathbf{X}^T(\mathbf{p}-\mathbf{y}).$$
+
+### 7.2 Hessian
+
+Gradient là:
+
+$$\nabla J=\sum_{i=1}^{m}(p_i-y_i)\mathbf{x}_i.$$
+
+Vì:
+
+$$\frac{\partial p_i}{\partial \boldsymbol{\beta}}=p_i(1-p_i)\mathbf{x}_i,$$
+
+nên:
+
+$$\nabla^2J=\sum_{i=1}^{m}p_i(1-p_i)\mathbf{x}_i\mathbf{x}_i^T.$$
+
+Dạng ma trận:
+
+$$\nabla^2J=\mathbf{X}^T\mathbf{R}\mathbf{X},$$
+
+trong đó:
+
+$$\mathbf{R}=\operatorname{diag}(p_1(1-p_1),\ldots,p_m(1-p_m)).$$
+
+### 7.3 Tính lồi
+
+Với mọi vector $\mathbf{v}$:
+
+$$\mathbf{v}^T\nabla^2J\mathbf{v}
+=\mathbf{v}^T\mathbf{X}^T\mathbf{R}\mathbf{X}\mathbf{v}
+=(\mathbf{X}\mathbf{v})^T\mathbf{R}(\mathbf{X}\mathbf{v}).$$
+
+Vì $p_i(1-p_i)\geq 0$, $\mathbf{R}$ là positive semidefinite. Do đó:
+
+$$\mathbf{v}^T\nabla^2J\mathbf{v}\geq 0.$$
+
+Suy ra $J$ là hàm lồi.
+
+### 7.4 Cập nhật Newton
+
+Newton's Method dùng:
+
+$$\boldsymbol{\beta}_{new}
+=\boldsymbol{\beta}-(\nabla^2J)^{-1}\nabla J.$$
+
+Thay gradient và Hessian:
+
+$$\boldsymbol{\beta}_{new}
+=\boldsymbol{\beta}
+-\left(\mathbf{X}^T\mathbf{R}\mathbf{X}\right)^{-1}\mathbf{X}^T(\mathbf{p}-\mathbf{y}).$$
+
+### 7.5 So sánh với Gradient Descent
+
+Gradient Descent dùng:
+
+$$\boldsymbol{\beta}_{new}=\boldsymbol{\beta}-\alpha\mathbf{X}^T(\mathbf{p}-\mathbf{y}).$$
+
+Nó rẻ hơn mỗi bước nhưng phụ thuộc learning rate $\alpha$ và thường cần nhiều vòng lặp. Newton dùng thông tin độ cong nên thường hội tụ rất nhanh gần nghiệm tối ưu, nhưng phải tạo và giải hệ tuyến tính với Hessian $p\times p$. Chi phí có thể lên tới $\mathcal{O}(p^3)$ nếu nghịch đảo trực tiếp, nên khó dùng khi số đặc trưng $p$ rất lớn.
 
 ---
 

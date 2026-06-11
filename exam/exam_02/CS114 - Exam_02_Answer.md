@@ -1,3 +1,26 @@
+---
+title: "CS114 - Exam 02 Answer"
+author: "Quoc Kien"
+toc: true
+toc-depth: 3
+format:
+  pdf:
+    documentclass: scrartcl
+    toc: true
+    toc-depth: 3
+    geometry:
+      - margin=0.8in
+    include-in-header:
+      text: |
+        \usepackage{fvextra}
+        \DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,breakanywhere,commandchars=\\\{\}}
+        \usepackage{booktabs}
+        \usepackage{longtable}
+        \usepackage{array}
+        \usepackage{enumitem}
+        \setlist{nosep}
+        \AtBeginDocument{\hypersetup{bookmarksopen=true,bookmarksnumbered=true,bookmarksdepth=3}}
+---
 
 # **ĐÁP ÁN ĐỀ THI MACHINE LEARNING — ĐỀ 02**
 
@@ -314,15 +337,106 @@ Giảm rất mạnh từ $K=2$ sang $K=3$ (từ 14.1 xuống 0.56). **Chọn $K 
 
 ---
 
-## Câu 7. Hội tụ của thuật toán K-means (Nâng cao)
+## Câu 7. Thử thách: Hội tụ của K-means và Giới hạn của Đảm bảo Hội tụ
 
-Hàm mục tiêu của K-means là tổng bình phương khoảng cách: $J = \sum_{i=1}^m \|x_i - \mu_{c_i}\|^2 \ge 0$.
-Thuật toán là quá trình Coordinate Descent với 2 bước:
-1. **Gán cụm:** Chọn tâm cụm gần nhất cho mỗi điểm làm tổng khoảng cách $J$ giảm đi hoặc giữ nguyên.
-2. **Cập nhật tâm:** Việc cập nhật tâm cụm bằng giá trị trung bình (mean) chính là nghiệm tối ưu giải bài toán cực tiểu hóa $J$ cho mỗi cụm, do đó $J$ tiếp tục giảm hoặc giữ nguyên.
+### 7.1 Bước gán cụm
 
-Vì $J$ luôn giảm hoặc không đổi qua mỗi bước lặp và bị chặn dưới bởi 0, cộng với việc tập hợp các cách phân chia $m$ điểm vào $K$ nhóm là hữu hạn, nên thuật toán chắc chắn sẽ dừng và hội tụ.
+Khi các tâm $\boldsymbol{\mu}_1,\ldots,\boldsymbol{\mu}_K$ cố định, mỗi điểm $\mathbf{x}^{(i)}$ đóng góp:
 
-Tuy nhiên, hàm $J$ không lồi hoàn toàn (non-convex). Do tính tham lam của quá trình lặp, thuật toán có thể bị kẹt ở các điểm cực tiểu cục bộ (local minimum) nếu các tâm cụm ban đầu được khởi tạo ở các vị trí không thuận lợi.
+$$\left\|\mathbf{x}^{(i)}-\boldsymbol{\mu}_{c_i}\right\|_2^2.$$
+
+Chọn cụm gần nhất nghĩa là:
+
+$$c_i^{new}=\arg\min_k\left\|\mathbf{x}^{(i)}-\boldsymbol{\mu}_k\right\|_2^2.$$
+
+Do đó với từng điểm:
+
+$$\left\|\mathbf{x}^{(i)}-\boldsymbol{\mu}_{c_i^{new}}\right\|_2^2
+\leq
+\left\|\mathbf{x}^{(i)}-\boldsymbol{\mu}_{c_i^{old}}\right\|_2^2.$$
+
+Cộng trên mọi điểm suy ra $J$ không tăng.
+
+### 7.2 Bước cập nhật tâm
+
+Khi nhãn cụm cố định, bài toán của cụm $C_k$ là:
+
+$$\min_{\boldsymbol{\mu}_k}\sum_{\mathbf{x}^{(i)}\in C_k}\left\|\mathbf{x}^{(i)}-\boldsymbol{\mu}_k\right\|_2^2.$$
+
+Lấy gradient:
+
+$$\nabla_{\boldsymbol{\mu}_k}J_k
+=-2\sum_{\mathbf{x}^{(i)}\in C_k}\mathbf{x}^{(i)}+2|C_k|\boldsymbol{\mu}_k.$$
+
+Đặt bằng 0:
+
+$$\boldsymbol{\mu}_k=\frac{1}{|C_k|}\sum_{\mathbf{x}^{(i)}\in C_k}\mathbf{x}^{(i)}.$$
+
+Vì mean là nghiệm tối ưu của bài toán bình phương nhỏ nhất trong cụm, bước cập nhật tâm cũng không làm tăng $J$.
+
+### 7.3 Hội tụ hữu hạn
+
+Mỗi vòng lặp gồm hai bước đều làm $J$ giảm hoặc giữ nguyên. Đồng thời $J\geq 0$. Hơn nữa, với $m$ điểm và $K$ cụm, số cách gán cụm tối đa là $K^m$, hữu hạn. Vì thuật toán không thể tạo vô hạn trạng thái gán cụm khác nhau với $J$ giảm mãi, K-means phải dừng sau hữu hạn bước khi nhãn cụm không đổi.
+
+### 7.4 Ví dụ hai khởi tạo
+
+Dữ liệu: $x=\{0,2,3,10,11,12\}$, $K=2$.
+
+**Trường hợp A:** $\mu_1=0$, $\mu_2=10$.
+
+Gán cụm:
+
+$$C_1=\{0,2,3\},\quad C_2=\{10,11,12\}.$$
+
+Cập nhật:
+
+$$\mu_1=\frac{0+2+3}{3}=\frac{5}{3},\quad \mu_2=\frac{10+11+12}{3}=11.$$
+
+Gán lại không đổi, nên hội tụ. SSE:
+
+$$J_A=(0-\tfrac{5}{3})^2+(2-\tfrac{5}{3})^2+(3-\tfrac{5}{3})^2+(10-11)^2+(11-11)^2+(12-11)^2.$$
+
+$$J_A=\frac{25}{9}+\frac{1}{9}+\frac{16}{9}+1+0+1=\frac{42}{9}+2=\frac{20}{3}\approx 6.667.$$
+
+**Trường hợp B:** $\mu_1=2$, $\mu_2=3$.
+
+Lần gán đầu:
+
+$$C_1=\{0,2\},\quad C_2=\{3,10,11,12\}.$$
+
+Cập nhật:
+
+$$\mu_1=1,\quad \mu_2=\frac{3+10+11+12}{4}=9.$$
+
+Gán lại:
+
+$$C_1=\{0,2,3\},\quad C_2=\{10,11,12\}.$$
+
+Cập nhật tiếp:
+
+$$\mu_1=\frac{5}{3},\quad \mu_2=11.$$
+
+SSE cuối cùng cũng là:
+
+$$J_B=\frac{20}{3}\approx 6.667.$$
+
+### 7.5 Vì sao vẫn không đảm bảo global minimum?
+
+Trong ví dụ này hai khởi tạo đều đi về cùng nghiệm tốt. Tuy nhiên, đây chỉ là một ví dụ thuận lợi, không phải một chứng minh global optimum cho mọi dữ liệu.
+
+Lý do cốt lõi là $J(\mathbf{c},\boldsymbol{\mu})$ không lồi theo đồng thời cả nhãn cụm rời rạc $\mathbf{c}$ và tâm cụm $\boldsymbol{\mu}$. K-means chỉ tối ưu từng khối biến một cách tham lam:
+
+- Tối ưu nhãn khi tâm cố định.
+- Tối ưu tâm khi nhãn cố định.
+
+Một trạng thái có thể ổn định theo hai bước này nhưng vẫn không phải cách chia tốt nhất trong toàn bộ không gian phân cụm. Do đó, hội tụ hữu hạn chỉ đảm bảo đạt một điểm cố định của thuật toán Lloyd, không đảm bảo cực tiểu toàn cục.
+
+### 7.6 Cách giảm rủi ro nghiệm cục bộ
+
+Trong thực tế thường dùng:
+
+- Chạy K-means nhiều lần với nhiều khởi tạo khác nhau rồi chọn nghiệm có SSE nhỏ nhất.
+- Dùng K-means++ để chọn tâm ban đầu xa nhau hơn và có xác suất khởi tạo tốt hơn.
+- Kiểm tra elbow/silhouette để tránh chọn $K$ quá sai so với cấu trúc dữ liệu.
 
 **HẾT ĐÁP ÁN**

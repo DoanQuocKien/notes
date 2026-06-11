@@ -1,4 +1,26 @@
-
+---
+title: "CS114 - Exam 01"
+author: "Quoc Kien"
+toc: true
+toc-depth: 3
+format:
+  pdf:
+    documentclass: scrartcl
+    toc: true
+    toc-depth: 3
+    geometry:
+      - margin=0.8in
+    include-in-header:
+      text: |
+        \usepackage{fvextra}
+        \DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,breakanywhere,commandchars=\\\{\}}
+        \usepackage{booktabs}
+        \usepackage{longtable}
+        \usepackage{array}
+        \usepackage{enumitem}
+        \setlist{nosep}
+        \AtBeginDocument{\hypersetup{bookmarksopen=true,bookmarksnumbered=true,bookmarksdepth=3}}
+---
 
 # **ĐỀ THI MACHINE LEARNING — ĐỀ 01**
 
@@ -8,7 +30,10 @@
 
 ---
 
-Câu 1\. OLS Linear Regression bằng Ma trận
+
+---
+
+## Câu 1. OLS Linear Regression bằng Ma trận
 
 Cho 5 điểm dữ liệu huấn luyện với mô hình $\hat{y} = \beta_0 + \beta_1 x$:
 
@@ -30,7 +55,10 @@ Cho 5 điểm dữ liệu huấn luyện với mô hình $\hat{y} = \beta_0 + \b
 
 ---
 
-Câu 2\. Logistic Regression — Thay số Tính Xác suất và Loss
+
+---
+
+## Câu 2. Logistic Regression — Thay số Tính Xác suất và Loss
 
 Cho mô hình Logistic Regression có $\boldsymbol{\beta} = (0.5, -1.2, 0.8)$, phần tử đầu tiên là bias. Cho bảng 8 mẫu sau:
 
@@ -54,7 +82,10 @@ Cho mô hình Logistic Regression có $\boldsymbol{\beta} = (0.5, -1.2, 0.8)$, p
 
 ---
 
-Câu 3\. Họ Phân Phối Số Mũ (Exponential Family) và GLM
+
+---
+
+## Câu 3. Họ Phân Phối Số Mũ (Exponential Family) và GLM
 
 **Hãy:**
 
@@ -64,7 +95,10 @@ Câu 3\. Họ Phân Phối Số Mũ (Exponential Family) và GLM
 
 ---
 
-Câu 4\. Neural Network Forward Pass — Mạng 3-2-1
+
+---
+
+## Câu 4. Neural Network Forward Pass — Mạng 3-2-1
 
 Cho mạng gồm:
 
@@ -87,7 +121,10 @@ $$\mathbf{W}^{[2]} = \begin{pmatrix} 0.7 & -0.5 \end{pmatrix}, \quad b^{[2]} = 0
 
 ---
 
-Câu 5\. Decision Tree — Gini Index
+
+---
+
+## Câu 5. Decision Tree — Gini Index
 
 Cho bảng dữ liệu phân loại khách hàng mua sản phẩm:
 
@@ -113,7 +150,10 @@ Cho bảng dữ liệu phân loại khách hàng mua sản phẩm:
 
 ---
 
-Câu 6\. K-means Clustering — Trace Thuật Toán
+
+---
+
+## Câu 6. K-means Clustering — Trace Thuật Toán
 
 Cho 6 điểm dữ liệu trong không gian 2D:
 
@@ -139,7 +179,10 @@ $$\mu_1^{(0)} = (1, 2), \quad \mu_2^{(0)} = (9, 8)$$
 
 ---
 
-Câu 7\. Bias-Variance Decomposition
+
+---
+
+## Câu 7. Bias-Variance Decomposition
 
 **Hãy:**
 
@@ -156,7 +199,10 @@ Câu 7\. Bias-Variance Decomposition
 
 ---
 
-Câu 8. Tính phi tuyến trong Mạng Neural (Nâng cao)
+
+---
+
+## Câu 8. Tính phi tuyến trong Mạng Neural (Nâng cao)
 
 Vì sao ta không thể dùng hàm kích hoạt tuyến tính (linear activation, $g(z)=z$) cho tất cả các tầng ẩn trong một mạng Neural Network có nhiều tầng? Chứng minh bằng toán học.
 

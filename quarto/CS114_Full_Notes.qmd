@@ -835,6 +835,34 @@ Công thức cập nhật đa biến sử dụng ma trận nghịch đảo Hessi
 
 $$\boldsymbol{\beta}^{(t+1)} = \boldsymbol{\beta}^{(t)} - H^{-1} \nabla J(\boldsymbol{\beta}^{(t)})$$
 
+**Dạng ma trận dùng trong bài thi Newton.**
+
+Với ma trận thiết kế $\mathbf{X}\in\mathbb{R}^{n\times p}$, vector xác suất $\mathbf{p}=\sigma(\mathbf{X}\boldsymbol{\beta})$, và vector nhãn $\mathbf{y}$:
+
+$$\nabla J(\boldsymbol{\beta})=\mathbf{X}^T(\mathbf{p}-\mathbf{y})$$
+
+Đặt ma trận đường chéo:
+
+$$\mathbf{R}=\operatorname{diag}\left(p_1(1-p_1),p_2(1-p_2),\ldots,p_n(1-p_n)\right)$$
+
+thì Hessian là:
+
+$$\nabla^2J(\boldsymbol{\beta})=\mathbf{X}^T\mathbf{R}\mathbf{X}$$
+
+và bước Newton có dạng:
+
+$$\boldsymbol{\beta}_{new}
+=\boldsymbol{\beta}
+-\left(\mathbf{X}^T\mathbf{R}\mathbf{X}\right)^{-1}\mathbf{X}^T(\mathbf{p}-\mathbf{y})$$
+
+Để kiểm tra tính lồi, lấy bất kỳ vector $\mathbf{v}$:
+
+$$\mathbf{v}^T\nabla^2J\mathbf{v}
+=\mathbf{v}^T\mathbf{X}^T\mathbf{R}\mathbf{X}\mathbf{v}
+=(\mathbf{X}\mathbf{v})^T\mathbf{R}(\mathbf{X}\mathbf{v})\ge 0$$
+
+vì mọi phần tử đường chéo $p_i(1-p_i)$ đều không âm. Đây là lý do Logistic Regression với cross-entropy có nghiệm tối ưu toàn cục, còn Newton's Method có thể tận dụng độ cong để đi rất nhanh gần nghiệm.
+
 #### So sánh đặc tính vận hành:
 
 | Thuật toán Tối ưu | Cơ chế Đạo hàm | Ưu điểm Vận hành | Nhược điểm Khuyết góc |
@@ -2518,11 +2546,55 @@ $$\sigma'(z)=\sigma(z)(1-\sigma(z))$$
 
 Khi $z$ rất lớn, $\sigma(z)\approx1$, nên $\sigma'(z)\approx0$. Khi $z$ rất âm, $\sigma(z)\approx0$, nên $\sigma'(z)\approx0$. Nếu nhiều tầng đều nhân với đạo hàm gần 0, tín hiệu đạo hàm về các tầng đầu gần như biến mất. Đây là hiện tượng **gradient biến mất**.
 
+**Cận trên exam-style cho vanishing gradient.**
+
+Vì $\sigma(z)\in(0,1)$, đặt $s=\sigma(z)$ thì:
+
+$$\sigma'(z)=s(1-s)$$
+
+Hàm $s(1-s)$ đạt cực đại tại $s=\frac12$, nên:
+
+$$0<\sigma'(z)\leq\frac14$$
+
+Với một mạng sâu dạng vô hướng:
+
+$$a^{[0]}=x,\quad z^{[\ell]}=w_{\ell}a^{[\ell-1]},\quad a^{[\ell]}=\sigma(z^{[\ell]})$$
+
+gradient về trọng số tầng đầu có dạng tích theo quy tắc chuỗi:
+
+$$
+\frac{\partial L}{\partial w_1}
+=
+\frac{\partial L}{\partial a^{[L]}}
+\left[\prod_{\ell=2}^{L}\sigma'(z^{[\ell]})w_{\ell}\right]
+\sigma'(z^{[1]})a^{[0]}
+$$
+
+Nếu $|w_{\ell}|\leq1$, phần tín hiệu đi từ tầng cuối về tầng đầu bị chặn bởi:
+
+$$
+\prod_{\ell=2}^{L}|\sigma'(z^{[\ell]})w_{\ell}|
+\leq
+\left(\frac14\right)^{L-1}
+$$
+
+Ví dụ với $L=8$:
+
+$$\left(\frac14\right)^7=\frac{1}{16384}\approx0.000061$$
+
+Nghĩa là chỉ riêng việc nhân chuỗi các đạo hàm sigmoid đã có thể làm tín hiệu nhỏ đi hơn 16 nghìn lần. Nếu nhiều neuron rơi vào vùng bão hòa, đạo hàm còn nhỏ hơn $\frac14$, nên gradient biến mất nhanh hơn nữa.
+
 ReLU:
 
 $$g(z)=\max(0,z)$$
 
 Đạo hàm của ReLU bằng $1$ khi $z>0$, nên ở miền dương tín hiệu đạo hàm đi qua dễ hơn.
+
+Ba cách giảm vanishing gradient thường gặp:
+
+- **ReLU:** tránh nhân gradient với một số luôn nhỏ hơn hoặc bằng $0.25$ như sigmoid.
+- **Batch Normalization:** giữ $z$ ít rơi vào vùng bão hòa, nên đạo hàm của sigmoid/tanh ít bị kéo về 0 hơn.
+- **Residual connection:** thêm đường tắt dạng $\mathbf{A}^{[l+1]}=F(\mathbf{A}^{[l]})+\mathbf{A}^{[l]}$, giúp gradient có một nhánh identity để chảy ngược về tầng trước.
 
 ```{python}
 #| label: activation-saturation
@@ -2584,6 +2656,49 @@ Tác dụng chính:
 - Giúp phân phối đầu vào của mỗi tầng ổn định hơn.
 - Cho phép dùng learning rate lớn hơn.
 - Thường làm quá trình train nhanh và mượt hơn.
+
+**Backward pass của Batch Normalization.**
+
+Trong bài tính tay, nếu một neuron có mini-batch $z_1,\ldots,z_m$ và:
+
+$$\tilde{z}_i=\gamma\hat{z}_i+\beta,\quad
+\hat{z}_i=\frac{z_i-\mu_{\mathcal{B}}}{\sqrt{\sigma_{\mathcal{B}}^2+\epsilon}}$$
+
+thì gradient từ tầng sau thường được ký hiệu:
+
+$$g_i=\frac{\partial L}{\partial \tilde{z}_i}$$
+
+Hai gradient dễ nhất là:
+
+$$\frac{\partial L}{\partial \gamma}=\sum_{i=1}^{m}g_i\hat{z}_i,\quad
+\frac{\partial L}{\partial \beta}=\sum_{i=1}^{m}g_i$$
+
+Gradient quay về từng $z_i$ có dạng gọn:
+
+$$
+\frac{\partial L}{\partial z_i}
+=\frac{\gamma}{m\sqrt{\sigma_{\mathcal{B}}^2+\epsilon}}
+\left[
+m g_i-\sum_{j=1}^{m}g_j-\hat{z}_i\sum_{j=1}^{m}g_j\hat{z}_j
+\right]
+$$
+
+Cách nhớ: có ba phần điều chỉnh. Phần $m g_i$ là gradient trực tiếp của phần tử $i$; phần $-\sum_j g_j$ xuất hiện vì mean phụ thuộc vào cả batch; phần $-\hat{z}_i\sum_j g_j\hat{z}_j$ xuất hiện vì variance cũng phụ thuộc vào cả batch.
+
+**Ví dụ mini-batch nhanh.** Với $z=(1,3,5,7)$, ta có $\mu_{\mathcal{B}}=4$, $\sigma_{\mathcal{B}}^2=5$, và:
+
+$$\hat{z}=\left(-\frac{3}{\sqrt5},-\frac{1}{\sqrt5},\frac{1}{\sqrt5},\frac{3}{\sqrt5}\right)$$
+
+Nếu $\gamma=2$, $\beta=-1$, thì:
+
+$$\tilde{z}=2\hat{z}-1$$
+
+Nếu $g=(1,-1,2,-2)$:
+
+$$\frac{\partial L}{\partial \beta}=0,\quad
+\frac{\partial L}{\partial \gamma}=\frac{-6}{\sqrt5}\approx-2.683$$
+
+Đây là đúng kiểu thay số cần cho câu BatchNorm trong đề thi.
 
 ---
 
@@ -3306,6 +3421,44 @@ $$\boldsymbol{\mu}_k \leftarrow \frac{\sum_{i=1}^{n} \mathbb{I}(c^{(i)} = k)\mat
 
 
 > **Chứng minh tính hội tụ:** Vì tại mỗi phân đoạn của Bước 1 và Bước 2, giá trị của hàm chi phí $J$ luôn luôn giảm hoặc giữ nguyên ($J^{(t+1)} \le J^{(t)}$), đồng thời hàm $J$ luôn bị chặn dưới bởi số 0, nên giải thuật $K$-means **chắc chắn luôn luôn hội tụ** về một điểm cực trị sau một số hữu hạn vòng lặp. Tuy nhiên, vì đây là hàm không lồi hoàn toàn, thuật toán có thể bị kẹt ở điểm cực tiểu cục bộ (Local Minimum) phụ thuộc vào cách khởi tạo tâm cụm ban đầu.
+
+**Bản chứng minh đầy đủ hơn để dùng khi thi.**
+
+K-means tối ưu hàm:
+
+$$J(\mathbf{c},\boldsymbol{\mu})=\sum_{i=1}^{m}\left\|\mathbf{x}^{(i)}-\boldsymbol{\mu}_{c_i}\right\|_2^2$$
+
+trong đó $c_i$ là nhãn cụm của điểm thứ $i$.
+
+**Bước 1: Gán cụm khi tâm cố định.** Với các tâm cụm không đổi, mỗi điểm được gán về tâm gần nhất:
+
+$$c_i^{new}=\arg\min_k\left\|\mathbf{x}^{(i)}-\boldsymbol{\mu}_k\right\|_2^2$$
+
+nên:
+
+$$\left\|\mathbf{x}^{(i)}-\boldsymbol{\mu}_{c_i^{new}}\right\|_2^2
+\leq
+\left\|\mathbf{x}^{(i)}-\boldsymbol{\mu}_{c_i^{old}}\right\|_2^2$$
+
+cho từng điểm. Cộng trên toàn bộ dữ liệu suy ra $J$ không tăng.
+
+**Bước 2: Cập nhật tâm khi nhãn cố định.** Với một cụm $C_k$ đã cố định, ta cần giải:
+
+$$\min_{\boldsymbol{\mu}_k}\sum_{\mathbf{x}^{(i)}\in C_k}\left\|\mathbf{x}^{(i)}-\boldsymbol{\mu}_k\right\|_2^2$$
+
+Lấy gradient:
+
+$$-2\sum_{\mathbf{x}^{(i)}\in C_k}\mathbf{x}^{(i)}+2|C_k|\boldsymbol{\mu}_k=0$$
+
+suy ra:
+
+$$\boldsymbol{\mu}_k=\frac{1}{|C_k|}\sum_{\mathbf{x}^{(i)}\in C_k}\mathbf{x}^{(i)}$$
+
+Tức là tâm mới chính là trung bình cộng, nghiệm tối ưu của cụm đó. Vì vậy bước cập nhật tâm cũng không làm tăng $J$.
+
+**Bước 3: Vì sao hữu hạn?** Có tối đa $K^m$ cách gán $m$ điểm vào $K$ cụm. Mỗi vòng lặp làm $J$ giảm hoặc giữ nguyên, và khi phép gán không đổi thì các tâm cũng không đổi. Vì số trạng thái gán cụm là hữu hạn, thuật toán phải dừng sau hữu hạn bước.
+
+**Điều không được hiểu sai:** Hội tụ không có nghĩa là đạt cực tiểu toàn cục. K-means là coordinate descent trên một bài toán có biến rời rạc $c_i$ và tâm liên tục $\boldsymbol{\mu}_k$, nên hàm mục tiêu không lồi toàn cục. Một nghiệm có thể ổn định với hai bước Lloyd nhưng vẫn kém hơn một cách chia khác. Trong thực tế nên dùng K-means++, chạy nhiều lần với nhiều khởi tạo, rồi chọn nghiệm có distortion nhỏ nhất.
 
 ---
 

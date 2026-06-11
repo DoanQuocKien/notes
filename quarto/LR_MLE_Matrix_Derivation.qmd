@@ -299,6 +299,44 @@ Quy trình thay số:
 
 ---
 
+### Dạng bài chứng minh: Gaussian MLE dẫn tới Normal Equations
+
+Khi đề yêu cầu chứng minh OLS từ giả định Gaussian, hãy viết theo chuỗi sau:
+
+Giả định:
+
+$$y_i=\boldsymbol{\beta}^T\mathbf{x}_i+\epsilon_i,\quad \epsilon_i\sim\mathcal{N}(0,\sigma^2)$$
+
+Suy ra:
+
+$$p(y_i\mid\mathbf{x}_i;\boldsymbol{\beta})
+=\frac{1}{\sqrt{2\pi}\sigma}
+\exp\left(-\frac{(y_i-\boldsymbol{\beta}^T\mathbf{x}_i)^2}{2\sigma^2}\right)$$
+
+Log-likelihood toàn bộ dữ liệu:
+
+$$\ell(\boldsymbol{\beta})
+=C-\frac{1}{2\sigma^2}\sum_{i=1}^{n}(y_i-\boldsymbol{\beta}^T\mathbf{x}_i)^2$$
+
+Trong đó $C$ không phụ thuộc $\boldsymbol{\beta}$. Vì vậy:
+
+$$\arg\max_{\boldsymbol{\beta}}\ell(\boldsymbol{\beta})
+=\arg\min_{\boldsymbol{\beta}}\sum_{i=1}^{n}(y_i-\boldsymbol{\beta}^T\mathbf{x}_i)^2$$
+
+Dạng ma trận:
+
+$$L(\boldsymbol{\beta})=\frac12\|\mathbf{y}-\mathbf{X}\boldsymbol{\beta}\|_2^2$$
+
+Gradient:
+
+$$\nabla L=-\mathbf{X}^T(\mathbf{y}-\mathbf{X}\boldsymbol{\beta})$$
+
+Đặt bằng 0:
+
+$$\mathbf{X}^T\mathbf{X}\boldsymbol{\beta}=\mathbf{X}^T\mathbf{y}$$
+
+Đây là Normal Equations.
+
 ## 8. Bộ bài tập mẫu có lời giải
 
 ### Bài 1: Giải OLS bằng ma trận với hai điểm

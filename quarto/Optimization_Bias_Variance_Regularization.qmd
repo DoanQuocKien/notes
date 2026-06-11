@@ -283,6 +283,29 @@ $$\operatorname{MSE}=\operatorname{Bias}^2+\operatorname{Variance}+\text{Noise}$
 
 ---
 
+### Dạng bài: một bước gradient descent có regularization
+
+Giả sử loss Ridge:
+
+$$J(\boldsymbol{\beta})=\frac{1}{2n}\|\mathbf{y}-\mathbf{X}\boldsymbol{\beta}\|_2^2+\lambda\|\boldsymbol{\beta}\|_2^2$$
+
+Gradient tổng:
+
+$$\nabla J
+=-\frac1n\mathbf{X}^T(\mathbf{y}-\mathbf{X}\boldsymbol{\beta})+2\lambda\boldsymbol{\beta}$$
+
+Nếu không phạt bias, tách $\boldsymbol{\beta}=(\beta_0,\beta_1,\ldots,\beta_p)$ và chỉ phạt từ $\beta_1$ trở đi:
+
+$$\nabla_{\beta_0}J=\nabla_{\beta_0}J_{data}$$
+
+$$\nabla_{\beta_j}J=\nabla_{\beta_j}J_{data}+2\lambda\beta_j,\quad j\ge1$$
+
+Sau đó cập nhật:
+
+$$\boldsymbol{\beta}_{new}=\boldsymbol{\beta}-\alpha\nabla J$$
+
+**Cách kiểm tra trực giác:** nếu $\lambda$ lớn, các hệ số không phải bias bị kéo về 0 mạnh hơn. Nếu bắt đầu tại $\boldsymbol{\beta}=0$, gradient của penalty bằng 0 ở bước đầu tiên; tác dụng regularization xuất hiện rõ hơn ở các bước sau.
+
 ## 9. Bộ bài tập mẫu có lời giải
 
 ### Bài 1: Tính objective Ridge

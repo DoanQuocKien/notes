@@ -354,6 +354,48 @@ print("P(y=1 | x):", round(posterior_y1, 3))
 print("Lớp dự đoán:", int(posterior_y1 >= 0.5))
 ```
 
+### Dạng bài: Naive Bayes từ bảng dữ liệu rời rạc
+
+Với dữ liệu email có ba thuộc tính nhị phân như `free`, `win`, `meeting`, cách làm luôn giống nhau.
+
+Giả sử cần phân loại email mới:
+
+| free | win | meeting |
+| :--- | :--- | :--- |
+| Yes | Yes | No |
+
+Bước 1: tính prior:
+
+$$P(\text{Spam})=\frac{\#\text{Spam}}{n},\quad P(\text{Not Spam})=\frac{\#\text{Not Spam}}{n}$$
+
+Bước 2: tính likelihood theo từng lớp:
+
+$$P(\text{free=Yes}\mid \text{Spam}),\quad
+P(\text{win=Yes}\mid \text{Spam}),\quad
+P(\text{meeting=No}\mid \text{Spam})$$
+
+và tương tự cho lớp Not Spam.
+
+Bước 3: nhân điểm số chưa chuẩn hóa:
+
+$$score(\text{Spam})=P(\text{Spam})
+P(\text{free=Yes}\mid\text{Spam})
+P(\text{win=Yes}\mid\text{Spam})
+P(\text{meeting=No}\mid\text{Spam})$$
+
+$$score(\text{Not Spam})=P(\text{Not Spam})
+P(\text{free=Yes}\mid\text{Not Spam})
+P(\text{win=Yes}\mid\text{Not Spam})
+P(\text{meeting=No}\mid\text{Not Spam})$$
+
+Bước 4: chọn lớp có score lớn hơn. Nếu muốn xác suất chuẩn hóa:
+
+$$P(\text{Spam}\mid x)=\frac{score(\text{Spam})}{score(\text{Spam})+score(\text{Not Spam})}$$
+
+Nếu một likelihood bằng 0, dùng Laplace smoothing:
+
+$$P(x_j=v\mid y=c)=\frac{\text{count}(x_j=v,y=c)+1}{\text{count}(y=c)+|\mathcal{V}_j|}$$
+
 ### Bộ bài tập mẫu có lời giải
 
 **Đề bài.** Một bộ phân loại sinh cho biết:

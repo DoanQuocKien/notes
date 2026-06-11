@@ -390,6 +390,42 @@ $$J=\sum_i\|\mathbf{x}^{(i)}-\boldsymbol{\mu}_{c_i}\|_2^2$$
 
 **Mẹo nhớ một dòng:** bước gán chọn tâm gần nhất; bước cập nhật kéo tâm về trung bình các điểm được gán.
 
+### Dạng bài chứng minh: khoảng cách tới mean và khoảng cách từng cặp
+
+Một đẳng thức hay gặp trong phân cụm là:
+
+$$\sum_{i=1}^{n}\|x_i-\mu\|^2=\frac{1}{2n}\sum_{i=1}^{n}\sum_{j=1}^{n}\|x_i-x_j\|^2$$
+
+với:
+
+$$\mu=\frac1n\sum_{i=1}^{n}x_i$$
+
+Cách chứng minh gọn:
+
+$$\sum_{i=1}^{n}\|x_i-\mu\|^2
+=\sum_i\|x_i\|^2-2\mu^T\sum_i x_i+n\|\mu\|^2$$
+
+Vì $\sum_i x_i=n\mu$:
+
+$$\sum_{i=1}^{n}\|x_i-\mu\|^2=\sum_i\|x_i\|^2-n\|\mu\|^2$$
+
+Mặt khác:
+
+$$\sum_i\sum_j\|x_i-x_j\|^2
+=\sum_i\sum_j(\|x_i\|^2-2x_i^Tx_j+\|x_j\|^2)$$
+
+Hai tổng đầu và cuối đều bằng $n\sum_i\|x_i\|^2$, còn tổng giữa:
+
+$$2\sum_i\sum_jx_i^Tx_j=2\left(\sum_i x_i\right)^T\left(\sum_jx_j\right)=2n^2\|\mu\|^2$$
+
+Do đó:
+
+$$\sum_i\sum_j\|x_i-x_j\|^2=2n\sum_i\|x_i\|^2-2n^2\|\mu\|^2$$
+
+Chia hai vế cho $2n$:
+
+$$\frac{1}{2n}\sum_i\sum_j\|x_i-x_j\|^2=\sum_i\|x_i\|^2-n\|\mu\|^2=\sum_i\|x_i-\mu\|^2$$
+
 ### Bộ bài tập mẫu có lời giải
 
 **Đề bài.** Cho các điểm một chiều $x=\{1,2,4,7,9\}$ và $K=2$. Khởi tạo $\mu_1=2$, $\mu_2=4$. Hãy thực hiện một vòng K-means đầu tiên.

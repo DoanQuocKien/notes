@@ -624,6 +624,44 @@ Quy trình thay số:
 
 ---
 
+### Dạng bài chứng minh: Gaussian MLE dẫn tới Normal Equations
+
+Khi đề yêu cầu chứng minh OLS từ giả định Gaussian, hãy viết theo chuỗi sau:
+
+Giả định:
+
+$$y_i=\boldsymbol{\beta}^T\mathbf{x}_i+\epsilon_i,\quad \epsilon_i\sim\mathcal{N}(0,\sigma^2)$$
+
+Suy ra:
+
+$$p(y_i\mid\mathbf{x}_i;\boldsymbol{\beta})
+=\frac{1}{\sqrt{2\pi}\sigma}
+\exp\left(-\frac{(y_i-\boldsymbol{\beta}^T\mathbf{x}_i)^2}{2\sigma^2}\right)$$
+
+Log-likelihood toàn bộ dữ liệu:
+
+$$\ell(\boldsymbol{\beta})
+=C-\frac{1}{2\sigma^2}\sum_{i=1}^{n}(y_i-\boldsymbol{\beta}^T\mathbf{x}_i)^2$$
+
+Trong đó $C$ không phụ thuộc $\boldsymbol{\beta}$. Vì vậy:
+
+$$\arg\max_{\boldsymbol{\beta}}\ell(\boldsymbol{\beta})
+=\arg\min_{\boldsymbol{\beta}}\sum_{i=1}^{n}(y_i-\boldsymbol{\beta}^T\mathbf{x}_i)^2$$
+
+Dạng ma trận:
+
+$$L(\boldsymbol{\beta})=\frac12\|\mathbf{y}-\mathbf{X}\boldsymbol{\beta}\|_2^2$$
+
+Gradient:
+
+$$\nabla L=-\mathbf{X}^T(\mathbf{y}-\mathbf{X}\boldsymbol{\beta})$$
+
+Đặt bằng 0:
+
+$$\mathbf{X}^T\mathbf{X}\boldsymbol{\beta}=\mathbf{X}^T\mathbf{y}$$
+
+Đây là Normal Equations.
+
 ## 8. Bộ bài tập mẫu có lời giải
 
 ### Bài 1: Giải OLS bằng ma trận với hai điểm
@@ -1095,6 +1133,41 @@ print("Cross-entropy từng mẫu:", np.round(losses, 3))
 print("Loss trung bình:", round(float(losses.mean()), 3))
 ```
 
+### Dạng bài: chứng minh MLE dẫn tới Binary Cross-Entropy
+
+Khi đề yêu cầu “viết likelihood, log-likelihood, rồi chứng minh tương đương với cross-entropy”, hãy làm theo khung này.
+
+Với $p_i=P(y_i=1\mid x_i;\boldsymbol{\beta})=\sigma(\boldsymbol{\beta}^T\mathbf{x}_i)$:
+
+$$P(y_i\mid x_i;\boldsymbol{\beta})=p_i^{y_i}(1-p_i)^{1-y_i}$$
+
+Likelihood toàn bộ dữ liệu:
+
+$$L(\boldsymbol{\beta})=\prod_{i=1}^{n}p_i^{y_i}(1-p_i)^{1-y_i}$$
+
+Log-likelihood:
+
+$$\ell(\boldsymbol{\beta})=\sum_{i=1}^{n}\left[y_i\log p_i+(1-y_i)\log(1-p_i)\right]$$
+
+Negative log-likelihood:
+
+$$-\ell(\boldsymbol{\beta})
+=-\sum_{i=1}^{n}\left[y_i\log p_i+(1-y_i)\log(1-p_i)\right]$$
+
+Đây chính là binary cross-entropy nếu bỏ hoặc chia thêm hệ số $\frac1n$. Vì nhân/chia bởi hằng số dương không đổi điểm tối ưu:
+
+$$\arg\max\ell(\boldsymbol{\beta})=\arg\min[-\ell(\boldsymbol{\beta})]$$
+
+Gradient của log-likelihood dùng cho gradient ascent:
+
+$$\nabla\ell(\boldsymbol{\beta})=\sum_{i=1}^{n}(y_i-p_i)\mathbf{x}_i$$
+
+Gradient của cross-entropy dùng cho gradient descent:
+
+$$\nabla J(\boldsymbol{\beta})=\frac1n\sum_{i=1}^{n}(p_i-y_i)\mathbf{x}_i$$
+
+Hai công thức khác dấu vì một bên tối đa hóa, một bên tối thiểu hóa.
+
 ### Bộ bài tập mẫu có lời giải
 
 **Đề bài.** Cho mô hình Logistic Regression có $\boldsymbol{\beta}=(-0.4, 1.2, -0.8)$, trong đó phần tử đầu tiên là bias. Với mẫu $\mathbf{x}=(1,2,1)$ và nhãn thật $y=1$, hãy tính xác suất dự đoán, lớp dự đoán, và loss cross-entropy.
@@ -1513,6 +1586,40 @@ print("Inverse link Gaussian:", np.round(gaussian_mu, 3))
 print("Inverse link Bernoulli:", np.round(bernoulli_mu, 3))
 print("Inverse link Poisson:", np.round(poisson_mu, 3))
 ```
+
+### Dạng bài: chứng minh Bernoulli sinh ra sigmoid
+
+Với Bernoulli:
+
+$$P(y;\phi)=\phi^y(1-\phi)^{1-y},\quad y\in\{0,1\}$$
+
+Lấy log:
+
+$$\log P(y;\phi)=y\log\phi+(1-y)\log(1-\phi)$$
+
+Biến đổi:
+
+$$\log P(y;\phi)=y\log\frac{\phi}{1-\phi}+\log(1-\phi)$$
+
+So với dạng Exponential Family:
+
+$$P(y\mid\eta)=b(y)\exp(\eta T(y)-a(\eta))$$
+
+ta đọc được:
+
+$$\eta=\log\frac{\phi}{1-\phi},\quad T(y)=y,\quad a(\eta)=\log(1+e^\eta)$$
+
+Từ $\eta=\log\frac{\phi}{1-\phi}$:
+
+$$e^\eta=\frac{\phi}{1-\phi}$$
+
+$$\phi=\frac{e^\eta}{1+e^\eta}=\frac{1}{1+e^{-\eta}}=\sigma(\eta)$$
+
+Vì GLM đặt $\eta=\theta^Tx$, ta có:
+
+$$P(y=1\mid x)=\sigma(\theta^Tx)$$
+
+Đây chính là Logistic Regression nhìn từ Exponential Family.
 
 ### Bộ bài tập mẫu có lời giải
 
@@ -1971,6 +2078,48 @@ print("P(y=1 | x):", round(posterior_y1, 3))
 print("Lớp dự đoán:", int(posterior_y1 >= 0.5))
 ```
 
+### Dạng bài: Naive Bayes từ bảng dữ liệu rời rạc
+
+Với dữ liệu email có ba thuộc tính nhị phân như `free`, `win`, `meeting`, cách làm luôn giống nhau.
+
+Giả sử cần phân loại email mới:
+
+| free | win | meeting |
+| :--- | :--- | :--- |
+| Yes | Yes | No |
+
+Bước 1: tính prior:
+
+$$P(\text{Spam})=\frac{\#\text{Spam}}{n},\quad P(\text{Not Spam})=\frac{\#\text{Not Spam}}{n}$$
+
+Bước 2: tính likelihood theo từng lớp:
+
+$$P(\text{free=Yes}\mid \text{Spam}),\quad
+P(\text{win=Yes}\mid \text{Spam}),\quad
+P(\text{meeting=No}\mid \text{Spam})$$
+
+và tương tự cho lớp Not Spam.
+
+Bước 3: nhân điểm số chưa chuẩn hóa:
+
+$$score(\text{Spam})=P(\text{Spam})
+P(\text{free=Yes}\mid\text{Spam})
+P(\text{win=Yes}\mid\text{Spam})
+P(\text{meeting=No}\mid\text{Spam})$$
+
+$$score(\text{Not Spam})=P(\text{Not Spam})
+P(\text{free=Yes}\mid\text{Not Spam})
+P(\text{win=Yes}\mid\text{Not Spam})
+P(\text{meeting=No}\mid\text{Not Spam})$$
+
+Bước 4: chọn lớp có score lớn hơn. Nếu muốn xác suất chuẩn hóa:
+
+$$P(\text{Spam}\mid x)=\frac{score(\text{Spam})}{score(\text{Spam})+score(\text{Not Spam})}$$
+
+Nếu một likelihood bằng 0, dùng Laplace smoothing:
+
+$$P(x_j=v\mid y=c)=\frac{\text{count}(x_j=v,y=c)+1}{\text{count}(y=c)+|\mathcal{V}_j|}$$
+
 ### Bộ bài tập mẫu có lời giải
 
 **Đề bài.** Một bộ phân loại sinh cho biết:
@@ -2378,6 +2527,31 @@ plt.legend()
 plt.grid(axis="y", alpha=0.25)
 plt.show()
 ```
+
+### Dạng bài: Information Gain từ bảng nhiều thuộc tính
+
+Khi bảng có nhiều cột như `Outlook`, `Temperature`, `Humidity`, `Wind`, hãy tính từng thuộc tính theo cùng một khung.
+
+Với thuộc tính $A$ có các giá trị $v_1,\ldots,v_k$:
+
+$$Gain(S,A)=H(S)-\sum_{r=1}^{k}\frac{|S_{v_r}|}{|S|}H(S_{v_r})$$
+
+Mẫu bảng phụ nên lập:
+
+| Giá trị của $A$ | Số mẫu | Số Yes | Số No | Entropy |
+| :--- | :--- | :--- | :--- | :--- |
+| $v_1$ | $|S_{v_1}|$ | count | count | $H(S_{v_1})$ |
+| $v_2$ | $|S_{v_2}|$ | count | count | $H(S_{v_2})$ |
+
+Sau đó tính weighted entropy:
+
+$$H_{after}(A)=\sum_v\frac{|S_v|}{|S|}H(S_v)$$
+
+và:
+
+$$Gain(S,A)=H(S)-H_{after}(A)$$
+
+**Cách trình bày rõ ràng:** tính $H(S)$ một lần ở đầu, rồi mỗi thuộc tính chỉ cần một bảng phụ và một dòng gain. Đừng trộn các count của thuộc tính này sang thuộc tính khác.
 
 ### Bộ bài tập mẫu có lời giải
 
@@ -2953,6 +3127,40 @@ Khi làm tay một mạng nhỏ, điều dễ gây nhầm nhất là cùng một
 | $\frac{\partial L}{\partial w}$ hoặc $dW$ | Gradient của loss theo trọng số | Không | Dùng để cập nhật $w\leftarrow w-\eta\frac{\partial L}{\partial w}$. |
 
 Quy tắc một dòng: **$z$ là trước activation, $a/h/\hat{y}$ là sau activation, $\delta$ là lỗi quay ngược về trước activation, còn $dW/db$ là thứ dùng để sửa tham số.**
+
+### Dịch bảng trọng số thành phương trình
+
+Khi đề cho bảng kết nối thay vì ma trận, hãy biến từng dòng thành một cạnh trong mạng. Ví dụ một mạng 2 input, 2 hidden, 1 output có bảng:
+
+| Kết nối | Trọng số |
+| :--- | :--- |
+| $x_1\to h_1$ | $w_{x_1\to h_1}$ |
+| $x_2\to h_1$ | $w_{x_2\to h_1}$ |
+| $x_1\to h_2$ | $w_{x_1\to h_2}$ |
+| $x_2\to h_2$ | $w_{x_2\to h_2}$ |
+| $h_1\to o$ | $w_{h_1\to o}$ |
+| $h_2\to o$ | $w_{h_2\to o}$ |
+
+thì phương trình forward bắt buộc là:
+
+$$z_{h_1}=w_{x_1\to h_1}x_1+w_{x_2\to h_1}x_2+b_{h_1},\quad h_1=\sigma(z_{h_1})$$
+
+$$z_{h_2}=w_{x_1\to h_2}x_1+w_{x_2\to h_2}x_2+b_{h_2},\quad h_2=\sigma(z_{h_2})$$
+
+$$z_o=w_{h_1\to o}h_1+w_{h_2\to o}h_2+b_o,\quad \hat{y}=\sigma(z_o)$$
+
+Sau đó backprop đi ngược đúng thứ tự các mũi tên:
+
+$$o\rightarrow h_1,h_2\rightarrow x_1,x_2$$
+
+Nói cách khác:
+
+1. Tính lỗi output $\delta_o$.
+2. Dùng $\delta_o$ để tính gradient của các cạnh đi vào output.
+3. Truyền lỗi về từng hidden neuron để có $\delta_{h_1},\delta_{h_2}$.
+4. Dùng $\delta_{h_1},\delta_{h_2}$ để tính gradient của các cạnh đi vào hidden.
+
+**Mẫu câu nên viết trong bài làm:** “Tôi dùng $z$ cho tổng tuyến tính trước sigmoid, dùng $h$ cho activation sau sigmoid, và dùng $\delta$ cho đạo hàm của loss theo $z$ tại neuron đó.” Câu này tự bảo vệ bài làm khỏi lẫn ký hiệu.
 
 ### Công thức thao tác cho mạng 2-2-1, squared error
 
@@ -3647,6 +3855,29 @@ $$\operatorname{MSE}=\operatorname{Bias}^2+\operatorname{Variance}+\text{Noise}$
 
 ---
 
+### Dạng bài: một bước gradient descent có regularization
+
+Giả sử loss Ridge:
+
+$$J(\boldsymbol{\beta})=\frac{1}{2n}\|\mathbf{y}-\mathbf{X}\boldsymbol{\beta}\|_2^2+\lambda\|\boldsymbol{\beta}\|_2^2$$
+
+Gradient tổng:
+
+$$\nabla J
+=-\frac1n\mathbf{X}^T(\mathbf{y}-\mathbf{X}\boldsymbol{\beta})+2\lambda\boldsymbol{\beta}$$
+
+Nếu không phạt bias, tách $\boldsymbol{\beta}=(\beta_0,\beta_1,\ldots,\beta_p)$ và chỉ phạt từ $\beta_1$ trở đi:
+
+$$\nabla_{\beta_0}J=\nabla_{\beta_0}J_{data}$$
+
+$$\nabla_{\beta_j}J=\nabla_{\beta_j}J_{data}+2\lambda\beta_j,\quad j\ge1$$
+
+Sau đó cập nhật:
+
+$$\boldsymbol{\beta}_{new}=\boldsymbol{\beta}-\alpha\nabla J$$
+
+**Cách kiểm tra trực giác:** nếu $\lambda$ lớn, các hệ số không phải bias bị kéo về 0 mạnh hơn. Nếu bắt đầu tại $\boldsymbol{\beta}=0$, gradient của penalty bằng 0 ở bước đầu tiên; tác dụng regularization xuất hiện rõ hơn ở các bước sau.
+
 ## 9. Bộ bài tập mẫu có lời giải
 
 ### Bài 1: Tính objective Ridge
@@ -4169,6 +4400,42 @@ $$J=\sum_i\|\mathbf{x}^{(i)}-\boldsymbol{\mu}_{c_i}\|_2^2$$
 | Cách cải thiện | Dùng K-means++ và chạy nhiều lần với các khởi tạo khác nhau. |
 
 **Mẹo nhớ một dòng:** bước gán chọn tâm gần nhất; bước cập nhật kéo tâm về trung bình các điểm được gán.
+
+### Dạng bài chứng minh: khoảng cách tới mean và khoảng cách từng cặp
+
+Một đẳng thức hay gặp trong phân cụm là:
+
+$$\sum_{i=1}^{n}\|x_i-\mu\|^2=\frac{1}{2n}\sum_{i=1}^{n}\sum_{j=1}^{n}\|x_i-x_j\|^2$$
+
+với:
+
+$$\mu=\frac1n\sum_{i=1}^{n}x_i$$
+
+Cách chứng minh gọn:
+
+$$\sum_{i=1}^{n}\|x_i-\mu\|^2
+=\sum_i\|x_i\|^2-2\mu^T\sum_i x_i+n\|\mu\|^2$$
+
+Vì $\sum_i x_i=n\mu$:
+
+$$\sum_{i=1}^{n}\|x_i-\mu\|^2=\sum_i\|x_i\|^2-n\|\mu\|^2$$
+
+Mặt khác:
+
+$$\sum_i\sum_j\|x_i-x_j\|^2
+=\sum_i\sum_j(\|x_i\|^2-2x_i^Tx_j+\|x_j\|^2)$$
+
+Hai tổng đầu và cuối đều bằng $n\sum_i\|x_i\|^2$, còn tổng giữa:
+
+$$2\sum_i\sum_jx_i^Tx_j=2\left(\sum_i x_i\right)^T\left(\sum_jx_j\right)=2n^2\|\mu\|^2$$
+
+Do đó:
+
+$$\sum_i\sum_j\|x_i-x_j\|^2=2n\sum_i\|x_i\|^2-2n^2\|\mu\|^2$$
+
+Chia hai vế cho $2n$:
+
+$$\frac{1}{2n}\sum_i\sum_j\|x_i-x_j\|^2=\sum_i\|x_i\|^2-n\|\mu\|^2=\sum_i\|x_i-\mu\|^2$$
 
 ### Bộ bài tập mẫu có lời giải
 

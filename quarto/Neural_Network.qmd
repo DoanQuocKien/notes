@@ -447,6 +447,40 @@ Khi làm tay một mạng nhỏ, điều dễ gây nhầm nhất là cùng một
 
 Quy tắc một dòng: **$z$ là trước activation, $a/h/\hat{y}$ là sau activation, $\delta$ là lỗi quay ngược về trước activation, còn $dW/db$ là thứ dùng để sửa tham số.**
 
+### Dịch bảng trọng số thành phương trình
+
+Khi đề cho bảng kết nối thay vì ma trận, hãy biến từng dòng thành một cạnh trong mạng. Ví dụ một mạng 2 input, 2 hidden, 1 output có bảng:
+
+| Kết nối | Trọng số |
+| :--- | :--- |
+| $x_1\to h_1$ | $w_{x_1\to h_1}$ |
+| $x_2\to h_1$ | $w_{x_2\to h_1}$ |
+| $x_1\to h_2$ | $w_{x_1\to h_2}$ |
+| $x_2\to h_2$ | $w_{x_2\to h_2}$ |
+| $h_1\to o$ | $w_{h_1\to o}$ |
+| $h_2\to o$ | $w_{h_2\to o}$ |
+
+thì phương trình forward bắt buộc là:
+
+$$z_{h_1}=w_{x_1\to h_1}x_1+w_{x_2\to h_1}x_2+b_{h_1},\quad h_1=\sigma(z_{h_1})$$
+
+$$z_{h_2}=w_{x_1\to h_2}x_1+w_{x_2\to h_2}x_2+b_{h_2},\quad h_2=\sigma(z_{h_2})$$
+
+$$z_o=w_{h_1\to o}h_1+w_{h_2\to o}h_2+b_o,\quad \hat{y}=\sigma(z_o)$$
+
+Sau đó backprop đi ngược đúng thứ tự các mũi tên:
+
+$$o\rightarrow h_1,h_2\rightarrow x_1,x_2$$
+
+Nói cách khác:
+
+1. Tính lỗi output $\delta_o$.
+2. Dùng $\delta_o$ để tính gradient của các cạnh đi vào output.
+3. Truyền lỗi về từng hidden neuron để có $\delta_{h_1},\delta_{h_2}$.
+4. Dùng $\delta_{h_1},\delta_{h_2}$ để tính gradient của các cạnh đi vào hidden.
+
+**Mẫu câu nên viết trong bài làm:** “Tôi dùng $z$ cho tổng tuyến tính trước sigmoid, dùng $h$ cho activation sau sigmoid, và dùng $\delta$ cho đạo hàm của loss theo $z$ tại neuron đó.” Câu này tự bảo vệ bài làm khỏi lẫn ký hiệu.
+
 ### Công thức thao tác cho mạng 2-2-1, squared error
 
 Với hidden sigmoid và output sigmoid:

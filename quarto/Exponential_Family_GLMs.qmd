@@ -303,6 +303,40 @@ print("Inverse link Bernoulli:", np.round(bernoulli_mu, 3))
 print("Inverse link Poisson:", np.round(poisson_mu, 3))
 ```
 
+### Dạng bài: chứng minh Bernoulli sinh ra sigmoid
+
+Với Bernoulli:
+
+$$P(y;\phi)=\phi^y(1-\phi)^{1-y},\quad y\in\{0,1\}$$
+
+Lấy log:
+
+$$\log P(y;\phi)=y\log\phi+(1-y)\log(1-\phi)$$
+
+Biến đổi:
+
+$$\log P(y;\phi)=y\log\frac{\phi}{1-\phi}+\log(1-\phi)$$
+
+So với dạng Exponential Family:
+
+$$P(y\mid\eta)=b(y)\exp(\eta T(y)-a(\eta))$$
+
+ta đọc được:
+
+$$\eta=\log\frac{\phi}{1-\phi},\quad T(y)=y,\quad a(\eta)=\log(1+e^\eta)$$
+
+Từ $\eta=\log\frac{\phi}{1-\phi}$:
+
+$$e^\eta=\frac{\phi}{1-\phi}$$
+
+$$\phi=\frac{e^\eta}{1+e^\eta}=\frac{1}{1+e^{-\eta}}=\sigma(\eta)$$
+
+Vì GLM đặt $\eta=\theta^Tx$, ta có:
+
+$$P(y=1\mid x)=\sigma(\theta^Tx)$$
+
+Đây chính là Logistic Regression nhìn từ Exponential Family.
+
 ### Bộ bài tập mẫu có lời giải
 
 **Đề bài.** Cho $\boldsymbol{\beta}=(0.5,1.0,-0.25)$ và $\mathbf{x}=(1,2,4)$, trong đó phần tử đầu là bias. Tính dự đoán nếu ta dùng Gaussian GLM, Bernoulli GLM và Poisson GLM.

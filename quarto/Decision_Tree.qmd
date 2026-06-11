@@ -252,6 +252,31 @@ plt.grid(axis="y", alpha=0.25)
 plt.show()
 ```
 
+### Dạng bài: Information Gain từ bảng nhiều thuộc tính
+
+Khi bảng có nhiều cột như `Outlook`, `Temperature`, `Humidity`, `Wind`, hãy tính từng thuộc tính theo cùng một khung.
+
+Với thuộc tính $A$ có các giá trị $v_1,\ldots,v_k$:
+
+$$Gain(S,A)=H(S)-\sum_{r=1}^{k}\frac{|S_{v_r}|}{|S|}H(S_{v_r})$$
+
+Mẫu bảng phụ nên lập:
+
+| Giá trị của $A$ | Số mẫu | Số Yes | Số No | Entropy |
+| :--- | :--- | :--- | :--- | :--- |
+| $v_1$ | $|S_{v_1}|$ | count | count | $H(S_{v_1})$ |
+| $v_2$ | $|S_{v_2}|$ | count | count | $H(S_{v_2})$ |
+
+Sau đó tính weighted entropy:
+
+$$H_{after}(A)=\sum_v\frac{|S_v|}{|S|}H(S_v)$$
+
+và:
+
+$$Gain(S,A)=H(S)-H_{after}(A)$$
+
+**Cách trình bày rõ ràng:** tính $H(S)$ một lần ở đầu, rồi mỗi thuộc tính chỉ cần một bảng phụ và một dòng gain. Đừng trộn các count của thuộc tính này sang thuộc tính khác.
+
 ### Bộ bài tập mẫu có lời giải
 
 **Đề bài.** Một nút cha có 10 mẫu: 5 mẫu lớp 0 và 5 mẫu lớp 1. Một phép tách tạo ra:

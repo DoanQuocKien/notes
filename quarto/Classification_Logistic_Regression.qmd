@@ -312,6 +312,41 @@ print("Cross-entropy từng mẫu:", np.round(losses, 3))
 print("Loss trung bình:", round(float(losses.mean()), 3))
 ```
 
+### Dạng bài: chứng minh MLE dẫn tới Binary Cross-Entropy
+
+Khi đề yêu cầu “viết likelihood, log-likelihood, rồi chứng minh tương đương với cross-entropy”, hãy làm theo khung này.
+
+Với $p_i=P(y_i=1\mid x_i;\boldsymbol{\beta})=\sigma(\boldsymbol{\beta}^T\mathbf{x}_i)$:
+
+$$P(y_i\mid x_i;\boldsymbol{\beta})=p_i^{y_i}(1-p_i)^{1-y_i}$$
+
+Likelihood toàn bộ dữ liệu:
+
+$$L(\boldsymbol{\beta})=\prod_{i=1}^{n}p_i^{y_i}(1-p_i)^{1-y_i}$$
+
+Log-likelihood:
+
+$$\ell(\boldsymbol{\beta})=\sum_{i=1}^{n}\left[y_i\log p_i+(1-y_i)\log(1-p_i)\right]$$
+
+Negative log-likelihood:
+
+$$-\ell(\boldsymbol{\beta})
+=-\sum_{i=1}^{n}\left[y_i\log p_i+(1-y_i)\log(1-p_i)\right]$$
+
+Đây chính là binary cross-entropy nếu bỏ hoặc chia thêm hệ số $\frac1n$. Vì nhân/chia bởi hằng số dương không đổi điểm tối ưu:
+
+$$\arg\max\ell(\boldsymbol{\beta})=\arg\min[-\ell(\boldsymbol{\beta})]$$
+
+Gradient của log-likelihood dùng cho gradient ascent:
+
+$$\nabla\ell(\boldsymbol{\beta})=\sum_{i=1}^{n}(y_i-p_i)\mathbf{x}_i$$
+
+Gradient của cross-entropy dùng cho gradient descent:
+
+$$\nabla J(\boldsymbol{\beta})=\frac1n\sum_{i=1}^{n}(p_i-y_i)\mathbf{x}_i$$
+
+Hai công thức khác dấu vì một bên tối đa hóa, một bên tối thiểu hóa.
+
 ### Bộ bài tập mẫu có lời giải
 
 **Đề bài.** Cho mô hình Logistic Regression có $\boldsymbol{\beta}=(-0.4, 1.2, -0.8)$, trong đó phần tử đầu tiên là bias. Với mẫu $\mathbf{x}=(1,2,1)$ và nhãn thật $y=1$, hãy tính xác suất dự đoán, lớp dự đoán, và loss cross-entropy.

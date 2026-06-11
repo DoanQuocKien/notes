@@ -2,8 +2,8 @@
 title: "Học máy: Mạng Nơ-ron và Lan truyền Ngược Vector hóa"
 author: "Quoc Kien"
 jupyter: science_env
-format: 
-  html:    
+format:
+  html:
     toc: true
     toc-depth: 3
     theme: cosmic
@@ -14,22 +14,273 @@ format:
         \DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,breakanywhere,commandchars=\\\{\}}
 ---
 
-## 1. Nơ-ron Đơn Bào (Perceptron) và Hiện tượng Bão hòa Gradient
+## 1. Bức tranh tinh thần: mạng nơ-ron đang lưu gì?
 
-Mô hình nơ-ron cơ bản thực hiện một phép biến đổi tuyến tính kết hợp với hàm kích hoạt phi tuyến:
+Một mạng nơ-ron không phải là một công thức bí ẩn. Nó là nhiều tầng biến đổi dữ liệu liên tiếp. Ở mỗi tầng, có hai pha:
 
-$$z = \mathbf{w}^T \mathbf{x} + b \implies \hat{y} = a = g(z)$$
+1. **Pha tuyến tính:** gom thông tin từ tầng trước bằng trọng số và độ lệch.
+2. **Pha phi tuyến:** đưa kết quả qua hàm kích hoạt để tạo giá trị kích hoạt cho tầng sau.
 
-### Hiện tượng Bão hòa Gradient (Gradient Saturation)
-Khi sử dụng hàm kích hoạt Sigmoid $\sigma(z) = \frac{1}{1 + e^{-z}}$, đạo hàm của nó là $\sigma'(z) = \sigma(z)(1 - \sigma(z))$. 
-Khi giá trị $z$ tiến về cực hạn ($z \to \infty$ hoặc $z \to -\infty$), giá trị của $\sigma(z)$ tiến sát về $1$ hoặc $0$, dẫn đến đạo hàm $\sigma'(z) \to 0$. Khi thực hiện lan truyền ngược qua nhiều tầng ẩn, các đạo hàm tiệm cận 0 này nhân chuỗi với nhau sẽ làm gradient triệt tiêu hoàn toàn về 0. Mạng nơ-ron rơi vào trạng thái bão hòa và dừng học (**Vanishing Gradient Problem**).
+Với tầng $l$:
 
-Để khắc phục, các tầng ẩn hiện đại ưu tiên sử dụng hàm **ReLU** $g(z) = \max(0, z)$ vì đạo hàm bằng $1$ với mọi miền dương, hoặc **Leaky ReLU** để tránh hiện tượng nơ-ron chết:
-$$g(z) = \max(\alpha z, z) \implies g'(z) = \begin{cases} 1 & \text{nếu } z > 0 \\ \alpha & \text{nếu } z \le 0 \end{cases} \quad (\text{với } \alpha \approx 0.01)$$
+$$
+\mathbf{Z}^{[l]}=\mathbf{W}^{[l]}\mathbf{A}^{[l-1]}+\mathbf{b}^{[l]}
+$$
+
+$$
+\mathbf{A}^{[l]}=g^{[l]}(\mathbf{Z}^{[l]})
+$$
+
+Ý nghĩa của từng ký hiệu:
+
+| Ký hiệu | Nằm ở đâu trong mạng? | Nói bằng lời |
+| :--- | :--- | :--- |
+| $\mathbf{A}^{[0]}$ | Tầng đầu vào | Dữ liệu gốc, thường chính là $\mathbf{X}^T$. |
+| $\mathbf{W}^{[l]}$ | Các cạnh nối từ tầng $l-1$ sang tầng $l$ | Trọng số cho biết giá trị kích hoạt tầng trước ảnh hưởng mạnh yếu thế nào đến tầng sau. |
+| $\mathbf{b}^{[l]}$ | Mỗi nơ-ron ở tầng $l$ có một độ lệch | Dịch điểm tuyến tính lên hoặc xuống trước khi kích hoạt. |
+| $\mathbf{Z}^{[l]}$ | Bên trong tầng $l$, trước hàm kích hoạt | Điểm tuyến tính trước kích hoạt. |
+| $\mathbf{A}^{[l]}$ | Đầu ra của tầng $l$ | Giá trị kích hoạt sau khi áp dụng hàm $g$. Đây là thứ được gửi sang tầng kế tiếp. |
+| $\mathbf{dZ}^{[l]}$ | Khi lan truyền ngược qua tầng $l$ | Tín hiệu lỗi tại điểm trước kích hoạt. |
+| $\mathbf{dW}^{[l]}$, $\mathbf{db}^{[l]}$ | Cùng chỗ với $\mathbf{W}^{[l]}$, $\mathbf{b}^{[l]}$ | Hướng cần chỉnh trọng số và độ lệch để hàm mất mát giảm. |
+
+Nếu chỉ nhớ một câu: **lan truyền xuôi tạo ra $Z$ rồi $A$; lan truyền ngược tạo ra $dZ$ rồi $dW, db$; bước cập nhật dùng $dW, db$ để sửa $W, b$.**
+
+```{python}
+#| label: nn-variable-map
+#| fig-cap: "Vị trí của A, W, b, Z trong một tầng kết nối đầy đủ."
+#| echo: false
+
+import matplotlib.pyplot as plt
+from matplotlib.patches import Circle, Rectangle, FancyArrowPatch
+
+fig, ax = plt.subplots(figsize=(10, 4.8))
+ax.axis("off")
+ax.set_xlim(-0.5, 9.5)
+ax.set_ylim(-0.5, 4.8)
+
+left_nodes = [(0.8, 3.2), (0.8, 2.2), (0.8, 1.2)]
+right_nodes = [(5.2, 2.8), (5.2, 1.6)]
+
+for idx, (x, y) in enumerate(left_nodes, start=1):
+    ax.add_patch(Circle((x, y), 0.25, facecolor="#4C78A8", edgecolor="black"))
+    ax.text(x, y, f"$a_{{{idx}}}^{{[l-1]}}$", color="white", ha="center", va="center", fontsize=10)
+
+for idx, (x, y) in enumerate(right_nodes, start=1):
+    ax.add_patch(Circle((x, y), 0.27, facecolor="#F58518", edgecolor="black"))
+    ax.text(x, y, f"$a_{{{idx}}}^{{[l]}}$", color="white", ha="center", va="center", fontsize=10)
+
+for x0, y0 in left_nodes:
+    for x1, y1 in right_nodes:
+        ax.add_patch(FancyArrowPatch((x0 + 0.25, y0), (x1 - 0.27, y1),
+                                     arrowstyle="->", mutation_scale=10,
+                                     linewidth=1, color="#8A8F98", alpha=0.75))
+
+ax.add_patch(Rectangle((2.15, 0.75), 1.35, 3.05, facecolor="#E8F0FE", edgecolor="#4C78A8"))
+ax.text(2.825, 3.95, "$\\mathbf{W}^{[l]}$", ha="center", va="bottom", fontsize=12, fontweight="bold")
+ax.text(2.825, 2.25, "trọng số\ntrên các cạnh", ha="center", va="center", fontsize=10)
+
+ax.add_patch(Rectangle((3.8, 0.9), 0.8, 2.75, facecolor="#FEF3C7", edgecolor="#F58518"))
+ax.text(4.2, 3.8, "$\\mathbf{b}^{[l]}$", ha="center", va="bottom", fontsize=12, fontweight="bold")
+ax.text(4.2, 2.25, "độ lệch\nmỗi nơ-ron", ha="center", va="center", fontsize=10)
+
+ax.text(0.8, 0.35, "$\\mathbf{A}^{[l-1]}$", ha="center", fontsize=13, fontweight="bold")
+ax.text(5.2, 0.35, "$\\mathbf{A}^{[l]}=g(\\mathbf{Z}^{[l]})$", ha="center", fontsize=13, fontweight="bold")
+ax.text(6.9, 2.2, "$\\mathbf{Z}^{[l]}=\\mathbf{W}^{[l]}\\mathbf{A}^{[l-1]}+\\mathbf{b}^{[l]}$",
+        ha="left", va="center", fontsize=12,
+        bbox=dict(boxstyle="round,pad=0.35", facecolor="#F7FAFC", edgecolor="#CBD5E0"))
+
+ax.annotate("lan truyền xuôi", xy=(5.9, 4.2), xytext=(0.4, 4.2),
+            arrowprops=dict(arrowstyle="->", color="#2F855A", lw=2),
+            color="#2F855A", ha="center", va="center", fontsize=11)
+ax.annotate("lan truyền ngược", xy=(0.4, 4.55), xytext=(5.9, 4.55),
+            arrowprops=dict(arrowstyle="->", color="#C05621", lw=2),
+            color="#C05621", ha="center", va="center", fontsize=11)
+
+plt.show()
+```
+
+---
+
+## 2. Một nơ-ron đơn: từ đầu vào đến dự đoán
+
+Một nơ-ron nhận vector đầu vào $\mathbf{x}$, nhân với trọng số $\mathbf{w}$, cộng độ lệch $b$, rồi đưa qua hàm kích hoạt:
+
+$$z=\mathbf{w}^T\mathbf{x}+b$$
+
+$$a=g(z)$$
+
+Nếu $g$ là sigmoid, $a$ có thể đọc như xác suất. Nếu $g$ là ReLU, $a$ là tín hiệu dương được truyền tiếp.
+
+Ví dụ:
+
+$$\mathbf{x}=(2,3),\quad \mathbf{w}=(0.5,-0.2),\quad b=0.1$$
+
+$$z=0.5(2)-0.2(3)+0.1=0.5$$
+
+Nếu dùng sigmoid:
+
+$$a=\sigma(0.5)=\frac{1}{1+e^{-0.5}}\approx0.622$$
+
+Điều quan trọng: $z$ là điểm thô trước kích hoạt, còn $a$ là tín hiệu đã xử lý để đưa sang bước sau.
+
+---
+
+## 3. Lan truyền xuôi: dữ liệu chảy từ trái sang phải
+
+Với mini-batch có $m$ mẫu, ta không xử lý từng mẫu riêng lẻ mà xếp chúng thành ma trận.
+
+Nếu tầng $l-1$ có $n_{l-1}$ nơ-ron và tầng $l$ có $n_l$ nơ-ron:
+
+| Đại lượng | Kích thước | Vai trò |
+| :--- | :--- | :--- |
+| $\mathbf{A}^{[l-1]}$ | $n_{l-1}\times m$ | Giá trị kích hoạt của tầng trước cho toàn bộ mini-batch. |
+| $\mathbf{W}^{[l]}$ | $n_l\times n_{l-1}$ | Mỗi hàng là trọng số đi vào một nơ-ron của tầng $l$. |
+| $\mathbf{b}^{[l]}$ | $n_l\times 1$ | Độ lệch của từng nơ-ron, được cộng cho mọi cột trong mini-batch. |
+| $\mathbf{Z}^{[l]}$ | $n_l\times m$ | Điểm tuyến tính của tầng $l$. |
+| $\mathbf{A}^{[l]}$ | $n_l\times m$ | Đầu ra của tầng $l$ sau hàm kích hoạt. |
+
+Tưởng tượng mỗi cột là một mẫu. Mỗi hàng là một nơ-ron. Vì vậy $\mathbf{A}^{[l]}$ có hàng là nơ-ron tầng $l$ và cột là mẫu trong mini-batch.
+
+```{python}
+#| label: nn-forward-table-visual
+#| fig-cap: "Lan truyền xuôi tạo Z rồi A ở từng tầng."
+#| echo: false
+
+import matplotlib.pyplot as plt
+from matplotlib.patches import Rectangle, FancyArrowPatch
+
+fig, ax = plt.subplots(figsize=(10, 3.8))
+ax.axis("off")
+ax.set_xlim(0, 10)
+ax.set_ylim(0, 4)
+
+boxes = [
+    (0.3, 1.4, 1.2, 1.0, "$\\mathbf{A}^{[0]}$", "dữ liệu"),
+    (2.0, 1.4, 1.2, 1.0, "$\\mathbf{Z}^{[1]}$", "$W^{[1]}A^{[0]}+b^{[1]}$"),
+    (3.7, 1.4, 1.2, 1.0, "$\\mathbf{A}^{[1]}$", "$g^{[1]}(Z^{[1]})$"),
+    (5.4, 1.4, 1.2, 1.0, "$\\mathbf{Z}^{[2]}$", "$W^{[2]}A^{[1]}+b^{[2]}$"),
+    (7.1, 1.4, 1.2, 1.0, "$\\mathbf{A}^{[2]}$", "dự đoán"),
+    (8.8, 1.4, 0.9, 1.0, "$\\mathcal{L}$", "mất mát"),
+]
+
+for x, y, w, h, title, desc in boxes:
+    ax.add_patch(Rectangle((x, y), w, h, facecolor="#EDF2F7", edgecolor="#4A5568", linewidth=1.2))
+    ax.text(x + w / 2, y + 0.63, title, ha="center", va="center", fontsize=12, fontweight="bold")
+    ax.text(x + w / 2, y + 0.25, desc, ha="center", va="center", fontsize=8)
+
+for i in range(len(boxes) - 1):
+    x0 = boxes[i][0] + boxes[i][2]
+    y0 = boxes[i][1] + 0.5
+    x1 = boxes[i + 1][0]
+    y1 = boxes[i + 1][1] + 0.5
+    ax.add_patch(FancyArrowPatch((x0, y0), (x1, y1), arrowstyle="->", mutation_scale=14,
+                                 linewidth=1.6, color="#2F855A"))
+
+ax.text(5, 3.1, "Lan truyền xuôi: tính dự đoán và mất mát", ha="center", fontsize=13, fontweight="bold")
+plt.show()
+```
+
+---
+
+## 4. Lan truyền ngược: lỗi chảy từ phải sang trái
+
+Lan truyền xuôi trả lời câu hỏi: **mô hình dự đoán gì?**
+
+Lan truyền ngược trả lời câu hỏi: **mỗi tham số phải bị sửa bao nhiêu để hàm mất mát giảm?**
+
+Ký hiệu quan trọng nhất là $\mathbf{dZ}^{[l]}$:
+
+$$\mathbf{dZ}^{[l]}=\frac{\partial\mathcal{L}}{\partial\mathbf{Z}^{[l]}}$$
+
+Đọc bằng lời: nếu điểm trước kích hoạt $\mathbf{Z}^{[l]}$ thay đổi một chút, hàm mất mát thay đổi bao nhiêu?
+
+Sau khi có $\mathbf{dZ}^{[l]}$, ta tính được:
+
+$$\mathbf{dW}^{[l]}=\frac{1}{m}\mathbf{dZ}^{[l]}(\mathbf{A}^{[l-1]})^T$$
+
+$$\mathbf{db}^{[l]}=\frac{1}{m}\sum_{i=1}^{m}\mathbf{dZ}^{(i)[l]}$$
+
+Ý nghĩa trực giác:
+
+- $\mathbf{dZ}^{[l]}$ là mức lỗi của từng nơ-ron trong từng mẫu.
+- $\mathbf{A}^{[l-1]}$ là tín hiệu đã đi vào tầng đó.
+- $dW$ bằng **lỗi nhân tín hiệu đầu vào**. Nếu đầu vào lớn và lỗi lớn, cạnh đó cần được sửa nhiều.
+- $db$ là lỗi trung bình của từng nơ-ron.
+
+Với tầng ẩn:
+
+$$
+\mathbf{dZ}^{[l]}
+=
+\left((\mathbf{W}^{[l+1]})^T\mathbf{dZ}^{[l+1]}\right)\odot g'(\mathbf{Z}^{[l]})
+$$
+
+Phần $(\mathbf{W}^{[l+1]})^T\mathbf{dZ}^{[l+1]}$ kéo lỗi từ tầng sau về tầng trước. Phần $\odot g'(\mathbf{Z}^{[l]})$ kiểm tra hàm kích hoạt ở tầng này có cho gradient đi qua hay không.
+
+```{python}
+#| label: nn-backprop-map
+#| fig-cap: "Lan truyền ngược đưa lỗi về từng tầng rồi tạo dW, db để cập nhật tham số."
+#| echo: false
+
+fig, ax = plt.subplots(figsize=(10, 4))
+ax.axis("off")
+ax.set_xlim(0, 10)
+ax.set_ylim(0, 4)
+
+items = [
+    (8.2, 2.4, "$\\mathbf{dZ}^{[2]}$", "lỗi đầu ra"),
+    (6.0, 2.4, "$\\mathbf{dW}^{[2]},\\mathbf{db}^{[2]}$", "sửa tầng 2"),
+    (4.0, 2.4, "$\\mathbf{dZ}^{[1]}$", "lỗi tầng ẩn"),
+    (1.8, 2.4, "$\\mathbf{dW}^{[1]},\\mathbf{db}^{[1]}$", "sửa tầng 1"),
+]
+
+for x, y, title, desc in items:
+    ax.add_patch(Rectangle((x - 0.7, y - 0.45), 1.4, 0.9, facecolor="#FFF5F5", edgecolor="#C05621"))
+    ax.text(x, y + 0.13, title, ha="center", va="center", fontsize=11, fontweight="bold")
+    ax.text(x, y - 0.22, desc, ha="center", va="center", fontsize=8)
+
+for x0, x1 in [(7.5, 6.7), (5.3, 4.7), (3.3, 2.5)]:
+    ax.add_patch(FancyArrowPatch((x0, 2.4), (x1, 2.4), arrowstyle="->", mutation_scale=14,
+                                 linewidth=1.6, color="#C05621"))
+
+ax.text(5, 3.35, "Lan truyền ngược: hàm mất mát gửi tín hiệu sửa tham số", ha="center", fontsize=13, fontweight="bold")
+ax.text(5, 1.25, "$W^{[l]} \\leftarrow W^{[l]}-\\alpha dW^{[l]}$    và    $b^{[l]} \\leftarrow b^{[l]}-\\alpha db^{[l]}$",
+        ha="center", fontsize=12,
+        bbox=dict(boxstyle="round,pad=0.35", facecolor="#F7FAFC", edgecolor="#CBD5E0"))
+plt.show()
+```
+
+Sau khi có gradient, cập nhật tham số:
+
+$$\mathbf{W}^{[l]}\leftarrow\mathbf{W}^{[l]}-\alpha\mathbf{dW}^{[l]}$$
+
+$$\mathbf{b}^{[l]}\leftarrow\mathbf{b}^{[l]}-\alpha\mathbf{db}^{[l]}$$
+
+Trong đó $\alpha$ là learning rate.
+
+---
+
+## 5. Vì sao sigmoid dễ làm mất gradient?
+
+Sigmoid:
+
+$$\sigma(z)=\frac{1}{1+e^{-z}}$$
+
+Đạo hàm:
+
+$$\sigma'(z)=\sigma(z)(1-\sigma(z))$$
+
+Khi $z$ rất lớn, $\sigma(z)\approx1$, nên $\sigma'(z)\approx0$. Khi $z$ rất âm, $\sigma(z)\approx0$, nên $\sigma'(z)\approx0$. Nếu nhiều tầng đều nhân với đạo hàm gần 0, tín hiệu đạo hàm về các tầng đầu gần như biến mất. Đây là hiện tượng **gradient biến mất**.
+
+ReLU:
+
+$$g(z)=\max(0,z)$$
+
+Đạo hàm của ReLU bằng $1$ khi $z>0$, nên ở miền dương tín hiệu đạo hàm đi qua dễ hơn.
 
 ```{python}
 #| label: activation-saturation
-#| fig-cap: "Sigmoid saturates for large positive or negative inputs, while ReLU preserves a usable gradient on the positive side."
+#| fig-cap: "Sigmoid dễ bão hòa ở hai đầu, còn ReLU giữ gradient tốt ở miền dương."
 #| echo: false
 
 import numpy as np
@@ -42,15 +293,15 @@ relu = np.maximum(0, z)
 
 fig, ax = plt.subplots(1, 2, figsize=(9, 3.4))
 ax[0].plot(z, sigmoid, label="sigmoid", color="#4C78A8")
-ax[0].plot(z, relu / relu.max(), label="scaled ReLU", color="#F58518")
-ax[0].set_title("Activation value")
+ax[0].plot(z, relu / relu.max(), label="ReLU đã co tỉ lệ", color="#F58518")
+ax[0].set_title("Giá trị kích hoạt")
 ax[0].set_xlabel("z")
 ax[0].grid(alpha=0.25)
 ax[0].legend()
 
-ax[1].plot(z, sigmoid_grad, label="sigmoid derivative", color="#4C78A8")
-ax[1].axhline(1.0, color="#F58518", linestyle="--", label="ReLU derivative for z > 0")
-ax[1].set_title("Gradient signal")
+ax[1].plot(z, sigmoid_grad, label="đạo hàm sigmoid", color="#4C78A8")
+ax[1].axhline(1.0, color="#F58518", linestyle="--", label="đạo hàm ReLU khi z > 0")
+ax[1].set_title("Tín hiệu đạo hàm")
 ax[1].set_xlabel("z")
 ax[1].grid(alpha=0.25)
 ax[1].legend()
@@ -58,151 +309,63 @@ plt.tight_layout()
 plt.show()
 ```
 
-The plot shows why deep networks often avoid sigmoid activations in hidden layers: once $z$ is far from zero, the sigmoid slope is nearly flat, so backpropagation sends almost no correction signal to earlier layers.
+---
+
+## 6. Dropout và Chuẩn hóa Mini-batch
+
+### Dropout
+
+Dropout tắt ngẫu nhiên một phần giá trị kích hoạt trong lúc huấn luyện:
+
+$$\mathbf{A}^{[l]}_{\text{drop}}=\mathbf{A}^{[l]}\odot\mathbf{M}^{[l]}$$
+
+Trong đó $\mathbf{M}^{[l]}$ là mặt nạ 0 hoặc 1. Nếu một nơ-ron bị tắt, mạng không được dựa quá nhiều vào nó. Nhờ vậy mô hình bớt overfit.
+
+Khi kiểm thử, ta không tắt nơ-ron nữa. Với inverted dropout, lúc huấn luyện thường chia giá trị kích hoạt còn sống cho $1-p$ để giữ kỳ vọng ổn định.
+
+### Chuẩn hóa mini-batch
+
+Chuẩn hóa mini-batch chuẩn hóa $\mathbf{Z}^{[l]}$ trong một mini-batch:
+
+$$\hat{z}^{(i)}=\frac{z^{(i)}-\mu_{\mathcal{B}}}{\sqrt{\sigma_{\mathcal{B}}^2+\epsilon}}$$
+
+Sau đó học thêm scale và shift:
+
+$$\tilde{z}^{(i)}=\gamma\hat{z}^{(i)}+\beta$$
+
+Tác dụng chính:
+
+- Giúp phân phối đầu vào của mỗi tầng ổn định hơn.
+- Cho phép dùng learning rate lớn hơn.
+- Thường làm quá trình train nhanh và mượt hơn.
 
 ---
 
-## 2. Kiến trúc Mạng Nơ-ron Đa Tầng (Multilayer Perceptron - MLP)
+## 7. Bảng Công thức Thi: Lan truyền Xuôi, Lan truyền Ngược, Cập nhật
 
-Cách dễ nhất để đọc một MLP là nhìn theo từng tầng. Mỗi hình tròn lưu một activation vô hướng, và mỗi cạnh mang một trọng số học được. Một tầng fully connected nghĩa là mọi activation ở tầng trước đều đóng góp vào mọi nơ-ron ở tầng sau.
-
-```{python}
-#| label: nn-layering-graph
-#| fig-cap: "Mạng nơ-ron fully connected gồm tầng đầu vào, tầng ẩn và tầng đầu ra."
-#| echo: false
-
-import matplotlib.pyplot as plt
-
-layers = [3, 4, 3, 2]
-layer_names = ["Đầu vào\n$A^{[0]}$", "Ẩn 1\n$A^{[1]}$", "Ẩn 2\n$A^{[2]}$", "Đầu ra\n$A^{[3]}$"]
-positions = {}
-
-fig, ax = plt.subplots(figsize=(8, 4.8))
-for layer_idx, width in enumerate(layers):
-    y_offset = (max(layers) - width) / 2
-    for neuron_idx in range(width):
-        y = width - neuron_idx - 1 + y_offset
-        positions[(layer_idx, neuron_idx)] = (layer_idx, y)
-        circle = plt.Circle((layer_idx, y), 0.14, color="#4C78A8", edgecolor="black", linewidth=0.8, zorder=3)
-        ax.add_patch(circle)
-        ax.text(layer_idx, y, f"$a_{neuron_idx + 1}$", ha="center", va="center", fontsize=7, color="white")
-
-for layer_idx in range(len(layers) - 1):
-    for src in range(layers[layer_idx]):
-        for dst in range(layers[layer_idx + 1]):
-            x0, y0 = positions[(layer_idx, src)]
-            x1, y1 = positions[(layer_idx + 1, dst)]
-            ax.plot([x0 + 0.14, x1 - 0.14], [y0, y1], color="#9AA0A6", linewidth=0.6, alpha=0.55, zorder=1)
-
-for layer_idx, name in enumerate(layer_names):
-    ax.text(layer_idx, -0.7, name, ha="center", va="top", fontsize=10, fontweight="bold")
-
-ax.annotate("lan truyền xuôi", xy=(2.55, 4.2), xytext=(0.45, 4.2),
-            arrowprops=dict(arrowstyle="->", lw=1.5, color="#2F855A"),
-            color="#2F855A", ha="center", va="center", fontsize=10)
-ax.annotate("lan truyền ngược", xy=(0.45, 4.55), xytext=(2.55, 4.55),
-            arrowprops=dict(arrowstyle="->", lw=1.5, color="#C05621"),
-            color="#C05621", ha="center", va="center", fontsize=10)
-ax.set_xlim(-0.5, len(layers) - 0.5)
-ax.set_ylim(-1.0, 5.0)
-ax.axis("off")
-plt.show()
-```
-
-Sơ đồ này giúp đọc ký hiệu ma trận phía dưới: nhân với $\mathbf{W}^{[l]}$ là gom toàn bộ cạnh đi vào tầng $l$, cộng $\mathbf{b}^{[l]}$ là dịch từng nơ-ron, và áp dụng $g^{[l]}$ là biến điểm tuyến tính thành activation truyền tiếp về phía trước.
-
-
-
-Để xử lý các bài toán phi tuyến phức tạp, các nơ-ron được xếp chồng thành kiến trúc đa tầng đầy đủ kết nối (Fully Connected). Quá trình lan truyền xuôi (Forward Pass) cho một Mini-batch gồm $m$ mẫu dữ liệu được biểu diễn đồng thời dưới dạng ma trận để tối ưu hóa hiệu năng tính toán:
-
-$$\mathbf{Z}^{[l]} = \mathbf{W}^{[l]} \mathbf{A}^{[l-1]} + \mathbf{b}^{[l]}$$
-
-$$\mathbf{A}^{[l]} = g^{[l]}(\mathbf{Z}^{[l]})$$
-
-Kích thước của các ma trận trong hệ thống (với $n_l$ là số nơ-ron tại layer $l$):
-* $\mathbf{A}^{[l-1]}$: Kích thước $\left( n_{l-1} \times m \right)$ — với $\mathbf{A}^{[0]} = \mathbf{X}^T$ là ma trận đầu vào.
-* $\mathbf{W}^{[l]}$: Kích thước $\left( n_l \times n_{l-1} \right)$ — ma trận trọng số của tầng $l$.
-* $\mathbf{b}^{[l]}$: Kích thước $\left( n_l \times 1 \right)$ — vector bias (được cộng broatcast theo cột cho đủ kích thước batch $m$).
-* $\mathbf{Z}^{[l]}$ và $\mathbf{A}^{[l]}$: Kích thước $\left( n_l \times m \right)$.
-
----
-
-## 3. Chứng Minh Toán Học Đạo Hàm Ma Trận Lan Truyền Ngược (Vectorized Backpropagation)
-
-Xét hàm mất mát lỗi bình phương tổng quát hoặc Cross-Entropy viết cho toàn bộ một batch gồm $m$ mẫu dữ liệu: $\mathcal{L}$. Ta định nghĩa ma trận lỗi hệ thống tại tầng $l$ bằng đạo hàm riêng của Loss đối với tổng tuyến tính ma trận $\mathbf{Z}^{[l]}$:
-
-$$\mathbf{dZ}^{[l]} = \frac{\partial \mathcal{L}}{\partial \mathbf{Z}^{[l]}} \quad \left(\text{kích thước } n_l \times m\right)$$
-
-Sử dụng toán tử tích Hadamard $\odot$ (element-wise product), ta tiến hành chứng minh chuỗi công thức vi phân ma trận ngược từ tầng cuối cùng $L$ về các tầng ẩn trước đó.
-
-### Bước 1: Gradient tại tầng đầu ra (Output Layer $l = L$)
-Giả sử bài toán phân loại đa lớp sử dụng hàm kích hoạt Softmax và hàm mất mát Cross-Entropy ở tầng cuối. Triển khai vi phân chuỗi ma trận và triệt tiêu các lượng mẫu số tương ứng, ta thu được ma trận sai số đầu ra cực kỳ clean:
-
-$$\mathbf{dZ}^{[L]} = \mathbf{A}^{[L]} - \mathbf{Y}$$
-
-### Bước 2: Lan truyền ngược ma trận sai số về tầng ẩn $l$
-Ta cần tính $\mathbf{dZ}^{[l]}$ dựa trên ma trận sai số của tầng liền sau nó $\mathbf{dZ}^{[l+1]}$. Áp dụng quy tắc vi phân chuỗi tổng quát trên không gian đa biến:
-
-$$\mathbf{dZ}^{[l]} = \frac{\partial \mathcal{L}}{\partial \mathbf{Z}^{[l]}} = \left[ \frac{\partial \mathbf{Z}^{[l+1]}}{\partial \mathbf{A}^{[l]}} \right]^T \frac{\partial \mathcal{L}}{\partial \mathbf{Z}^{[l+1]}} \odot (g^{[l]})'(\mathbf{Z}^{[l]})$$
-
-Vì phương trình tầng kế tiếp là $\mathbf{Z}^{[l+1]} = \mathbf{W}^{[l+1]} \mathbf{A}^{[l]} + \mathbf{b}^{[l+1]}$, đạo hàm riêng $\frac{\partial \mathbf{Z}^{[l+1]}}{\partial \mathbf{A}^{[l]}} = \mathbf{W}^{[l+1]}$. Thay thế vào hệ thống, ta thu được phương trình lan truyền lỗi cốt lõi:
-
-$$\mathbf{dZ}^{[l]} = \left( (\mathbf{W}^{[l+1]})^T \mathbf{dZ}^{[l+1]} \right) \odot (g^{[l]})'(\mathbf{Z}^{[l]})$$
-
-### Bước 3: Tính Gradient đối với các tham số Ma trận $\mathbf{W}^{[l]}$ và $\mathbf{b}^{[l]}$
-Từ ma trận lỗi $\mathbf{dZ}^{[l]}$, ta tính tốc độ thay đổi của hàm mất mát đối với các tham số cần tối ưu hóa của tầng đó (chia cho $m$ để lấy trung bình mẫu trên toàn bộ mini-batch):
-
-$$\mathbf{dW}^{[l]} = \frac{\partial \mathcal{L}}{\partial \mathbf{W}^{[l]}} = \frac{1}{m} \mathbf{dZ}^{[l]} (\mathbf{A}^{[l-1]})^T \quad \left(\text{kích thước } n_l \times n_{l-1}\right)$$
-
-$$\mathbf{db}^{[l]} = \frac{\partial \mathcal{L}}{\partial \mathbf{b}^{[l]}} = \frac{1}{m} \sum_{i=1}^{m} \mathbf{dZ}^{(i)[l]} = \frac{1}{m} \text{np.sum}(\mathbf{dZ}^{[l]}, \text{axis}=1, \text{keepdims}=True)$$
-
----
-
-## 4. Các Kỹ Thuật Điều Hướng Chống Overfitting Hiện Đại
-
-### 4.1 Cơ chế Ngắt Kết Nối Ngẫu Nhiên (Dropout)
-Tại mỗi bước lặp huấn luyện (training iteration), thuật toán tiến hành ngắt kết nối ngẫu nhiên một tỷ lệ $p$ các nơ-ron trong tầng ẩn bằng cách đặt giá trị output của chúng bằng 0.
-
-
-
-Về mặt toán học, phép toán này tương đương với việc bọc một ma trận mặt nạ nhị phân Bernoulli $\mathbf{M}^{[l]}$ vào quá trình lan truyền:
-$$\mathbf{A}^{[l]} = g^{[l]}(\mathbf{Z}^{[l]}) \odot \mathbf{M}^{[l]} \quad \text{với } M_{j,k}^{[l]} \sim \text{Bernoulli}(1-p)$$
-
-Khi kiểm thử (Testing), ta không dùng Dropout mà giữ nguyên toàn bộ mạng, nhưng phải nhân kết quả đầu ra với hệ số tỷ lệ $(1-p)$ để đảm bảo kỳ vọng toán học của các tầng ổn định (hoặc áp dụng Inverted Dropout ngay trong lúc train bằng cách chia trực tiếp $\mathbf{A}^{[l]}$ cho $1-p$). Dropout ép mạng nơ-ron không được phụ thuộc vào bất kỳ một liên kết đơn lẻ nào, tăng tính tổng quát hóa tương tự như mô hình tập hợp (Ensemble).
-
-### 4.2 Chuẩn hóa Lớp Dữ liệu (Batch Normalization)
-Để giải quyết hiện tượng dịch chuyển phân phối nội bộ phức tạp (**Internal Covariate Shift**) khiến các tầng ẩn sâu rất khó hội tụ, ta thực hiện chuẩn hóa phân phối đầu ra tuyến tính $\mathbf{Z}^{[l]}$ về trạng thái trung bình bằng 0 và phương sai bằng 1 trên mỗi mini-batch dữ liệu $\mathcal{B}$:
-
-$$\boldsymbol{\mu}_{\mathcal{B}} = \frac{1}{m} \sum_{i=1}^{m} \mathbf{z}^{(i)}, \quad \boldsymbol{\sigma}_{\mathcal{B}}^2 = \frac{1}{m} \sum_{i=1}^{m} (\mathbf{z}^{(i)} - \boldsymbol{\mu}_{\mathcal{B}})^2$$
-
-$$\hat{\mathbf{z}}^{(i)} = \frac{\mathbf{z}^{(i)} - \boldsymbol{\mu}_{\mathcal{B}}}{\sqrt{\boldsymbol{\sigma}_{\mathcal{B}}^2 + \epsilon}}$$
-
-Để không làm mất đi tính đại diện phi tuyến của tầng dữ liệu, mạng nơ-ron được bổ sung hai tham số có thể học được là $\boldsymbol{\gamma}$ (scale) và $\boldsymbol{\beta}$ (shift) để biến đổi lại:
-
-$$\tilde{\mathbf{z}}^{(i)} = \boldsymbol{\gamma} \odot \hat{\mathbf{z}}^{(i)} + \boldsymbol{\beta}$$
-
-Giá trị $\tilde{\mathbf{z}}^{(i)}$ này mới là giá trị thực tế được đưa vào hàm kích hoạt $g(\cdot)$. Batch Normalization hoạt động như một chất bôi trơn toán học mạnh mẽ, cho phép mạng sử dụng learning rate lớn hơn và tăng tốc độ hội tụ lên gấp nhiều lần.
-
----
-
-## 5. Bảng Công thức Thi: Lan truyền Xuôi và Lan truyền Ngược
-
-Dùng phần này khi cần kiểm tra kích thước ma trận hoặc suy luận gradient theo từng tầng.
-
-| Đại lượng | Công thức | Kích thước |
+| Giai đoạn | Công thức | Kích thước |
 | :--- | :--- | :--- |
-| Batch đầu vào | $\mathbf{A}^{[0]}=\mathbf{X}^T$ | $n_0\times m$ |
-| Điểm tuyến tính | $\mathbf{Z}^{[l]}=\mathbf{W}^{[l]}\mathbf{A}^{[l-1]}+\mathbf{b}^{[l]}$ | $n_l\times m$ |
-| Activation | $\mathbf{A}^{[l]}=g^{[l]}(\mathbf{Z}^{[l]})$ | $n_l\times m$ |
-| Sai số đầu ra softmax + CE | $\mathbf{dZ}^{[L]}=\mathbf{A}^{[L]}-\mathbf{Y}$ | $n_L\times m$ |
-| Sai số tầng ẩn | $\mathbf{dZ}^{[l]}=((\mathbf{W}^{[l+1]})^T\mathbf{dZ}^{[l+1]})\odot g'(\mathbf{Z}^{[l]})$ | $n_l\times m$ |
-| Gradient trọng số | $\mathbf{dW}^{[l]}=\frac{1}{m}\mathbf{dZ}^{[l]}(\mathbf{A}^{[l-1]})^T$ | $n_l\times n_{l-1}$ |
-| Gradient bias | $\mathbf{db}^{[l]}=\frac{1}{m}\sum_i \mathbf{dZ}^{(i)[l]}$ | $n_l\times 1$ |
+| Đầu vào | $\mathbf{A}^{[0]}=\mathbf{X}^T$ | $n_0\times m$ |
+| Tuyến tính xuôi | $\mathbf{Z}^{[l]}=\mathbf{W}^{[l]}\mathbf{A}^{[l-1]}+\mathbf{b}^{[l]}$ | $n_l\times m$ |
+| Kích hoạt xuôi | $\mathbf{A}^{[l]}=g^{[l]}(\mathbf{Z}^{[l]})$ | $n_l\times m$ |
+| Lỗi đầu ra, sigmoid + BCE | $\mathbf{dZ}^{[L]}=\mathbf{A}^{[L]}-\mathbf{Y}$ | $n_L\times m$ |
+| Lỗi tầng ẩn | $\mathbf{dZ}^{[l]}=((\mathbf{W}^{[l+1]})^T\mathbf{dZ}^{[l+1]})\odot g'(\mathbf{Z}^{[l]})$ | $n_l\times m$ |
+| Đạo hàm theo trọng số | $\mathbf{dW}^{[l]}=\frac{1}{m}\mathbf{dZ}^{[l]}(\mathbf{A}^{[l-1]})^T$ | $n_l\times n_{l-1}$ |
+| Đạo hàm theo độ lệch | $\mathbf{db}^{[l]}=\frac{1}{m}\sum_i\mathbf{dZ}^{(i)[l]}$ | $n_l\times1$ |
+| Cập nhật trọng số | $\mathbf{W}^{[l]}\leftarrow\mathbf{W}^{[l]}-\alpha\mathbf{dW}^{[l]}$ | giống $\mathbf{W}^{[l]}$ |
+| Cập nhật độ lệch | $\mathbf{b}^{[l]}\leftarrow\mathbf{b}^{[l]}-\alpha\mathbf{db}^{[l]}$ | giống $\mathbf{b}^{[l]}$ |
 
-**Quy tắc kiểm tra kích thước:** mọi gradient phải có cùng kích thước với tham số mà nó cập nhật. Nếu $\mathbf{W}^{[l]}$ có kích thước $n_l\times n_{l-1}$, thì $\mathbf{dW}^{[l]}$ cũng phải có kích thước $n_l\times n_{l-1}$.
+Quy tắc kiểm tra nhanh:
+
+- $dW$ phải cùng kích thước với $W$.
+- $db$ phải cùng kích thước với $b$.
+- $dZ$ phải cùng kích thước với $Z$.
+- Nếu phép nhân ma trận không khớp kích thước, hãy kiểm tra lại chiều mini-batch: thường mỗi cột là một mẫu.
 
 ```{python}
 #| label: neural-gradient-check
+#| fig-cap: "Đạo hàm từ lan truyền ngược khớp với đạo hàm xấp xỉ bằng sai phân số."
+#| echo: false
 
 import numpy as np
 
@@ -212,17 +375,17 @@ y = np.array([[1.0]])
 W = np.array([[0.4, -0.3]])
 b = np.array([[0.2]])
 
-def sigmoid(z):
+def sigmoid_fn(z):
     return 1 / (1 + np.exp(-z))
 
 def loss(W_value):
-    z = W_value @ x + b
-    a = sigmoid(z)
-    return float(np.sum(0.5 * (a - y) ** 2))
+    z_value = W_value @ x + b
+    a_value = sigmoid_fn(z_value)
+    return float(np.sum(0.5 * (a_value - y) ** 2))
 
-z = W @ x + b
-a = sigmoid(z)
-dz = (a - y) * a * (1 - a)
+z_value = W @ x + b
+a_value = sigmoid_fn(z_value)
+dz = (a_value - y) * a_value * (1 - a_value)
 dW = dz @ x.T
 
 eps = 1e-5
@@ -239,28 +402,52 @@ print("dW từ sai phân số:", np.round(numeric_dW, 6))
 print("Sai lệch tuyệt đối:", np.round(np.abs(dW - numeric_dW), 10))
 ```
 
-### Bộ bài tập mẫu có lời giải
+---
+
+## 8. Bộ bài tập mẫu có lời giải
+
+### Bài 1: Xác định kích thước ma trận
 
 **Đề bài.** Một mini-batch có $m=5$ mẫu, tầng trước có $n_{l-1}=3$ nơ-ron, tầng hiện tại có $n_l=4$ nơ-ron. Hãy xác định kích thước của $\mathbf{A}^{[l-1]}$, $\mathbf{W}^{[l]}$, $\mathbf{b}^{[l]}$, $\mathbf{Z}^{[l]}$, $\mathbf{dW}^{[l]}$.
 
-**Lời giải từng bước.**
+**Lời giải.**
 
-1. Vì tầng trước có 3 nơ-ron và batch có 5 mẫu:
-   $$\mathbf{A}^{[l-1]}\in\mathbb{R}^{3\times 5}$$
-2. Vì tầng hiện tại có 4 nơ-ron và nhận 3 đầu vào:
-   $$\mathbf{W}^{[l]}\in\mathbb{R}^{4\times 3}$$
-3. Bias có một giá trị cho mỗi nơ-ron tầng hiện tại:
-   $$\mathbf{b}^{[l]}\in\mathbb{R}^{4\times 1}$$
-4. Điểm tuyến tính:
-   $$\mathbf{Z}^{[l]}=\mathbf{W}^{[l]}\mathbf{A}^{[l-1]}+\mathbf{b}^{[l]}\in\mathbb{R}^{4\times 5}$$
-5. Gradient trọng số phải cùng kích thước với trọng số:
-   $$\mathbf{dW}^{[l]}\in\mathbb{R}^{4\times 3}$$
+Vì mỗi cột là một mẫu:
 
-**Kết luận.** Nếu khi làm bài bạn ra $\mathbf{dW}^{[l]}$ khác kích thước $\mathbf{W}^{[l]}$, phép nhân ma trận đã bị sai.
+$$\mathbf{A}^{[l-1]}\in\mathbb{R}^{3\times5}$$
 
-### Bài 2: Lan truyền xuôi hoàn chỉnh qua mạng 2-2-1
+Vì tầng hiện tại có 4 nơ-ron, mỗi nơ-ron nhận 3 giá trị kích hoạt từ tầng trước:
 
-**Đề bài.** Cho một mạng có 2 input, 2 neuron ẩn dùng ReLU, và 1 output dùng sigmoid:
+$$\mathbf{W}^{[l]}\in\mathbb{R}^{4\times3}$$
+
+Độ lệch có một số cho mỗi nơ-ron:
+
+$$\mathbf{b}^{[l]}\in\mathbb{R}^{4\times1}$$
+
+Tuyến tính xuôi:
+
+$$\mathbf{Z}^{[l]}=\mathbf{W}^{[l]}\mathbf{A}^{[l-1]}+\mathbf{b}^{[l]}$$
+
+Kích thước:
+
+$$
+(4\times3)(3\times5)+(4\times1)
+=4\times5
+$$
+
+Nên:
+
+$$\mathbf{Z}^{[l]}\in\mathbb{R}^{4\times5}$$
+
+Đạo hàm theo trọng số luôn cùng kích thước với trọng số:
+
+$$\mathbf{dW}^{[l]}\in\mathbb{R}^{4\times3}$$
+
+**Kết luận.** Nếu $dW$ không cùng kích thước với $W$, phép nhân trong backprop đã sai.
+
+### Bài 2: Lan truyền xuôi qua mạng 2-2-1
+
+**Đề bài.** Cho mạng có 2 đầu vào, 2 nơ-ron ẩn dùng ReLU, và 1 đầu ra dùng sigmoid:
 
 $$
 \mathbf{x}=
@@ -289,9 +476,11 @@ $$
 b^{[2]}=0.05
 $$
 
-Tính $\mathbf{Z}^{[1]}$, $\mathbf{A}^{[1]}$, $Z^{[2]}$, và xác suất output.
+Tính $\mathbf{Z}^{[1]}$, $\mathbf{A}^{[1]}$, $Z^{[2]}$, và $A^{[2]}$.
 
-**Lời giải.** Tính tầng ẩn:
+**Lời giải.**
+
+Tầng ẩn:
 
 $$
 \mathbf{Z}^{[1]}
@@ -309,21 +498,30 @@ $$
 \end{pmatrix}
 $$
 
-Neuron ẩn thứ nhất:
+Nơ-ron ẩn thứ nhất:
 
 $$z_1^{[1]}=0.5(1)-0.4(2)+0.1=-0.2$$
 
-Neuron ẩn thứ hai:
+Nơ-ron ẩn thứ hai:
 
 $$z_2^{[1]}=0.3(1)+0.8(2)-0.2=1.7$$
 
-Vì dùng ReLU:
+Do đó:
 
 $$
-\mathbf{A}^{[1]}
-=\operatorname{ReLU}
+\mathbf{Z}^{[1]}=
 \begin{pmatrix}
 -0.2\\1.7
+\end{pmatrix}
+$$
+
+Qua ReLU:
+
+$$
+\mathbf{A}^{[1]}=
+\begin{pmatrix}
+\max(0,-0.2)\\
+\max(0,1.7)
 \end{pmatrix}
 =
 \begin{pmatrix}
@@ -331,7 +529,7 @@ $$
 \end{pmatrix}
 $$
 
-Tính output logit:
+Tầng đầu ra:
 
 $$
 Z^{[2]}
@@ -343,57 +541,66 @@ Z^{[2]}
 0\\1.7
 \end{pmatrix}
 +0.05
-=1.2(0)-0.7(1.7)+0.05
-=-1.14
 $$
 
-Đưa qua sigmoid:
-
 $$
-A^{[2]}=\sigma(-1.14)
-=\frac{1}{1+e^{1.14}}
-\approx0.242
+Z^{[2]}=1.2(0)-0.7(1.7)+0.05=-1.14
 $$
 
-**Kết luận.** Lan truyền xuôi chỉ là lặp lại hai bước: affine transform rồi activation. ReLU đặt giá trị âm về $0$, sigmoid đổi logit cuối thành xác suất.
+Qua sigmoid:
 
-### Bài 3: Một bước backprop cho output sigmoid
+$$
+A^{[2]}=\sigma(-1.14)=\frac{1}{1+e^{1.14}}\approx0.242
+$$
 
-**Đề bài.** Với output của Bài 2 và nhãn thật $y=1$, dùng binary cross-entropy. Tính $dZ^{[2]}$, $dW^{[2]}$, $db^{[2]}$.
+**Kết luận.** Mạng dự đoán xác suất khoảng $0.242$ cho lớp 1.
 
-**Lời giải.** Với sigmoid + binary cross-entropy:
+### Bài 3: Một bước lan truyền ngược ở tầng đầu ra
+
+**Đề bài.** Với đầu ra của Bài 2 và nhãn thật $y=1$, dùng sigmoid + binary cross-entropy. Tính $dZ^{[2]}$, $dW^{[2]}$, $db^{[2]}$.
+
+**Lời giải.**
+
+Với sigmoid + binary cross-entropy:
 
 $$dZ^{[2]}=A^{[2]}-y$$
 
-Vì chỉ có một mẫu:
-
-$$dW^{[2]}=dZ^{[2]}(A^{[1]})^T,\quad db^{[2]}=dZ^{[2]}$$
-
-Từ Bài 2, $A^{[2]}\approx0.242$ và $y=1$:
+Thay số:
 
 $$dZ^{[2]}=0.242-1=-0.758$$
 
-Tính gradient trọng số output:
+Vì chỉ có một mẫu:
+
+$$dW^{[2]}=dZ^{[2]}(A^{[1]})^T$$
 
 $$
 dW^{[2]}
-=dZ^{[2]}(A^{[1]})^T
 =-0.758
 \begin{pmatrix}
 0&1.7
 \end{pmatrix}
-$$
-
-$$
-dW^{[2]}
-\approx
+=
 \begin{pmatrix}
 0&-1.289
 \end{pmatrix}
 $$
 
-Bias gradient:
+Đạo hàm theo độ lệch:
 
-$$db^{[2]}=dZ^{[2]}\approx-0.758$$
+$$db^{[2]}=dZ^{[2]}=-0.758$$
 
-**Kết luận.** Nếu dự đoán thấp hơn nhãn thật $1$, $dZ^{[2]}$ âm. Gradient âm làm gradient descent tăng các trọng số liên quan để output lần sau cao hơn.
+Nếu tốc độ học $\alpha=0.1$, cập nhật tầng đầu ra:
+
+$$
+W_1^{[2]}\leftarrow1.2-0.1(0)=1.2
+$$
+
+$$
+W_2^{[2]}\leftarrow-0.7-0.1(-1.289)=-0.571
+$$
+
+$$
+b^{[2]}\leftarrow0.05-0.1(-0.758)=0.126
+$$
+
+**Kết luận.** Vì mô hình dự đoán quá thấp so với nhãn $1$, đạo hàm làm độ lệch tầng đầu ra tăng và làm trọng số nối từ giá trị kích hoạt $1.7$ bớt âm để lần sau xác suất lớp 1 cao hơn.

@@ -17,6 +17,8 @@ The goal is to turn dense machine learning theory into notes that are easier to 
 
 ## Notebook Set
 
+The full combined document is available at `output/CS114_Full_Notes.pdf`. It is generated from all 9 source notebooks by `scripts/build_full_notes.py`.
+
 | Source notebook | Main topic | Generated PDF |
 | :--- | :--- | :--- |
 | `quarto/LR_OLS_Derivation.qmd` | Ordinary Least Squares derivation, residual checks, simple linear regression | `output/LR_OLS_Derivation.pdf` |
@@ -37,6 +39,7 @@ The goal is to turn dense machine learning theory into notes that are easier to 
 +-- html/                 # Rendered HTML previews and their *_files assets
 +-- output/               # Rendered PDF files
 +-- exam/                 # Sample and practice exams with step-by-step answer keys
++-- scripts/              # Rebuild scripts for generated source files
 +-- temp/                 # Quarto/Jupyter intermediate files and scratch artifacts
 +-- README.md             # Project overview
 ```
@@ -83,7 +86,9 @@ quarto preview .\quarto\Classification_Logistic_Regression.qmd
 Render one notebook to PDF:
 
 ```powershell
-quarto render .\quarto\Classification_Logistic_Regression.qmd --to pdf --output Classification_Logistic_Regression.pdf
+Push-Location .\quarto
+quarto render .\Classification_Logistic_Regression.qmd --to pdf --output Classification_Logistic_Regression.pdf
+Pop-Location
 Move-Item -LiteralPath .\quarto\Classification_Logistic_Regression.pdf -Destination .\output\Classification_Logistic_Regression.pdf -Force
 ```
 
@@ -92,10 +97,22 @@ Important: avoid using `--output-dir output` for single-file renders in this fol
 Render one notebook to HTML and move the preview artifacts:
 
 ```powershell
-quarto render .\quarto\Classification_Logistic_Regression.qmd --to html --output Classification_Logistic_Regression.html
+Push-Location .\quarto
+quarto render .\Classification_Logistic_Regression.qmd --to html --output Classification_Logistic_Regression.html
+Pop-Location
 Move-Item -LiteralPath .\quarto\Classification_Logistic_Regression.html -Destination .\html\Classification_Logistic_Regression.html -Force
 Move-Item -LiteralPath .\quarto\Classification_Logistic_Regression_files -Destination .\html\Classification_Logistic_Regression_files -Force
 ```
+
+Build the full combined source and render the big PDF:
+
+```powershell
+python .\scripts\build_full_notes.py
+quarto render .\quarto\CS114_Full_Notes.qmd --to pdf --output CS114_Full_Notes.pdf
+Move-Item -LiteralPath .\CS114_Full_Notes.pdf -Destination .\output\CS114_Full_Notes.pdf -Force
+```
+
+The combined PDF has a detailed table of contents and PDF bookmarks. Each source notebook starts at a new page for faster navigation.
 
 ## Study Design
 
@@ -110,3 +127,5 @@ Python chunks are kept for demonstrations and plots, but the problem-set solutio
 ## Current Status
 
 All 9 notebooks have been rendered successfully to PDF in `output/`. The Python chunks compile under `science_env`, and the worked problem sections are written as step-by-step mathematical solutions.
+
+The combined document `output/CS114_Full_Notes.pdf` has also been rendered successfully from all 9 notebooks.
